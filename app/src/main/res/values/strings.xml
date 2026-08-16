@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">InstantTranslate</string>
+
+    <!-- Placeholder pending provider/legal review (docs/PRODUCT_REQUIREMENTS.md §15, docs/IMPLEMENTATION_PLAN.md §7). -->
+    <string name="process_text_action_label">Translate</string>
+
+    <string name="label_original">Original</string>
+    <string name="label_translated">Translation</string>
+    <string name="direction_en_to_hi">English → Hindi</string>
+    <string name="direction_hi_to_en">Hindi → English</string>
+
+    <string name="action_copy">Copy</string>
+    <string name="action_replace">Replace</string>
+    <string name="copied_confirmation">Copied</string>
+    <string name="error_generic">Couldn\'t translate that.</string>
+</resources>

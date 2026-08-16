@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Theme.InstantTranslate" parent="Theme.Material3.DayNight.NoActionBar" />
+
+    <!--
+        ProcessTextActivity never draws its own UI — it validates, delegates to ResultActivity,
+        and relays ResultActivity's eventual result back to the host. Deliberately NOT
+        android:windowNoDisplay: that flag requires the activity to call finish() before its
+        own onResume() completes, which is incompatible with staying alive (invisible) in the
+        back stack while it awaits ResultActivity's asynchronous result — confirmed by a crash
+        ("did not call finish() prior to onResume() completing") during Stage 0A device testing.
+        Translucent-with-no-animation gets the same invisible effect without that constraint.
+    -->
+    <style name="Theme.InstantTranslate.Trampoline" parent="Theme.InstantTranslate">
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowAnimationStyle">@null</item>
+    </style>
+
+    <style name="Theme.InstantTranslate.Dialog" parent="Theme.Material3.DayNight.Dialog">
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:backgroundDimEnabled">true</item>
+    </style>
+
+</resources>

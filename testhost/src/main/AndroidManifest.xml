@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Dev-only controlled host app (docs/VALIDATION_PLAN.md §2.2). Never published; exists solely to
+    exercise Process Text discovery against known field types under our control. No <queries>
+    element here in the base manifest — that's added only by the withQueries flavor
+    (src/withQueries/AndroidManifest.xml) so the two variants isolate that one variable.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application
+        android:allowBackup="false"
+        android:label="@string/app_name"
+        android:theme="@style/Theme.TestHost"
+        android:supportsRtl="true">
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+    </application>
+
+</manifest>

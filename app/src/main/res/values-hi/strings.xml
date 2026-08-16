@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">InstantTranslate</string>
+    <string name="process_text_action_label">अनुवाद करें</string>
+
+    <string name="label_original">मूल पाठ</string>
+    <string name="label_translated">अनुवाद</string>
+    <string name="direction_en_to_hi">अंग्रेज़ी → हिन्दी</string>
+    <string name="direction_hi_to_en">हिन्दी → अंग्रेज़ी</string>
+
+    <string name="action_copy">कॉपी करें</string>
+    <string name="action_replace">बदलें</string>
+    <string name="copied_confirmation">कॉपी हो गया</string>
+    <string name="error_generic">अनुवाद नहीं हो सका।</string>
+</resources>

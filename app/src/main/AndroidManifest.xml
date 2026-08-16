@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Stage 0A: platform-only manifest. No permissions are declared — no network, no
+    Accessibility, no overlay, no IME, no background service (Validation Plan §2.5 Gate 0
+    pass criteria). INTERNET is added only in Stage 1 when the cloud provider lands.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!--
+        android:forceQueryable is deliberately NOT set here. docs/IMPLEMENTATION_PLAN.md §2 item 9 /
+        docs/VALIDATION_PLAN.md §2.2 call for testing it only as a one-off spike experiment (does it
+        change discovery from a host without the <queries> declaration?), weighed against making
+        this app broadly visible to every other installed app — not adopting it as a default.
+    -->
+    <application
+        android:allowBackup="false"
+        android:fullBackupContent="false"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:theme="@style/Theme.InstantTranslate"
+        android:supportsRtl="true">
+
+        <!--
+            Text-action adapter (docs/IMPLEMENTATION_PLAN.md §1, docs/TECHNICAL_PLAN.md §3).
+            The only externally exported component. No launcher intent filter in Stage 0A —
+            this build is reached exclusively through the Process Text selection menu.
+        -->
+        <activity
+            android:name=".textaction.ProcessTextActivity"
+            android:exported="true"
+            android:theme="@style/Theme.InstantTranslate.Trampoline"
+            android:excludeFromRecents="true"
+            android:noHistory="true"
+            android:label="@string/process_text_action_label">
+            <intent-filter>
+                <action android:name="android.intent.action.PROCESS_TEXT" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+        </activity>
+
+        <!--
+            Result presenter (ui/). Not exported — reachable only from ProcessTextActivity
+            via an explicit intent carrying sanitized text, never from outside the app.
+        -->
+        <activity
+            android:name=".ui.ResultActivity"
+            android:exported="false"
+            android:theme="@style/Theme.InstantTranslate.Dialog"
+            android:excludeFromRecents="true"
+            android:windowSoftInputMode="adjustResize" />
+
+    </application>
+
+</manifest>

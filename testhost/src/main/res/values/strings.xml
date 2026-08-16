@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">InstantTranslate Test Host</string>
+
+    <string name="fixture_readonly_textview">Read-only TextView</string>
+    <string name="fixture_readonly_sample">Selectable but not editable text, for testing the read-only Process Text path. Try: नमस्ते, this is a test.</string>
+
+    <string name="fixture_single_line_edittext">Editable single-line EditText</string>
+    <string name="fixture_multiline_edittext">Editable multiline EditText</string>
+    <string name="fixture_multiline_sample">Line one of editable sample text.\nLine two, with Hinglish: aap kaise ho?\nLine three, with Devanagari: आप कैसे हैं?</string>
+    <string name="fixture_password_edittext">Password field (negative case)</string>
+
+    <string name="fixture_compose_surface">Compose text surface</string>
+    <string name="fixture_compose_sample">Selectable Compose text: the quick brown fox jumps over the lazy dog.</string>
+
+    <string name="fixture_webview">WebView-hosted selectable text</string>
+
+    <string name="fixture_custom_selection">Custom selection implementation (negative case)</string>
+    <string name="fixture_custom_selection_sample">This text is drawn on a Canvas with a hand-rolled long-press handler that never calls startActionMode — it must NOT offer Process Text actions.</string>
+</resources>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    The withQueries flavor overlay. Adds the official Android 11+ package-visibility
+    declaration for discovering PROCESS_TEXT-capable packages, per
+    https://developer.android.com/training/package-visibility/use-cases#show-custom-text-selection-actions
+    referenced in docs/VALIDATION_PLAN.md §2.2. The withoutQueries flavor has no such overlay,
+    so its merged manifest never gains this element.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.PROCESS_TEXT" />
+            <data android:mimeType="text/plain" />
+        </intent>
+    </queries>
+
+</manifest>
