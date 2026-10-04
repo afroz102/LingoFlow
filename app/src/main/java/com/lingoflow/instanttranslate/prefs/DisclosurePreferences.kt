@@ -22,6 +22,6 @@ class DisclosurePreferences(context: Context) : DisclosureGate {
     private companion object {
         const val PREFS_NAME = "instanttranslate_prefs"
         const val KEY_ACKNOWLEDGED_VERSION = "cloud_disclosure_ack_version"
-        const val CURRENT_DISCLOSURE_VERSION = 3
+        const val CURRENT_DISCLOSURE_VERSION = 4
     }
 }

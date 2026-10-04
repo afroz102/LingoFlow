@@ -1,27 +1,25 @@
 package com.lingoflow.instanttranslate.direction
 
-import org.junit.Assert.assertEquals
+import org.junit.Assert.*
 import org.junit.Test
 
 class DirectionDetectorTest {
-
-    @Test
-    fun `Latin English asks the model to resolve the language`() {
-        assertEquals(Direction.AUTO, DirectionDetector.detect("hello there"))
+    @Test fun `English and informal Hinglish use one model call for detection`() {
+        for (text in listOf("hello there", "aap kaise ho", "main meeting mein late aaunga")) {
+            assertEquals(Direction.AUTO, DirectionDetector.detect(text))
+            assertTrue(DirectionDetector.isSupported(text))
+        }
     }
-
-    @Test
-    fun `Devanagari text detects as Hindi to English`() {
-        assertEquals(Direction.HINDI_TO_ENGLISH, DirectionDetector.detect("नमस्ते दुनिया"))
+    @Test fun `unsupported scripts and bounded input are rejected locally`() {
+        for (text in listOf("नमस्ते", "please कल आना", "\uA8E0", String(Character.toChars(0x11B00)), " ", "x".repeat(4001))) {
+            assertFalse(DirectionDetector.isSupported(text))
+        }
+        assertTrue(DirectionDetector.isSupported("x".repeat(4000)))
+        assertTrue(DirectionDetector.isSupported("kal milte hain 🎮"))
     }
-
-    @Test
-    fun `mixed script with any Devanagari codepoint detects as Hindi to English`() {
-        assertEquals(Direction.HINDI_TO_ENGLISH, DirectionDetector.detect("please कल आना"))
-    }
-
-    @Test
-    fun `Romanized Hindi is not incorrectly forced to English to Hindi`() {
-        assertEquals(Direction.AUTO, DirectionDetector.detect("aap kaise ho"))
+    @Test fun `automatic writing cannot resolve into reading mode`() {
+        assertTrue(Direction.AUTO.acceptsResolved(Direction.ENGLISH_TO_HINGLISH))
+        assertTrue(Direction.AUTO.acceptsResolved(Direction.HINGLISH_TO_ENGLISH))
+        assertFalse(Direction.AUTO.acceptsResolved(Direction.READ_TO_ENGLISH))
     }
 }

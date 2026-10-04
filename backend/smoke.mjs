@@ -31,33 +31,27 @@ await check('health_configuration_and_database', '/healthz', 200, {}, body => bo
 await check('no_auth_route', '/auth/signup', 404);
 await check('wrong_method', '/v1/translate', 405);
 await check('invalid_direction', '/v1/translate', 400, post({ text: 'hello', direction: 'OTHER' }));
-await check('english_to_hindi_without_credentials', '/v1/translate', 200,
-  post({ text: 'How are you?', direction: 'ENGLISH_TO_HINDI' }),
-  body => typeof body.translation === 'string' && /[\u0900-\u097f]/u.test(body.translation));
-await check('hindi_to_english_without_credentials', '/v1/translate', 200,
-  post({ text: 'आप कैसे हैं?', direction: 'HINDI_TO_ENGLISH' }),
-  body => typeof body.translation === 'string' && /[a-z]/i.test(body.translation));
-
 const romanized = body => typeof body.translation === 'string' && /[a-z]/i.test(body.translation) &&
-  !/[\u0900-\u097f]/u.test(body.translation);
-await check('auto_english_direction', '/v1/translate', 200,
+  !/[\u0900-\u097f\ua8e0-\ua8ff]/u.test(body.translation);
+await check('removed_devanagari_direction', '/v1/translate', 400,
+  post({ text: 'hello', direction: 'ENGLISH_TO_HINDI' }));
+await check('devanagari_input_rejected', '/v1/translate', 400,
+  post({ text: 'कल आना', direction: 'READ_TO_ENGLISH' }));
+await check('auto_english_to_roman_hindi', '/v1/translate', 200,
   post({ text: 'How are you?', direction: 'AUTO' }),
-  body => body.direction === 'ENGLISH_TO_HINDI' && /[\u0900-\u097f]/u.test(body.translation));
+  body => body.direction === 'ENGLISH_TO_HINGLISH' && romanized(body) && /kaise|kaisey|kaisi/i.test(body.translation));
 await check('auto_hinglish_preserves_negation', '/v1/translate', 200,
   post({ text: 'main kal nahi aa sakta', direction: 'AUTO' }),
   body => body.direction === 'HINGLISH_TO_ENGLISH' && romanized(body) && /not|cannot|can.t|won.t|unable/i.test(body.translation));
-await check('auto_mixed_hinglish', '/v1/translate', 200,
-  post({ text: 'main meeting mein late aaunga, please wait', direction: 'AUTO' }),
-  body => body.direction === 'HINGLISH_TO_ENGLISH' && romanized(body) && /late/i.test(body.translation) && /wait/i.test(body.translation));
-await check('english_to_romanized_hindi', '/v1/translate', 200,
-  post({ text: 'How are you?', direction: 'ENGLISH_TO_HINGLISH' }),
-  body => body.direction === 'ENGLISH_TO_HINGLISH' && romanized(body) && /kaise|kaisey|kaisi/i.test(body.translation));
-await check('hindi_to_romanized_hindi_preserves_negation', '/v1/translate', 200,
-  post({ text: 'मैं कल नहीं आ सकता।', direction: 'HINDI_TO_HINGLISH' }),
-  body => body.direction === 'HINDI_TO_HINGLISH' && romanized(body) && /nahi|nahin|nhi/i.test(body.translation));
-await check('hinglish_to_devanagari', '/v1/translate', 200,
-  post({ text: 'aap kaise ho?', direction: 'HINGLISH_TO_HINDI' }),
-  body => body.direction === 'HINGLISH_TO_HINDI' && /[\u0900-\u097f]/u.test(body.translation));
+await check('read_hinglish_game_context', '/v1/translate', 200,
+  post({ text: 'kal raid ke baad milte hain, abhi attack mat karna', direction: 'READ_TO_ENGLISH' }),
+  body => body.direction === 'READ_TO_ENGLISH' && romanized(body) && /raid/i.test(body.translation) && /not|don.t/i.test(body.translation));
+await check('read_english_stays_english', '/v1/translate', 200,
+  post({ text: 'Please wait for me', direction: 'READ_TO_ENGLISH' }),
+  body => body.direction === 'READ_TO_ENGLISH' && body.translation === 'Please wait for me');
+await check('explicit_english_to_hinglish', '/v1/translate', 200,
+  post({ text: 'I cannot join the raid tonight', direction: 'ENGLISH_TO_HINGLISH' }),
+  body => body.direction === 'ENGLISH_TO_HINGLISH' && romanized(body) && /nahi|nahin|nhi/i.test(body.translation));
 
 report.passed = report.checks.every(result => result.passed);
 if (process.argv[4]) writeFileSync(process.argv[4], JSON.stringify(report, null, 2) + '\n');

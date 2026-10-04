@@ -11,7 +11,7 @@ import org.junit.Test
 import java.net.SocketTimeoutException
 
 class BackendTranslationProviderTest {
-    private val direction = Direction.ENGLISH_TO_HINDI
+    private val direction = Direction.ENGLISH_TO_HINGLISH
 
     @Test fun `automatic Hinglish translation uses one request and validates the resolved direction`() = runTest {
         var calls = 0
@@ -26,7 +26,7 @@ class BackendTranslationProviderTest {
     }
 
     @Test fun `automatic response cannot omit direction or resolve to an output preference`() = runTest {
-        for (resolved in listOf(null, "AUTO", "OTHER", "ENGLISH_TO_HINGLISH", 123)) {
+        for (resolved in listOf(null, "AUTO", "OTHER", "ENGLISH_TO_HINDI", "READ_TO_ENGLISH", 123)) {
             val body = JSONObject().put("translation", "hello")
             if (resolved != null) body.put("direction", resolved)
             val provider = BackendTranslationProvider(BackendHttp { HttpResponse(200, body.toString()) })
@@ -56,9 +56,9 @@ class BackendTranslationProviderTest {
             assertEquals(setOf("text", "direction"), json.keys().asSequence().toSet())
             assertEquals("hello", json.getString("text"))
             assertEquals(direction.name, json.getString("direction"))
-            HttpResponse(200, """{"translation":"नमस्ते"}""")
+            HttpResponse(200, """{"translation":"Namaste"}""")
         })
-        assertEquals(TranslationResult.Success("नमस्ते", direction), provider.translate("hello", direction))
+        assertEquals(TranslationResult.Success("Namaste", direction), provider.translate("hello", direction))
         assertEquals(1, calls)
     }
 
@@ -77,7 +77,7 @@ class BackendTranslationProviderTest {
     }
 
     @Test fun `invalid successful bodies are never displayed as a translation`() = runTest {
-        for (raw in listOf("not json", "{}", """{"translation":""}""", """{"translation":123}""",
+        for (raw in listOf("""{"translation":"कल आना"}""", "not json", "{}", """{"translation":""}""", """{"translation":123}""",
             JSONObject().put("translation", "x".repeat(16001)).toString())) {
             val provider = BackendTranslationProvider(BackendHttp { HttpResponse(200, raw) })
             assertEquals(TranslationResult.Failure(FailureReason.INVALID_RESPONSE), provider.translate("hello", direction))
@@ -86,7 +86,7 @@ class BackendTranslationProviderTest {
 
     @Test fun `invalid input and missing backend never make a request`() = runTest {
         val http = BackendHttp { error("must not call") }
-        for (text in listOf(" ", "x".repeat(4001))) {
+        for (text in listOf(" ", "x".repeat(4001), "कल आना")) {
             assertEquals(TranslationResult.Failure(FailureReason.UNSUPPORTED_INPUT),
                 BackendTranslationProvider(http).translate(text, direction))
         }

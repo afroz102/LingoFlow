@@ -1,10 +1,16 @@
 # Benchmark tools and evidence
 
+The current V1 is English/Roman Hindi only with automatic writing replacement and floating
+reading. Earlier Devanagari/direction-picker findings are historical. The frozen corpus/timing
+protocol needs adaptation; the old latency instrumentation is explicitly skipped.
+
 The [validation plan](../docs/VALIDATION_PLAN.md) defines the quality, compatibility, resource
 and release gates. Passing a connectivity smoke does not pass those gates.
 
 | File | Purpose |
 |---|---|
+| `reading_writing_android_smoke.json` | Current API 30/34 reading/writing, clipboard, optional keyboard and live transport evidence |
+| `reading_writing_http_smoke.json` | Current hosted V1 modes, script rejection and semantic smoke flags |
 | `compatibility_matrix.csv` | Historical API 30/34 host/field discovery rows; physical coverage remains open |
 | `gate_0_result.md` | Platform-spike findings, fixes, privacy/lifecycle checks and consolidated scorecard |
 | `stage_0b_frozen_protocol.md` | Frozen matrix, draft corpus, reference-device/reviewer/budget decisions still pending |

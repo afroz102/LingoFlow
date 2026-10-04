@@ -1,28 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">InstantTranslate</string>
+    <string name="app_name">LingoTranslate</string>
 
-    <!-- Placeholder pending provider/legal review (docs/PRODUCT_REQUIREMENTS.md, docs/TECHNICAL_PLAN.md). -->
-    <string name="process_text_action_label">Translate</string>
+    <string name="process_text_action_label">Lingo-Translate</string>
 
-    <string name="label_original">Original</string>
-    <string name="label_translated">Translation</string>
-    <string name="direction_en_to_hi">English → Hindi</string>
-    <string name="direction_hi_to_en">Hindi → English</string>
-    <string name="direction_auto">Automatic (English / Hindi / Hinglish)</string>
+    <string name="direction_auto">Writing: English ↔ Roman Hindi</string>
     <string name="direction_hinglish_to_en">Hinglish → English</string>
     <string name="direction_en_to_hinglish">English → Hinglish (Roman Hindi)</string>
-    <string name="direction_hi_to_hinglish">Hindi → Hinglish (Roman Hindi)</string>
-    <string name="direction_hinglish_to_hi">Hinglish → Hindi (Devanagari)</string>
-    <string name="action_change_direction">Change language / script</string>
 
+    <string name="direction_read_to_en">Reading → English</string>
     <string name="action_copy">Copy</string>
-    <string name="action_replace">Replace</string>
     <string name="copied_confirmation">Copied</string>
-    <string name="error_generic">Couldn\'t translate that.</string>
+    <string name="error_generic">Use English or Roman Hindi/Hinglish, up to 4,000 characters. Devanagari is not supported in this version.</string>
 
     <!-- Shown before the first content request. Final public-release wording needs terms review. -->
-    <string name="disclosure_message">Selected text is sent through our translation server to Google\'s Gemini API. Under Google\'s free tier, content may be reviewed by people and used to improve its products. Please don\'t translate sensitive or confidential text. We don\'t save translation text or results. Our server stores total request counts to limit usage. No account or sign-in is needed.</string>
+    <string name="disclosure_message">Only text you ask to translate is sent through our translation server to Google\'s Gemini API. Under Google\'s free tier, content may be reviewed by people and used to improve its products. Please don\'t translate sensitive or confidential text. We don\'t save translation text or results. Our server stores total request counts to limit usage. No account or sign-in is needed.</string>
     <string name="action_continue">Continue</string>
     <string name="action_retry">Retry</string>
 
@@ -31,4 +23,39 @@
     <string name="error_timeout">That took too long. Try again.</string>
     <string name="error_provider">Couldn\'t reach the translation service. Try again.</string>
     <string name="error_invalid_response">Got an unexpected response. Try again.</string>
+    <string name="setup_intro">Write: select your draft and choose Lingo-Translate to replace it automatically.
+
+Read: select a message and choose Lingo-Translate for a floating English result. English and Roman Hindi/Hinglish only.</string>
+    <string name="setup_overlay">Allow floating translations</string>
+    <string name="setup_keyboard_explanation">Automatic copy prompts on modern Android require Lingo keyboard to be enabled and selected as your keyboard. This is a basic Roman keyboard without predictions. Typing stays on your phone.
+
+With another keyboard, copy a message and tap the Lingo bubble to translate it.</string>
+    <string name="setup_enable_keyboard">1. Enable Lingo keyboard</string>
+    <string name="setup_choose_keyboard">2. Choose Lingo keyboard</string>
+    <string name="setup_start">Start reading session</string>
+    <string name="setup_stop">Stop reading session</string>
+    <string name="setup_writing">Writing works independently of reading sessions and keyboard choice, in apps that expose Android text-selection actions. A successful translation replaces only the selected draft. Cancel or failure leaves the draft unchanged.</string>
+    <string name="clipboard_automatic">Lingo keyboard selected: copy prompts are available during a reading session.</string>
+    <string name="clipboard_manual">Other keyboard selected: copy a message, then tap the Lingo bubble. Automatic clipboard detection is restricted by Android.</string>
+    <string name="overlay_unavailable">Floating translations could not start. Allow display over other apps and try again. This phone or app may restrict overlays.</string>
+    <string name="reading_permission">Allow LingoTranslate to display over other apps so the English result can float over your current app.</string>
+    <string name="session_started">Reading session started. Return to your chat or game.</string>
+    <string name="session_stopped">Reading session stopped.</string>
+    <string name="session_channel">Lingo reading session</string>
+    <string name="session_notification">Floating translation is active. Tap Stop to end the session.</string>
+    <string name="reading_bubble">Lingo</string>
+    <string name="reading_bubble_description">Open reading translation or translate copied text. Drag to move.</string>
+    <string name="reading_title">Lingo · English</string>
+    <string name="reading_prompt">Message copied. Translate it to English?</string>
+    <string name="reading_capturing">Reading copied text…</string>
+    <string name="reading_loading">Translating meaning and context…</string>
+    <string name="clipboard_unavailable">No readable English or Roman Hindi message found. Copy a text message and try again. Passwords, sensitive clips and unsupported text are skipped.</string>
+    <string name="action_translate">Translate</string>
+    <string name="action_read_clipboard">Read copy</string>
+    <string name="action_minimize">Minimize</string>
+    <string name="action_close">Close</string>
+    <string name="action_stop">Stop</string>
+    <string name="keyboard_name">Lingo Roman keyboard</string>
+    <string name="keyboard_switch">Keyboard</string>
+    <string name="keyboard_space">Space</string>
 </resources>

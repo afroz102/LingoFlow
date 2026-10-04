@@ -3,7 +3,7 @@
 Current architecture, replacing Firebase and Supabase for this test version:
 
 ```text
-Android text selection → Translate → HTTPS POST /v1/translate
+Android selection / confirmed clipboard text → Lingo-Translate → HTTPS POST /v1/translate
 → our JavaScript Worker → atomic SQLite quota reservation → Gemini → result
 ```
 
@@ -81,106 +81,90 @@ This listens on `127.0.0.1:8787` and creates `backend/data/usage.sqlite`. The lo
 separate from D1. Production builds require HTTPS. Debug builds allow HTTP only to localhost,
 127.0.0.1, or the emulator host alias 10.0.2.2; they do not bypass TLS certificate validation.
 
-## Build and install on a real Android phone
+## Test on a real Android phone
 
-The final APK will already contain the hosted endpoint. No backend configuration, Supabase
-account, or Gemini key entry is needed on the phone.
+The `0.6.0-reading-writing` APK includes the public backend URL. No Supabase account,
+Gemini key entry or server configuration is needed on the phone. Internet is required.
 
-1. Transfer `app/build/outputs/apk/debug/app-debug.apk` to your phone and install it. Allow
-   installation from the particular browser/file app if Android asks.
-2. Optionally install `testhost/build/outputs/apk/withQueries/debug/testhost-withQueries-debug.apk`
-   for the controlled sample host. It has a launcher named InstantTranslate TestHost.
-3. Open the test host or another app that supports third-party text-selection actions.
-4. Long-press English text, select it, then choose **More → Translate** (or **अनुवाद करें**).
-5. Accept the cloud-processing disclosure. Check that the Hindi result appears and Copy works.
-6. Try Hindi and `aap kaise ho?` for English output. Latin Hinglish is detected by Gemini in
-   the translation request. Select **Change language / script** to correct the direction, choose
-   English→Hinglish or Hindi→Hinglish for Romanized output, or Hinglish→Hindi for Devanagari.
-   Each choice sends one new request and uses the shared quota; it is not saved for later selections.
-7. In an editable field, verify Replace changes only the selected text. In a read-only field,
-   verify Copy is available without Replace.
+1. Transfer `app/build/outputs/apk/debug/app-debug.apk` to the phone and install it, allowing
+   installs from that particular file/browser app if Android asks. Update any older LingoFlow APK.
+2. Open **LingoTranslate** from the launcher and tap **Allow floating translations**. Enable
+   display over other apps in Android settings, then return. This permission is needed for reading.
+3. For automatic copy prompts, tap **1. Enable Lingo keyboard** and enable it in system settings.
+   Return, tap **2. Choose Lingo keyboard**, and select it. Android will show its keyboard warning.
+   The keyboard is a basic local Roman keyboard; it has no suggestions or swipe typing. To keep
+   your current keyboard, skip this step and use the manual bubble route below.
+4. Tap **Start reading session** and acknowledge the cloud-processing disclosure. The Lingo bubble
+   appears. On Android 13+, allow notifications when asked for the notification Stop control;
+   declining still allows the overlay session. The session notification appears when permitted.
+   Return to your game/chat; do not stop the session yet.
+5. **Automatic reading:** with Lingo keyboard selected, copy a received Hinglish message in the
+   host. The prompt asks whether to translate. Tap **Translate**; English floats over the host.
+6. **Manual reading:** with another keyboard, copy the message, then tap **Lingo**. That tap requests
+   translation. The card briefly takes focus to read the clipboard, then floats the English result.
+7. **Selectable reading:** select a read-only Hinglish message and choose **Lingo-Translate** from
+   the selection menu (possibly under More). The result floats without another confirmation tap.
+8. Drag the card by its title. Use **Minimize** to keep a result as a bubble, **Close** to discard
+   it, **Copy** to put English in the clipboard, and **Stop** to end the entire reading session.
+   Stop is also available in the session notification or launcher.
+9. **Writing:** type `main kal nahi aa sakta`, select that draft, and choose **Lingo-Translate**.
+   It should automatically replace the selection with English. Try `How are you?` for Roman Hindi.
+   Writing works with any keyboard and does not require a running reading session or overlays.
+10. Try cancellation/offline input, selection of only part of a draft, rotation, landscape game,
+    repeated copies and session Stop. Errors/cancel must leave the original draft untouched.
 
-The translator has no launcher icon; it is opened through the selection menu. If Translate
-is missing in one host, try the controlled test host. Host apps choose whether they expose
-Android Process Text actions. Internet is required; no user authentication is required.
+Only English and Roman Hindi/Hinglish are supported; Devanagari is rejected. Reading an already
+English message should return it unchanged. Results use context in the copied/selected passage,
+not surrounding chat. Sensitive clips, password contexts and Lingo's own copied output are skipped.
 
-For another development machine, copy `backend.properties.example` to `backend.properties`,
-set `BACKEND_URL` to the deployed HTTPS origin, then build:
+The minimum is provisionally Android 6/API 23, not a guarantee for every phone/version. If a host
+omits the selection action, use its copy behavior. If the host blocks overlays, the floating route
+cannot be promised. Automatic copying requires the selected Lingo keyboard on modern Android;
+overlay permission alone does not provide clipboard access. Actual Game of Khans, Discord,
+WhatsApp, Telegram and Instagram compatibility still needs real-phone testing.
+
+For controlled testing, optionally install
+`testhost/build/outputs/apk/withQueries/debug/testhost-withQueries-debug.apk`.
+It exposes standard selection fields. The dev-only `FlowFixtureActivity` also provides cross-UID
+copy and result-contract controls for instrumentation; it is not part of the shipping app.
+
+## Build on another machine
+
+Copy `backend.properties.example` to ignored `backend.properties`, set `BACKEND_URL` to the
+hosted HTTPS origin, and use JDK 17/Android SDK 34:
 
 ```sh
-JAVA_HOME=/opt/homebrew/opt/openjdk@17 ./gradlew :app:assembleDebug :app:testDebugUnitTest
+JAVA_HOME=/opt/homebrew/opt/openjdk@17 ./gradlew :app:assembleDebug :app:testDebugUnitTest :app:lintDebug :testhost:assembleWithQueriesDebug
+npm --prefix backend test
 ```
 
 ## Live verification
 
-Hosted HTTP smoke (eight harmless translations, content-free report):
+Hosted smoke makes five harmless model requests and saves only status/timing/validation flags:
 
 ```sh
-node backend/smoke.mjs --live https://lingoflow-backend.lingoflow-backend.workers.dev benchmark/hinglish_smoke_result.json
+node backend/smoke.mjs --live https://lingoflow-backend.lingoflow-backend.workers.dev benchmark/reading_writing_http_smoke.json
 ```
 
-Opt-in Android transport test (seven harmless translations, no automatic retry). Run in a
-different UTC minute from the HTTP smoke to avoid the shared 10/minute allowance:
+Android cross-app smoke makes five translations; configure only on an owned emulator. The test
+restores its default IME/overlay access after each case. Install both APKs first:
 
 ```sh
 JAVA_HOME=/opt/homebrew/opt/openjdk@17 ./gradlew :app:connectedDebugAndroidTest \
-  -Pandroid.testInstrumentationRunnerArguments.class=com.lingoflow.instanttranslate.provider.backend.BackendTranslationSmokeTest \
+  -Pandroid.testInstrumentationRunnerArguments.class=com.lingoflow.instanttranslate.ui.ReadingWritingSmokeTest \
   -Pandroid.testInstrumentationRunnerArguments.liveCloud=true
 ```
 
-For the local server, first `adb reverse tcp:8787 tcp:8787`, and add
-`-Pandroid.testInstrumentationRunnerArguments.testBackendUrl=http://127.0.0.1:8787`.
+The separate `BackendTranslationSmokeTest` makes four requests. Run each suite in a separate
+UTC minute from other live checks to stay within the shared 10/minute limit. The historical
+latency harness is explicitly skipped pending adaptation to the new floating surface.
+For local Android transport, use `adb reverse tcp:8787 tcp:8787` and instrumentation argument
+`testBackendUrl=http://127.0.0.1:8787` in the transport test. TLS checks are never disabled.
 
-Verified on 2026-10-04 (India time):
-
-| Check | Result |
-|---|---|
-| Backend tests | 15 passed, including real SQLite persistence, four concurrent connections and stalled-database timeout |
-| Android JVM tests | 20 passed at deployment; 16 remain and pass after removing the unused stub provider and its four tests |
-| Debug app and Android test APKs | Built successfully with the deployed HTTPS origin |
-| Hosted HTTP smoke | All 6 checks passed; health 200, invalid input 400, wrong method 405, no Auth route 404, both translation directions 200 |
-| Real Android transport, API 34 emulator | Both English→Hindi and Hindi→English passed against the public Worker without credentials |
-| Local portable backend | Both directions passed over real Gemini; Android localhost transport also passed |
-| Hosted database | Schema and aggregate count row inspected; 4 real request reservations persisted, no content/identity columns |
-| Physical phone | Not attached; use the installation steps above |
-
-The [Android smoke record](../benchmark/backend_android_smoke_result.json) documents the live
-transport test. The content-free [HTTP smoke report](../benchmark/backend_smoke_result.json) records two small
-translation requests at approximately 1.1 and 1.0 seconds. This is a connectivity smoke test,
-not a quality/latency benchmark or a proven performance comparison with Supabase. The new
-hostname initially returned TLS handshake failures, then became reachable after activation;
-no certificate checks were bypassed.
-
-This remains a testing build:
-physical-device compatibility, saved language preferences, and the full blinded model-quality
-benchmark are still open. Hinglish controls and Romanized output are implemented for the current
-selection; use the latest `0.5.0-hinglish` APK, since older builds always routed Latin input to Hindi.
-
-
-## Hinglish update verification
-
-The `0.5.0-hinglish` APK (version code 2) and Worker version
-`1f58af37-6a33-427a-a252-0535b0a62a79` were checked on 2026-10-04:
-
-| Check | Result |
-|---|---|
-| Backend tests | 19 passed; includes one-call automatic detection, supported directions and Romanized-script validation |
-| Android JVM tests | 21 passed; includes resolved labels, explicit overrides and invalid-direction rejection |
-| Hosted HTTP smoke | All 12 checks passed, including 8 real translations; mixed Hinglish and negation flags passed |
-| Android API 34 transport | 7 live translation requests passed, including automatic English/Hinglish and script conversion |
-| Android result UI | Hinglish→English result, direction selector, Hinglish→Devanagari conversion, Copy availability and hidden read-only Replace passed |
-| Build/credential boundary | App and test APKs built; configured Gemini key absent from changed source files and app APK |
-
-Content-free records: [HTTP](../benchmark/hinglish_smoke_result.json) and
-[Android](../benchmark/hinglish_android_smoke_result.json). The first Android run overlapped
-the HTTP smoke and hit the shared minute cap; both tests passed after rerunning in a fresh
-quota window. No automatic retry or quota-limit change was added.
-
-For the result-UI smoke, use the same Android command above with
-`com.lingoflow.instanttranslate.ui.HinglishResultSmokeTest` as the class argument (two live
-requests). Run it and the transport test in a different UTC minute from the HTTP smoke.
-These checks do not replace physical-phone, complete cross-app or blinded quality validation.
-
+Current checks and remaining coverage are in [VALIDATION_PLAN.md](VALIDATION_PLAN.md).
+The deployed V1 Worker version is `933559fa-feea-4a9f-ba0a-1baa81a4444c`.
+Older backend/Hinglish smoke records remain historical; their Devanagari routes and old UI
+no longer describe the active API or APK.
 
 ## Free-tier references
 

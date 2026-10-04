@@ -1,141 +1,102 @@
-# Architecture and privacy — LingoFlow
+# Architecture — reading and writing V1
 
-Updated 2026-10-04. Describes the implemented test version. Operational commands and deployed
-resource IDs live in [BACKEND_SETUP.md](BACKEND_SETUP.md); requirements in
-[PRODUCT_REQUIREMENTS.md](PRODUCT_REQUIREMENTS.md).
+Updated 2026-10-04. Current Kotlin app uses the existing hosted JavaScript/SQLite/Gemini backend.
 
-## 1. Repository boundaries
+## Selection entry
 
-`app/` is the native Android product; `testhost/` is a separate development-only host with
-package-visibility A/B flavors, read-only/editable, Compose and WebView fixtures.
-`backend/` contains the translation API and SQLite quota code; `benchmark/` contains validation
-scripts, corpus and evidence. No shared Android library or DI framework is needed.
+`ProcessTextActivity` validates action, `text/plain`, CharSequence input and a 4,000 UTF-16-unit
+cap; flattens spans and defaults uncertain editable flags to read-only. `ResultActivity` handles
+first-use disclosure and loading/errors.
 
-## 2. Request path
+- Editable: `ResultViewModel`/`TranslateCoordinator` use AUTO writing. Success returns
+  `RESULT_OK` and only `EXTRA_PROCESS_TEXT`; host replaces its selected range. Cancel/error
+  returns no text. Activity ViewModel prevents duplicate calls on ordinary rotation.
+- Read-only: acquire overlay permission from visible UI if needed, start `ReadingOverlayService`
+  with the selected text, then finish with cancellation/no replacement. Selecting Lingo-Translate
+  already authorized the translation. No read-only ViewModel network request is started.
 
-```text
-Host ACTION_PROCESS_TEXT → ProcessTextActivity validates input
-→ ResultViewModel / TranslateCoordinator → disclosure and connectivity gates
-→ BackendTranslationProvider → HTTPS /v1/translate
-→ Worker → atomic D1 quota reservation → Gemini → validated JSON
-→ transient ResultActivity → explicit Copy / editable Replace / Back
-```
+No `noHistory` trampoline flag: it must remain alive for the result callback, including a trip
+to overlay settings. Content is never written into saved state or translation history.
 
-The Android provider sends only `text` and `direction`, with no API key, cookie, Auth session or
-caller/device identity. Host text is untrusted. The backend validates it independently and puts
-it inside a literal selected-text field, with a fixed translation instruction and JSON schema.
-It enables no tools, grounding, URL fetching or conversation history.
+## Reading session and clipboard
 
-## 3. Android logical boundaries
+`MainActivity` explicitly starts the foreground overlay service after disclosure/permission.
+The service declares the Android 14 `specialUse` type and subtype, displays a notification with
+Stop and returns `START_NOT_STICKY`. It neither starts on boot nor restarts after process death.
+Android 13+ notification permission is requested once at session start; denial still permits
+the session, with Stop available in the overlay/launcher. The system hides its notification
+from the drawer when permission is denied. Public store approval of the service/IME combination has not been evaluated.
 
-- **Text-action adapter:** validates action/text/size, flattens CharSequence, defaults uncertain
-  editability to read-only, launches the result and relays only its explicit result.
-- **Coordinator:** resolves direction, checks disclosure before connectivity, invokes the provider
-  and exposes typed outcomes. No Android SDK/model-specific response types cross this boundary.
-- **Direction policy:** any Devanagari defaults to Hindi→English. Latin input requests `AUTO`: Gemini
-  chooses English→Hindi or Hinglish→English and translates in a single call. The backend requires
-  a supported resolved direction and the app displays it. Ambiguous short Latin words default to
-  English→Hindi; the result/error surface offers explicit direction/script correction.
-  Choices live only in the ViewModel, survive rotation, and apply only to the current selection.
-  Changing a choice sends one new request; Retry retains that choice. Neither is available while
-  loading, and disclosure/connectivity gates apply to every request.
-- **Cloud readiness and disclosure:** no selected-content request until disclosure acknowledgement.
-  SharedPreferences stores only the acknowledged notice version; a changed notice prompts again.
-- **Provider:** one bounded HTTPS request, response validation, typed content-free failures and
-  cancellation propagation. Explicit user Retry is the only retry; no model/provider fallback.
-- **Presenter:** loading/disclosure/success/error state; original/result/direction; deliberate Copy
-  and conditional Replace. ViewModel survives rotation but content is not saved for process death.
+The normal overlay is `TYPE_APPLICATION_OVERLAY` on API 26+ (legacy `TYPE_PHONE` below),
+`FLAG_NOT_FOCUSABLE` and `FLAG_SECURE`. It does not move focus from the game/chat. A draggable
+header/bubble, bounded scrolling and viewport clamping support portrait/landscape.
 
-## 4. Process Text contract
+Automatic copy route:
 
-`ProcessTextActivity` is exported for `android.intent.action.PROCESS_TEXT`, DEFAULT category and
-`text/plain`. It has no launcher. `ResultActivity` is not exported. The app does not use
-`forceQueryable` or add an Accessibility/overlay workaround for hosts that do not expose actions.
+1. Android notifies the session's clipboard listener when the UID has access.
+2. Verify that Lingo keyboard is the current default IME, phone is unlocked/interactive,
+   password input is inactive, and the clip is a single text item, supported/bounded and not
+   marked sensitive or labeled as Lingo's own result. Never coerce URI clips.
+3. Suppress consecutive duplicate texts with a memory-only SHA-256 fingerprint.
+4. Replace the current prompt/request locally; show Translate confirmation. No cloud call yet.
+5. Confirmation uses READ_TO_ENGLISH, then shows validated English output. Unconfirmed prompts
+   expire after 60 seconds. Close clears content; Stop removes windows/listeners/jobs/content.
 
-Input validation requires the expected action, a readable CharSequence, nonblank text and at most
-4,000 UTF-16 code units. The manifest filters MIME type for implicit discovery; the current
-validator does not re-check MIME on a direct explicit invocation. That boundary needs release
-review rather than a claim that every crafted-intent case is covered.
+With another default keyboard there is no background-read claim. Tapping the bubble temporarily
+creates a focusable overlay, waits for actual window focus, reads the eligible clipboard and
+restores a non-focusable card. The tap is explicit translation confirmation. No periodic polling
+or unsolicited focus acquisition. This focused route can briefly pause a game; test target apps.
 
-Malformed extras fail safely. Missing/wrong-type read-only information defaults to read-only.
-Only Replace returns `RESULT_OK` with translated plain text in `EXTRA_PROCESS_TEXT`.
-Cancel, Back, invalid input and failures return no modification. Some custom hosts can reject
-replacement; Copy remains the fallback. Hosts control discovery and toolbar placement.
+One coroutine job/generation guard prevents canceled/older requests from overwriting newer cards.
+Minimize retains the current result/request in memory; Close discards it. New copy events cancel
+an existing request; an already-sent request can still consume server quota.
 
-## 5. Backend and database
+## Optional keyboard
 
-`translation.mjs` is shared by `worker.mjs` and the portable Node HTTP server. Workers binds
-`DB` to D1; the local server uses Node 24+ built-in SQLite and a separate WAL database.
-Both use the same conditional SQL upsert. The quota reservation and old-bucket cleanup occur
-inside one transaction, so parallel callers share a 10/minute and 200/UTC-day cap.
-Clock skew cannot reset a newer minute to an older bucket. Failed model calls still consume
-quota; unavailable quota storage blocks Gemini calls. Only day/minute/counts are stored, with
-buckets older than seven days pruned during requests.
+`LingoKeyboardService` is permission-protected by `BIND_INPUT_METHOD`. The user must enable and
+select it through system UI. It provides local Roman QWERTY, case toggle, digits/punctuation,
+space, selection-aware backspace, Enter/editor action and a keyboard picker. No network provider
+is called by keyboard events; no surrounding message history or keystrokes are collected.
+Password editor variations disable clipboard prompts. No accessibility permission is requested.
 
-Routes: GET `/healthz` checks configuration/database; POST `/v1/translate` translates. Unknown
-routes are 404, incorrect methods 405. Health does not verify model availability or quality.
-The API intentionally has no authentication; anyone knowing the URL can consume shared quota.
-There is no guaranteed app-only access or production availability claim.
+## Translation contract
 
-## 6. Deadlines, payloads and failures
+Only `{text, direction}` is sent over HTTPS to `/v1/translate`:
 
-- Android: 8-second connect, 22-second socket read, 30-second provider deadline; no redirects.
-- Backend: 18-second quota/model deadline, 5-second health database deadline.
-- Input: JSON only, streamed body at most 32 KiB, nonblank text ≤4,000 code units; `AUTO` or six
-  explicit directions from the shared Android/backend enum. Explicit modes include Romanized
-  Hindi output and Hinglish→Devanagari conversion.
-- Success: `{translation, direction}`; `AUTO` must resolve to English→Hindi, Hindi→English or
-  Hinglish→English. Invalid/missing automatic directions and Devanagari in Romanized output fail
-  validation. Old clients can ignore the added direction; new clients accept direction-less
-  responses only for explicit requests, never `AUTO`.
-- Upstream/Android response: at most 128 KiB; translated string ≤16,000 code units and nonblank.
-- Gemini must complete with STOP; malformed/truncated/non-string output fails validation.
-- Model ID pinned to `gemini-3.5-flash-lite`; model changes require quality/terms/quota rechecking.
-- Typed errors distinguish input, rate limit, timeout, provider and invalid-response failures.
-  Exception messages/upstream bodies never reach UI or application logs.
-
-Cancellation can still leave a server request/quota reservation already in progress. Do not
-retry automatically or claim cancelling recovers quota. Connection waiting does not justify
-blocking Android's main thread or adding an idle background service.
-
-## 7. Configuration and transport
-
-Android reads a public HTTPS origin from ignored `backend.properties` or `LINGOFLOW_BACKEND_URL`.
-The build rejects credentials, paths, query/fragment and invalid ports. The Gemini key lives
-only in Worker Secrets or ignored local `.dev.vars` with permissions 600.
-Production cleartext is disabled; debug allows HTTP only to localhost/127.0.0.1/10.0.2.2.
-TLS certificate checks remain enabled. Public preview URLs, Worker logs/traces and application
-request/content caching are disabled. Managed infrastructure may process connection metadata.
-The code/schema are portable; Cloudflare remains a managed hosting dependency.
-
-## 8. Privacy and data lifecycle
-
-No selected text or hash ever enters a trace label. Source/result content must not be written to
-preferences, databases, files, saved instance state, diagnostics, analytics or notifications.
-The result sets FLAG_SECURE to prevent screenshot/Recents capture; backup is disabled.
-Only timing enums/monotonic readings and typed outcomes are emitted in debug. Release timing is off.
-
-| Data | Handling |
+| Direction | Behavior |
 |---|---|
-| Selection/result | Volatile app/request memory; transmitted through Cloudflare to Google |
-| Disclosure version | Local non-content SharedPreferences |
-| Usage buckets/counts | Backend SQLite; no text, translation, IP or identity columns |
-| Clipboard result | Written only on Copy; then governed by Android/other apps |
-| Replacement result | Returned only on explicit Replace to the invoking host |
-| Model/public origin | Configuration; no Gemini credential in APK |
+| AUTO | Writing detection and translation in one call; resolves to one of the next two |
+| ENGLISH_TO_HINGLISH | Natural Hindi in Roman letters |
+| HINGLISH_TO_ENGLISH | Informal Roman Hindi/mixed Hindi-English → natural English |
+| READ_TO_ENGLISH | Received text → English; already English unchanged |
 
-There is no surrounding text, clipboard read, host context, cross-request history, background
-translation or identity profiling. Closing the UI does not promise that Google deletes its copy.
-Google unpaid API terms permit product improvement/human review: this build is for non-sensitive
-samples, not an unrestricted privacy-first public release.
+Old Devanagari directions are rejected. Both input and output reject Devanagari blocks, including
+extended characters. Gemini's fixed system prompt treats input as literal data, preserves semantic
+meaning and passage context, and forbids invented surrounding conversations or instructions in
+selected text. Temperature 0.2 and JSON schema remain; no tools, chat memory or separate detection call.
 
-## 9. Audit and release review
+Input ≤4,000 UTF-16 units/32 KiB request body; output ≤16,000 chars/128 KiB upstream body.
+Backend deadline 18 seconds, Android 30 seconds. Explicit Retry only. No automatic retries or cache.
 
-Use harmless canaries to verify intended traffic, logs, app files/preferences, backups/state,
-Recents, clipboard boundaries and idle behavior. Exercise failed/cancelled requests as well as
-success. Inspect the merged manifest, dependency/license inventory and APK for keys, debug tools,
-unexpected exported components/services and dangerous permissions. Review process death, rotated
-results, repeated requests, low memory and host result propagation on physical devices.
-A canary outside intended request/result/explicit Copy/Replace is release-blocking.
-Privacy acceptance requires current Google/hosting terms, truthful disclosure, distribution-market
-review and an explicit public-release data posture. See [validation](VALIDATION_PLAN.md#6-privacy-and-security-validation).
+## Backend and data
+
+Cloudflare Workers Free, D1 SQLite and `gemini-3.5-flash-lite`; portable Node 24+ server/SQLite
+shares business logic. Key only in server secrets/ignored local environment. No authentication,
+user/device identity or phone-side Gemini credentials. Health probes do not spend model quota.
+
+Atomic quota: 10 requests/minute and 200/UTC day across all callers. Failure after reservation
+still consumes allowance. Database failure blocks Gemini. D1 stores only day/minute buckets and
+aggregate counts; old buckets pruned after seven days. No text, translations or identity columns.
+
+Text/results are memory-only, except explicit output Copy to Android's clipboard. App windows use
+FLAG_SECURE. No content logging/analytics; Worker observability disabled. Cloudflare/Google still
+process requests; unpaid Gemini terms and the app disclosure apply. A service/IME killed by Android
+loses its state. Universal clipboard/overlay reliability and public release are not assumed.
+
+## Official platform references
+
+- [Process Text](https://developer.android.com/reference/android/content/Intent#ACTION_PROCESS_TEXT)
+- [Clipboard focus/default-IME restriction](https://developer.android.com/reference/android/content/ClipboardManager#getPrimaryClip())
+- [Input method implementation](https://developer.android.com/develop/ui/views/touch-and-input/creating-input-method)
+- [Overlay windows](https://developer.android.com/reference/android/view/WindowManager.LayoutParams#TYPE_APPLICATION_OVERLAY)
+- [Foreground service types](https://developer.android.com/about/versions/14/changes/fgs-types-required)

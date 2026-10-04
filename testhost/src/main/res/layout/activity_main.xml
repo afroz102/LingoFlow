@@ -92,11 +92,11 @@
             android:layout_height="wrap_content"
             android:text="@string/fixture_webview" />
 
-        <WebView
-            android:id="@+id/webview"
-            android:layout_width="match_parent"
-            android:layout_height="120dp"
-            android:layout_marginBottom="20dp" />
+        <FrameLayout android:layout_width="match_parent" android:layout_height="120dp"
+            android:layout_marginBottom="20dp">
+            <WebView android:id="@+id/webview" android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+        </FrameLayout>
 
         <!-- Fixture 7: deliberately custom selection implementation (negative/control case) -->
         <TextView

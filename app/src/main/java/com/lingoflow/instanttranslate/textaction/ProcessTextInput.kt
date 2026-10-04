@@ -8,13 +8,7 @@ import android.content.Intent
  */
 data class ValidatedInput(val text: String, val isReadOnly: Boolean)
 
-/**
- * Text-action adapter input validation (docs/TECHNICAL_PLAN.md): action, MIME/extra shape, and
- * size, exactly as exercised by docs/VALIDATION_PLAN.md §2.4's "wrong action, wrong MIME type,
- * missing extra, wrong extra type, and malformed parcel" cases. MIME type itself is enforced
- * by the manifest intent-filter; this only re-checks what a caller could still spoof by
- * launching the exported activity directly with an arbitrary intent.
- */
+/** Re-check MIME/action for explicit callers too; manifest filters cover only implicit dispatch. */
 object ProcessTextInput {
 
     // Shared with the HTTP provider/backend input boundary; final product limits still need
@@ -22,7 +16,7 @@ object ProcessTextInput {
     private const val MAX_LENGTH = 4000
 
     fun validate(intent: Intent): ValidatedInput? {
-        if (intent.action != Intent.ACTION_PROCESS_TEXT) return null
+        if (intent.action != Intent.ACTION_PROCESS_TEXT || intent.type != "text/plain") return null
 
         val raw: CharSequence = readCharSequenceExtraSafely(intent) ?: return null
         if (raw.isBlank()) return null

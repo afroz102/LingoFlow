@@ -1,6 +1,7 @@
 package com.lingoflow.instanttranslate.provider.backend
 
 import com.lingoflow.instanttranslate.BuildConfig
+import com.lingoflow.instanttranslate.direction.DirectionDetector
 import com.lingoflow.instanttranslate.direction.Direction
 import com.lingoflow.instanttranslate.provider.FailureReason
 import com.lingoflow.instanttranslate.provider.TranslationProvider
@@ -24,7 +25,7 @@ class BackendTranslationProvider internal constructor(
 
     override suspend fun translate(text: String, direction: Direction): TranslationResult {
         if (!configured) return TranslationResult.Failure(FailureReason.PROVIDER_ERROR)
-        if (text.isBlank() || text.length > 4000) return TranslationResult.Failure(FailureReason.UNSUPPORTED_INPUT)
+        if (!DirectionDetector.isSupported(text)) return TranslationResult.Failure(FailureReason.UNSUPPORTED_INPUT)
         return try {
             withTimeout(30_000) {
                 TranslationTimeline.mark(TimingMark.T_CLIENT_READY)
@@ -60,7 +61,9 @@ class BackendTranslationProvider internal constructor(
         val json = try { JSONObject(response.body) } catch (_: JSONException) { null }
             ?: return TranslationResult.Failure(FailureReason.INVALID_RESPONSE)
         val translated = json.opt("translation") as? String
-        if (translated.isNullOrBlank() || translated.length > 16000) return TranslationResult.Failure(FailureReason.INVALID_RESPONSE)
+        if (translated.isNullOrBlank() || translated.length > 16000 ||
+            translated.any { it in '\u0900'..'\u097f' || it in '\ua8e0'..'\ua8ff' } ||
+            translated.contains(Regex("[\\x{11B00}-\\x{11B09}]"))) return TranslationResult.Failure(FailureReason.INVALID_RESPONSE)
         // Older servers may omit direction for explicit requests; AUTO must never guess it.
         val direction = if (json.has("direction")) {
             val name = json.opt("direction") as? String

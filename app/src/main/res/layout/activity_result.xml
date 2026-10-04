@@ -1,151 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:minWidth="280dp">
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="20dp">
-
-        <ProgressBar
-            android:id="@+id/progress"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:indeterminate="true" />
-
-        <LinearLayout
-            android:id="@+id/disclosure"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:visibility="gone"
-            tools:visibility="visible">
-
-            <TextView
-                android:id="@+id/text_disclosure"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:text="@string/disclosure_message" />
-
-            <Button
-                android:id="@+id/button_disclosure_continue"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="end"
-                android:text="@string/action_continue" />
-
+    android:layout_width="match_parent" android:layout_height="wrap_content" android:minWidth="280dp">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="vertical" android:padding="20dp">
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:text="@string/process_text_action_label" android:textSize="20sp"
+            android:textStyle="bold" android:layout_marginBottom="16dp" />
+        <ProgressBar android:id="@+id/progress" android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:layout_gravity="center" />
+        <LinearLayout android:id="@+id/disclosure" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:orientation="vertical" android:visibility="gone">
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="@string/disclosure_message" android:layout_marginBottom="16dp" />
+            <Button android:id="@+id/button_disclosure_continue" android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:text="@string/action_continue" />
         </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/error_group"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:gravity="center_horizontal"
-            android:visibility="gone"
-            tools:visibility="visible">
-
-            <TextView
-                android:id="@+id/text_error"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:text="@string/error_generic" />
-
-            <Button
-                android:id="@+id/button_retry"
-                style="?attr/materialButtonOutlinedStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/action_retry" />
-
+        <LinearLayout android:id="@+id/error_group" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:orientation="vertical" android:visibility="gone">
+            <TextView android:id="@+id/text_error" android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:layout_marginBottom="16dp" />
+            <Button android:id="@+id/button_retry" android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:text="@string/action_retry" />
         </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/content"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:visibility="gone"
-            tools:visibility="visible">
-
-            <TextView
-                android:id="@+id/text_direction"
-                style="?attr/textAppearanceLabelMedium"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginBottom="12dp"
-                tools:text="English → Hindi" />
-
-            <TextView
-                style="?attr/textAppearanceLabelSmall"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/label_original" />
-
-            <TextView
-                android:id="@+id/text_original"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:textIsSelectable="true"
-                tools:text="Hello" />
-
-            <TextView
-                style="?attr/textAppearanceLabelSmall"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/label_translated" />
-
-            <TextView
-                android:id="@+id/text_translated"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="20dp"
-                android:textIsSelectable="true"
-                android:textStyle="bold"
-                tools:text="नमस्ते" />
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="end"
-                android:orientation="horizontal">
-
-                <Button
-                    android:id="@+id/button_copy"
-                    style="?attr/materialButtonOutlinedStyle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="8dp"
-                    android:text="@string/action_copy" />
-
-                <Button
-                    android:id="@+id/button_replace"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/action_replace"
-                    tools:visibility="visible" />
-
-            </LinearLayout>
-
-        </LinearLayout>
-
-        <Button
-            android:id="@+id/button_direction"
-            style="?attr/materialButtonOutlinedStyle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:text="@string/action_change_direction"
-            android:visibility="gone" />
-
+        <Button android:id="@+id/button_cancel" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:text="@android:string/cancel" android:textAllCaps="false" />
     </LinearLayout>
 </ScrollView>

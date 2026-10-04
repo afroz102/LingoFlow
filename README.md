@@ -1,63 +1,64 @@
-# LingoFlow / InstantTranslate
+# LingoFlow / LingoTranslate
 
-Native Android text-selection translation: **Select → More → Translate**, then preview,
-Copy, or explicitly Replace an editable selection. Hosts must expose Android Process Text.
-The app has no launcher and does not replace your keyboard.
+Android translation for **English ↔ Roman Hindi/Hinglish**, with meaning and conversational
+context preserved by Gemini. Devanagari is outside this V1 scope.
 
-The testing backend is live on Cloudflare's Free plan: our JavaScript API, SQLite/D1 aggregate
-quotas and server-side Gemini. No authentication or user sessions are required. Selected text
-passes through Cloudflare to Google; the app/database keep no translation history. Gemini's
-unpaid service is for non-sensitive test samples.
+- **Write:** select a draft → **Lingo-Translate** → replace the selected text automatically.
+- **Read selected text:** select a received message → **Lingo-Translate** → floating English result.
+- **Read copied text:** during a reading session, copy a message → confirmation prompt → floating
+  English result. On modern Android, automatic copy prompts require the optional **Lingo keyboard**
+  to be the selected keyboard. With another keyboard, copy → tap the Lingo bubble translates it.
 
-## Status
+The movable reading card has Copy, Minimize, Close and Stop controls. Reading sessions are
+explicitly started, show an ongoing notification and never restart on boot. Writing does not
+require an overlay, a session or switching keyboards. Host apps must expose Android Process Text.
 
-English, Devanagari Hindi and Hinglish (Romanized Hindi) are supported. Latin input uses a single
-Gemini request to distinguish English→Hindi from Hinglish→English; Devanagari input defaults to
-English output. **Change language / script** offers explicit direction correction, English→Hinglish,
-Hindi→Hinglish and Hinglish→Devanagari conversion. Choices apply to the current selection only.
-Historical Process Text evidence exists on API 30 and 34. Physical-phone/OEM compatibility and
-full blinded model-quality scoring remain open. The Hinglish update passed 19 backend and
-21 Android JVM tests, plus [hosted HTTP](benchmark/hinglish_smoke_result.json) and
-[Android transport/result UI](benchmark/hinglish_android_smoke_result.json) smoke checks.
+The public testing backend runs on Cloudflare Workers Free with D1/SQLite and server-side Gemini.
+No account or authentication is needed. Every translation uses Gemini; there is no local
+translation engine or cached translation history. Only the requested text and direction leave
+the phone. Gemini's unpaid service is for non-sensitive test samples. Shared allowance:
+**10 translations/minute, 200/UTC day**, across all callers.
 
-Shared testing allowance: **10 translations/minute, 200/UTC day** across all callers. The API is
-public, so other callers can exhaust that allowance. No public-release reliability/privacy
-claim has been established.
+## Test on your phone
 
-## Build and run
+Install `app/build/outputs/apk/debug/app-debug.apk`, then open **LingoTranslate**.
+Allow floating translations. For automatic copy prompts, enable and select Lingo keyboard.
+Tap **Start reading session**, acknowledge the disclosure and return to your chat/game.
+The optional keyboard is a basic Roman QWERTY keyboard without suggestions or swipe typing.
+Use **Stop reading session** to end monitoring and remove the overlay.
 
-Requirements: JDK 17, Android SDK 34 (minimum API 23 provisional), Node 24+ for local backend work.
-Copy `backend.properties.example` to ignored `backend.properties` and set the deployed public
-HTTPS origin from [backend setup](docs/BACKEND_SETUP.md). Never add a Gemini key to Android config.
+For writing, select English or Hinglish in an editable field, choose **Lingo-Translate** from
+its selection menu and check that only your selection changes. Cancel/failure leaves the draft.
+The [phone guide](docs/BACKEND_SETUP.md#test-on-a-real-android-phone) includes both reading routes.
+
+## Build and validate
+
+JDK 17, Android SDK 34, provisional minimum Android 6/API 23; Node 24+ for the portable backend.
+Copy `backend.properties.example` to ignored `backend.properties` and set the public HTTPS origin.
+Never put a Gemini key in Android configuration.
 
 ```sh
-JAVA_HOME=/opt/homebrew/opt/openjdk@17 ./gradlew :app:assembleDebug :app:testDebugUnitTest :testhost:assembleWithQueriesDebug
+JAVA_HOME=/opt/homebrew/opt/openjdk@17 ./gradlew :app:assembleDebug :app:testDebugUnitTest :app:lintDebug :testhost:assembleWithQueriesDebug
 npm --prefix backend test
-python3 benchmark/validate_corpus.py
 ```
 
-Install `app/build/outputs/apk/debug/app-debug.apk` and optionally the controlled host APK at
-`testhost/build/outputs/apk/withQueries/debug/testhost-withQueries-debug.apk`.
-Open the host, select text, choose More → Translate and acknowledge the disclosure.
-Full installation, hosted deployment and local Node/SQLite instructions are in the setup guide.
+The backend is deployed at `https://lingoflow-backend.lingoflow-backend.workers.dev`.
+The APK version is **0.6.0-reading-writing**, version code 3. No phone-side server/key setup.
+
+## Support and evidence
+
+Game of Khans, Discord, WhatsApp, Telegram and Instagram messages are target apps. Their actual
+selection, copy, overlay and keyboard behavior still needs physical-phone testing. Support for
+every Android phone/version is not established. Apps can omit selection actions or block overlays;
+Android/OEM restrictions also apply. Current checks passed: 19 backend and 22 Android JVM tests, app/host lint, APK builds,
+and controlled Android 11/14 reading/writing tests. See the [validation plan](docs/VALIDATION_PLAN.md).
 
 ## Repository
 
 | Directory | Purpose |
 |---|---|
-| `app/` | Kotlin Process Text adapter, result UI and HTTP provider |
-| `backend/` | Worker/portable Node server, SQLite schema/quotas, tests and HTTP smoke tool |
-| `testhost/` | Development-only host with package-visibility A/B and editor fixtures |
-| `benchmark/` | Corpus, validation/timing tools and dated evidence |
-| `docs/` | Current product, architecture, validation and operational guides |
-
-## Documentation
-
-- [Product requirements](docs/PRODUCT_REQUIREMENTS.md): current capabilities, remaining V1 work and roadmap.
-- [Architecture and privacy](docs/TECHNICAL_PLAN.md): active request path, data handling, limits and audit requirements.
-- [Validation plan](docs/VALIDATION_PLAN.md): compatibility, model-quality/resource budgets and release gates.
-- [Backend setup and phone testing](docs/BACKEND_SETUP.md): deployment, credentials, installation and live evidence.
-- [Benchmark index](benchmark/README.md): corpus, tools and historical findings.
-
-Superseded integrations and duplicated planning guides were removed; previous versions remain
-in Git history. `CLAUDE.md` contains the repository's coding conventions.
+| `app/` | Kotlin selection flows, setup, floating reading session, optional keyboard and HTTP provider |
+| `backend/` | Worker/Node API, SQLite aggregate quotas, tests and live smoke tool |
+| `testhost/` | Development-only host and cross-UID reading/writing fixtures |
+| `benchmark/` | Dated evidence and historical corpus/timing tools |
+| `docs/` | [Product](docs/PRODUCT_REQUIREMENTS.md), [architecture](docs/TECHNICAL_PLAN.md), [validation](docs/VALIDATION_PLAN.md), [setup](docs/BACKEND_SETUP.md) |

@@ -4,6 +4,7 @@ import com.lingoflow.instanttranslate.cloud.ConnectivityChecker
 import com.lingoflow.instanttranslate.cloud.DisclosureGate
 import com.lingoflow.instanttranslate.direction.DirectionDetector
 import com.lingoflow.instanttranslate.direction.Direction
+import com.lingoflow.instanttranslate.provider.FailureReason
 import com.lingoflow.instanttranslate.provider.TranslationProvider
 import com.lingoflow.instanttranslate.provider.TranslationResult
 import com.lingoflow.instanttranslate.timing.TimingMark
@@ -24,6 +25,7 @@ class TranslateCoordinator(
 ) {
 
     suspend fun translate(text: String, requestedDirection: Direction? = null): TranslationOutcome {
+        if (!DirectionDetector.isSupported(text)) return TranslationOutcome.Failed(FailureReason.UNSUPPORTED_INPUT)
         if (!disclosureGate.isAcknowledged()) return TranslationOutcome.DisclosureRequired
         if (!connectivityChecker.isConnected()) return TranslationOutcome.Offline
 

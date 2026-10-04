@@ -37,7 +37,7 @@ class TranslateCoordinatorTest {
 
     @Test
     fun `disclosure not yet acknowledged blocks the request before the provider is ever called`() = runTest {
-        val provider = FakeProvider(TranslationResult.Success("unused", Direction.ENGLISH_TO_HINDI))
+        val provider = FakeProvider(TranslationResult.Success("unused", Direction.ENGLISH_TO_HINGLISH))
         val coordinator = TranslateCoordinator(provider, FakeDisclosureGate(false), FakeConnectivityChecker(true))
 
         val outcome = coordinator.translate("hello")
@@ -48,7 +48,7 @@ class TranslateCoordinatorTest {
 
     @Test
     fun `offline blocks the request before the provider is ever called`() = runTest {
-        val provider = FakeProvider(TranslationResult.Success("unused", Direction.ENGLISH_TO_HINDI))
+        val provider = FakeProvider(TranslationResult.Success("unused", Direction.ENGLISH_TO_HINGLISH))
         val coordinator = TranslateCoordinator(provider, FakeDisclosureGate(true), FakeConnectivityChecker(false))
 
         val outcome = coordinator.translate("hello")
@@ -59,7 +59,7 @@ class TranslateCoordinatorTest {
 
     @Test
     fun `disclosure is checked before connectivity so the user sees the consent gate first`() = runTest {
-        val provider = FakeProvider(TranslationResult.Success("unused", Direction.ENGLISH_TO_HINDI))
+        val provider = FakeProvider(TranslationResult.Success("unused", Direction.ENGLISH_TO_HINGLISH))
         val coordinator = TranslateCoordinator(provider, FakeDisclosureGate(false), FakeConnectivityChecker(false))
 
         val outcome = coordinator.translate("hello")
@@ -69,14 +69,14 @@ class TranslateCoordinatorTest {
 
     @Test
     fun `successful provider result uses the model resolved direction`() = runTest {
-        val provider = FakeProvider(TranslationResult.Success("नमस्ते", Direction.ENGLISH_TO_HINDI))
+        val provider = FakeProvider(TranslationResult.Success("Namaste", Direction.ENGLISH_TO_HINGLISH))
         val coordinator = TranslateCoordinator(provider, FakeDisclosureGate(true), FakeConnectivityChecker(true))
 
         val outcome = coordinator.translate("hello") as TranslationOutcome.Translated
 
         assertEquals("hello", outcome.original)
-        assertEquals("नमस्ते", outcome.translated)
-        assertEquals(Direction.ENGLISH_TO_HINDI, outcome.direction)
+        assertEquals("Namaste", outcome.translated)
+        assertEquals(Direction.ENGLISH_TO_HINGLISH, outcome.direction)
         assertEquals(1, provider.callCount)
         assertEquals(Direction.AUTO, provider.requestedDirection)
     }
@@ -101,6 +101,16 @@ class TranslateCoordinatorTest {
         assertEquals(1, provider.callCount)
         val blocked = TranslateCoordinator(provider, FakeDisclosureGate(false), FakeConnectivityChecker(true))
         assertEquals(TranslationOutcome.DisclosureRequired, blocked.translate("How are you?", Direction.ENGLISH_TO_HINGLISH))
+        assertEquals(1, provider.callCount)
+    }
+
+    @Test fun `reading always requests English and unsupported script never calls provider`() = runTest {
+        val provider = FakeProvider(TranslationResult.Success("I cannot come tomorrow", Direction.READ_TO_ENGLISH))
+        val coordinator = TranslateCoordinator(provider, FakeDisclosureGate(true), FakeConnectivityChecker(true))
+        coordinator.translate("main kal nahi aa sakta", Direction.READ_TO_ENGLISH)
+        assertEquals(Direction.READ_TO_ENGLISH, provider.requestedDirection)
+        assertEquals(1, provider.callCount)
+        assertEquals(TranslationOutcome.Failed(FailureReason.UNSUPPORTED_INPUT), coordinator.translate("कल आना"))
         assertEquals(1, provider.callCount)
     }
 

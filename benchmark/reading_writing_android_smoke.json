@@ -1,0 +1,167 @@
+{
+  "recordedAt": "2026-10-04T15:28:58.734190+00:00",
+  "app": {
+    "versionName": "0.6.0-reading-writing",
+    "versionCode": 3,
+    "apkSha256": "dea71d7455330143fed28822192e6acc715f1b2d8466708ca699737576a59522"
+  },
+  "backend": {
+    "url": "https://lingoflow-backend.lingoflow-backend.workers.dev",
+    "workerVersion": "933559fa-feea-4a9f-ba0a-1baa81a4444c",
+    "model": "gemini-3.5-flash-lite"
+  },
+  "backendUnitTestsPassed": 19,
+  "androidJvmTests": [
+    {
+      "suite": "com.lingoflow.instanttranslate.coordinator.TranslateCoordinatorTest",
+      "passed": 9
+    },
+    {
+      "suite": "com.lingoflow.instanttranslate.direction.ClipboardDeduplicatorTest",
+      "passed": 1
+    },
+    {
+      "suite": "com.lingoflow.instanttranslate.direction.DirectionDetectorTest",
+      "passed": 3
+    },
+    {
+      "suite": "com.lingoflow.instanttranslate.provider.backend.BackendTranslationProviderTest",
+      "passed": 9
+    }
+  ],
+  "buildAndLint": "App and test APKs built; app and withQueries host lint passed with no errors",
+  "devices": [
+    {
+      "device": {
+        "api": "34",
+        "release": "14",
+        "model": "sdk_gphone64_arm64",
+        "abi": "arm64-v8a"
+      },
+      "suites": [
+        {
+          "completedAt": "2026-10-04T15:22:04.812577+00:00",
+          "tests": [
+            {
+              "class": "com.lingoflow.instanttranslate.ui.ReadingWritingSmokeTest",
+              "test": "otherKeyboardCanReadAfterBubbleTap",
+              "passed": true
+            },
+            {
+              "class": "com.lingoflow.instanttranslate.ui.ReadingWritingSmokeTest",
+              "test": "confirmedAutomaticCopyFloatsEnglishAndOwnCopyDoesNotPrompt",
+              "passed": true
+            },
+            {
+              "class": "com.lingoflow.instanttranslate.ui.ReadingWritingSmokeTest",
+              "test": "writingReturnsOnlySelectionAndReadingNeverReturnsReplacement",
+              "passed": true
+            },
+            {
+              "class": "com.lingoflow.instanttranslate.ui.ReadingWritingSmokeTest",
+              "test": "standardAndroidSelectionMenuReplacesAnEditableHost",
+              "passed": true
+            },
+            {
+              "class": "com.lingoflow.instanttranslate.ui.ReadingWritingSmokeTest",
+              "test": "automaticCopyShowsConfirmationAndSkipsSensitiveClipsWithoutARequest",
+              "passed": true
+            },
+            {
+              "class": "com.lingoflow.instanttranslate.ui.InputBoundaryTest",
+              "test": "exportedBoundaryRequiresActionMimeAndBoundedPlainText",
+              "passed": true
+            }
+          ],
+          "passed": true
+        },
+        {
+          "completedAt": "2026-10-04T15:22:58.913094+00:00",
+          "tests": [
+            {
+              "class": "com.lingoflow.instanttranslate.provider.backend.BackendTranslationSmokeTest",
+              "test": "writingAndReadingTranslateThroughOurBackend",
+              "passed": true
+            }
+          ],
+          "passed": true
+        }
+      ],
+      "liveTranslationRequests": 9
+    },
+    {
+      "device": {
+        "api": "30",
+        "release": "11",
+        "model": "sdk_gphone_arm64",
+        "abi": "arm64-v8a"
+      },
+      "suites": [
+        {
+          "completedAt": "2026-10-04T15:24:18.429946+00:00",
+          "tests": [
+            {
+              "class": "com.lingoflow.instanttranslate.ui.ReadingWritingSmokeTest",
+              "test": "automaticCopyShowsConfirmationAndSkipsSensitiveClipsWithoutARequest",
+              "passed": true
+            },
+            {
+              "class": "com.lingoflow.instanttranslate.ui.InputBoundaryTest",
+              "test": "exportedBoundaryRequiresActionMimeAndBoundedPlainText",
+              "passed": true
+            }
+          ],
+          "passed": true
+        },
+        {
+          "completedAt": "2026-10-04T15:25:29.169810+00:00",
+          "tests": [
+            {
+              "class": "com.lingoflow.instanttranslate.ui.ReadingWritingSmokeTest",
+              "test": "otherKeyboardCanReadAfterBubbleTap",
+              "passed": true
+            },
+            {
+              "class": "com.lingoflow.instanttranslate.ui.ReadingWritingSmokeTest",
+              "test": "standardAndroidSelectionMenuReplacesAnEditableHost",
+              "passed": true
+            }
+          ],
+          "passed": true
+        },
+        {
+          "completedAt": "2026-10-04T15:27:52.093524+00:00",
+          "tests": [
+            {
+              "class": "com.lingoflow.instanttranslate.ui.ReadingWritingSmokeTest",
+              "test": "keyboardTypesLocallyAndPasswordFocusSuppressesCopyPrompts",
+              "passed": true
+            }
+          ],
+          "passed": true
+        }
+      ],
+      "liveTranslationRequests": 2
+    }
+  ],
+  "credentialBoundary": "Configured Gemini secret absent from app source/docs and APK; secret/config files excluded from Git",
+  "scope": [
+    "Different-UID controlled host clipboard and Process Text result contract",
+    "Actual standard Android selection menu automatically replaces an editable field",
+    "Default-IME copy confirmation, sensitive/duplicate/own-copy suppression, Stop and landscape controls",
+    "Other-keyboard focused-overlay clipboard translation and floating English result",
+    "Read-only selections return no replacement; unsupported Devanagari input produces error",
+    "Keyboard case, letters, space, number and backspace commit locally; password focus suppresses clipboard prompts",
+    "One-call AUTO English/Hinglish routing, English-targeted reading and already-English reading unchanged"
+  ],
+  "limitations": [
+    "Controlled emulators only; Game of Khans, Discord, WhatsApp, Telegram and Instagram not yet tested on a physical phone",
+    "Full blinded semantic quality, OEM lifecycle/battery/accessibility and public distribution review remain open",
+    "Legacy latency harness skipped pending adaptation to actual overlay-frame completion"
+  ],
+  "notes": [
+    "Initial UI harness used uppercase-sensitive button lookup and a noncanonical IME identifier. Fixed harness/configuration and reran; records above use successful final runs.",
+    "Default keyboard and overlay app-op restored after each test; reading sessions stopped. No billing or quota-limit changes."
+  ],
+  "passed": true
+}

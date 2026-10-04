@@ -44,8 +44,7 @@ class ResultViewModel(
     private val _uiState = MutableStateFlow<ResultUiState>(ResultUiState.Loading)
     val uiState: StateFlow<ResultUiState> = _uiState.asStateFlow()
 
-    var requestedDirection: Direction? = null
-        private set
+    private val requestedDirection = if (isReadOnly) Direction.READ_TO_ENGLISH else Direction.AUTO
 
     init {
         // No startRun() here: ProcessTextActivity already opened this run when it received the
@@ -63,13 +62,6 @@ class ResultViewModel(
     /** Lets the result screen offer a plain Retry after a recoverable failure (offline, rate-limited, timeout, provider error) without re-showing disclosure, since it's already acknowledged by the time any [ResultUiState.Error] can be reached. */
     fun retry() {
         if (_uiState.value !is ResultUiState.Error) return
-        runTranslation(isNewRun = true)
-    }
-
-    /** Choosing a direction explicitly requests another translation, with the same selection. */
-    fun changeDirection(direction: Direction) {
-        if (_uiState.value !is ResultUiState.Success && _uiState.value !is ResultUiState.Error) return
-        requestedDirection = direction
         runTranslation(isNewRun = true)
     }
 
