@@ -1,11 +1,12 @@
-# Product requirements — LingoTranslate V1
+# Product requirements — LingoBoard 1.0.1
 
-Updated 2026-10-04 for `0.7.0-keyboard-translate`. This replaces the earlier preview/Replace and
-Devanagari scope. Historical evidence remains dated in `benchmark/` and Git history.
+Updated 2026-10-04 for `1.0.1`. This expands the earlier Roman Hindi/English-only keyboard. Historical evidence remains dated in `benchmark/` and Git history.
 
 ## Language and purpose
 
-English and natural Roman Hindi/Hinglish only. No Devanagari input, output or conversion modes.
+45 languages and 67 native/Roman translation options. All 22 scheduled Indian languages have
+both script options; Russian, French, Spanish, German, Korean, Indonesian, Chinese, Japanese
+and other common global languages are included. Auto source and English target are the defaults.
 Hinglish includes informal Roman Hindi mixed with English. Translate meaning, intent, tone,
 negation and idioms; preserve names, numbers, game terms, URLs, emojis and message formatting.
 Use context inside the supplied passage, without inventing missing chat history.
@@ -14,16 +15,17 @@ Use context inside the supplied passage, without inventing missing chat history.
 
 | Use case | Behavior |
 |---|---|
-| Keyboard writing | Translate icon → separate local draft → choose direction → Translate & insert into chat |
-| Keyboard reading | Copy received message → open composer → Read → confirm → English card above keys |
-| Selected editor reading | Select text in active editor → Translate selection → English card above keys |
-| Read-only selection action | Select message → Lingo-Translate → open composer within 60 seconds → keyboard English card |
-| Selection writing | Type → select draft → Lingo-Translate → translate and automatically replace selection |
+| Keyboard writing | Translate icon → separate local draft → choose source/target languages → Translate & insert into chat |
+| Keyboard reading | Copy received message → open composer → Read → confirm → result card above keys |
+| Selected editor reading | Select text in active editor → Translate icon → result card above keys |
+| Read-only selection action | Select message → LingoBoard Translate → open composer within 60 seconds → keyboard English card |
+| Selection writing | Type → select draft → LingoBoard Translate → translate and automatically replace selection |
 | Optional floating reading | Start reading session → copy → prompt → confirm → English floats over host |
 | Other keyboard floating fallback | Copy message → tap Lingo bubble → English floats over host |
 
-Keyboard writing never sends a chat message automatically. It uses explicit directions, with
-Roman Hindi → English as the default, and swap for English → Roman Hindi. Source typing stays
+Keyboard writing never sends a chat message automatically. It defaults to Auto → English; both selectors offer explicit languages and remember the user’s
+choices. Indian Roman targets are distinct options. Swap exchanges explicit languages; Auto →
+English swaps to English → Hindi (Roman), since Auto cannot be a target. Source typing stays
 inside its local, cursor-editable draft, not the host chat. Translation errors retain that source.
 The toolbar has a translation icon, reading action and keyboard switcher. Local typing offers
 one-shot Shift, double-tap/hold Caps Lock, two symbol pages, long-press top-row numbers,
@@ -37,7 +39,7 @@ unless the user presses Copy. Cancel/error never changes a draft. No global past
 ## Platform boundary
 
 Writing uses `ACTION_PROCESS_TEXT` with an editable flag and returns a replacement to the host.
-Read-only selections hand off to the selected Lingo keyboard by default; an explicitly running
+Read-only selections hand off to the selected LingoBoard by default; an explicitly running
 floating session remains a separate route. Host support is required; the app cannot insert a
 selection action into custom message renderers.
 
@@ -48,7 +50,7 @@ composer. Apps must expose a working editor/IME for this route. Input hiding, ed
 process death discard drafts/results and cancel requests. Changed host cursor/selection prevents
 automatic insertion of a late response; the result offers explicit Insert here or Copy.
 
-Optional automatic floating copy prompts require the selected Lingo keyboard plus a user-started
+Optional automatic floating copy prompts require the selected LingoBoard plus a user-started
 reading session. Overlay permission alone does not enable clipboard access. Other keyboards use
 the manual bubble route. No background clipboard polling or Accessibility Service is used.
 
@@ -59,7 +61,7 @@ Telegram and Instagram messaging are targets, awaiting real-device testing.
 ## Implemented requirements
 
 - Launcher setup prioritizing keyboard translation; floating mode remains optional.
-- Write/read translation panels, local draft, direction swap and inline English result.
+- Write/read translation panels, local draft, language selectors, swap and inline result.
 - Password fields disable translation actions; sensitive and own-output clips are skipped.
 - Automatic replacement on validated writing success; no preview/Replace step.
 - Floating English reading results, draggable card/bubble, scrollable long output, Copy,
@@ -71,13 +73,16 @@ Telegram and Instagram messaging are targets, awaiting real-device testing.
 - One active request/card; newer copies cancel the previous in-memory request/prompt.
 - Versioned cloud disclosure before content requests. No sign-in or content history.
 - One server-side Gemini call per accepted request, including writing language detection.
-- Local/server input bounds, unsupported-script rejection, validated output and shared quota.
+- Local/server input bounds, allowlisted language options and Roman-output script validation, validated output and shared quota.
 
 ## Quality and completion boundary
 
-Writing AUTO maps English → Roman Hindi and Roman Hindi/Hinglish → English. Short ambiguous
-words default to English → Roman Hindi; no detector can establish absent context. Reading always
-targets English; already-English messages are returned unchanged by the requested model contract.
+Source detection and translation share one Gemini request. Short ambiguous words may require
+the user to choose a source explicitly. Reading uses the selected target, defaulting to English.
+Already-target-language input should retain its meaning and requested writing system. Native
+Hindi/Devanagari support is restored as an explicit translation option. The typing layout
+remains Latin QWERTY. The app and IME allow screenshots. Light/dark themes, icon toolbar,
+larger keys and in-place draft editing improve appearance and input responsiveness.
 
 The backend has no local/system translation fallback. Human evaluation of real Hinglish, game
 slang, negation and ambiguity remains required. No claim of superiority to another translator

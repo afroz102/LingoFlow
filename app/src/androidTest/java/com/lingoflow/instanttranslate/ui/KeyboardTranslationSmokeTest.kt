@@ -23,7 +23,7 @@ class KeyboardTranslationSmokeTest {
     private val ime = "$app/.keyboard.LingoKeyboardService"
 
     private fun click(text: String) {
-        requireNotNull(device.wait(Until.findObject(By.text(text)), 5000)) { "Missing $text" }.click()
+        requireNotNull(device.wait(Until.findObject((if (text in listOf("Translate", "Read", "Translate selection")) By.desc(text) else By.text(text))), 5000)) { "Missing $text" }.click()
     }
     private fun desc(text: String) {
         requireNotNull(device.wait(Until.findObject(By.desc(text)), 5000)) { "Missing $text" }.click()
@@ -39,6 +39,10 @@ class KeyboardTranslationSmokeTest {
         device.executeShellCommand("appops set $app SYSTEM_ALERT_WINDOW deny")
         device.executeShellCommand("ime enable $ime")
         device.executeShellCommand("ime set $ime")
+        val preferences = context.getSharedPreferences("translation_languages", 0)
+        val oldSource = preferences.getString("source", "auto")
+        val oldTarget = preferences.getString("target", "en")
+        preferences.edit().putString("source", "auto").putString("target", "en").commit()
         DisclosurePreferences(context).acknowledge()
         device.executeShellCommand("am force-stop $host")
         device.executeShellCommand("am start -n $host/com.lingoflow.instanttranslate.testhost.FlowFixtureActivity")
@@ -47,6 +51,7 @@ class KeyboardTranslationSmokeTest {
             device.dumpWindowHierarchy(java.io.File(context.getExternalFilesDir(null), "keyboard_failure.xml"))
             throw error
         } finally {
+            preferences.edit().putString("source", oldSource).putString("target", oldTarget).commit()
             device.pressBack()
             if (oldIme.contains('/')) device.executeShellCommand("ime set $oldIme")
             if (oldIme != ime) device.executeShellCommand("ime disable $ime")
@@ -62,7 +67,7 @@ class KeyboardTranslationSmokeTest {
     private fun englishResult() {
         assertTrue("Result did not appear inside keyboard", device.wait(Until.hasObject(
             By.desc("Keyboard translation result").textContains("tomorrow")), 35_000))
-        assertTrue(device.hasObject(By.text("Read · English")))
+        assertTrue(device.hasObject(By.desc("Choose target language").textContains("English")))
         assertFalse("Reading started an overlay", device.hasObject(By.text("Lingo · English")))
     }
 
@@ -96,12 +101,12 @@ class KeyboardTranslationSmokeTest {
         openKeyboard()
         val original = draft().text
         click("Translate")
-        assertTrue(device.hasObject(By.text("Roman Hindi → English")))
+        assertTrue(device.hasObject(By.desc("Choose source language").textContains("Detect language")))
         click("h"); click("i"); click("Space"); click("?123"); click("?")
         assertEquals("hi ?", panelDraft().text)
         assertEquals("Typing in translation draft changed chat", original, draft().text)
         desc("Swap translation languages")
-        assertTrue(device.hasObject(By.text("English → Roman Hindi")))
+        assertTrue(device.hasObject(By.desc("Choose target language").textContains("Hindi (Roman)")))
         assertEquals("hi ?", panelDraft().text)
         desc("Close")
         assertFalse(device.hasObject(By.desc("Translation draft")))
@@ -120,24 +125,24 @@ class KeyboardTranslationSmokeTest {
             assertEquals("hi", panelDraft().text)
             desc("Close"); click("Read")
             assertEquals("main kal nahi aa sakta", panelDraft().text)
-            val confirmation = requireNotNull(device.findObject(By.text("Translate to English"))).visibleBounds
+            val confirmation = requireNotNull(device.findObject(By.text("Translate"))).visibleBounds
             assertTrue(confirmation.top > 0 && confirmation.bottom < device.displayHeight)
             assertTrue(device.hasObject(By.text("Space")))
         } finally { device.setOrientationNatural(); device.unfreezeRotation() }
     }
 
-    @Test fun passwordDisablesCloudControlsAndUnsupportedDraftLeavesChatUnchanged() = configured {
+    @Test fun passwordDisablesCloudControlsAndBlankDraftLeavesChatUnchanged() = configured {
         click("Focus password field")
         assertTrue(device.wait(Until.hasObject(By.text("Space")), 5000))
-        assertFalse(requireNotNull(device.findObject(By.text("Translate"))).isEnabled)
-        assertFalse(requireNotNull(device.findObject(By.text("Read"))).isEnabled)
+        assertFalse(requireNotNull(device.findObject(By.desc("Translate"))).isEnabled)
+        assertFalse(requireNotNull(device.findObject(By.desc("Read"))).isEnabled)
         device.pressBack()
         click("Focus draft field")
         val original = draft().text
         click("Translate")
-        panelDraft().text = "कल आना"
+        panelDraft().text = " "
         click("Translate & insert")
-        assertTrue(device.wait(Until.hasObject(By.textContains("Devanagari is not supported")), 5000))
+        assertTrue(device.wait(Until.hasObject(By.textContains("Enter text to translate")), 5000))
         assertEquals(original, draft().text)
     }
 
@@ -184,7 +189,7 @@ class KeyboardTranslationSmokeTest {
             assertEquals("main kal nahi aa sakta", panelDraft().text)
             assertFalse(device.hasObject(By.desc("Keyboard translation result")))
             assertEquals(original, draft().text)
-            click("Translate to English"); englishResult()
+            requireNotNull(device.findObject(By.text("Translate"))).click(); englishResult()
             assertEquals("Reading changed chat", original, draft().text)
             click("h"); click("i")
             assertEquals("Keyboard did not resume chat typing below reading result", original.length + 2, draft().text.length)
@@ -194,7 +199,7 @@ class KeyboardTranslationSmokeTest {
             // Android exposes the hint as accessibility text for an empty EditText.
             assertEquals("Own output should not reload as a new received message",
                 context.getString(com.lingoflow.instanttranslate.R.string.keyboard_read_hint), panelDraft().text)
-            assertTrue(device.hasObject(By.textContains("No readable English or Roman Hindi message found")))
+            assertTrue(device.hasObject(By.textContains("No readable text message found")))
         }
     }
 
@@ -216,7 +221,7 @@ class KeyboardTranslationSmokeTest {
         live()
         configured {
             click("Select draft text")
-            assertTrue(device.wait(Until.hasObject(By.text("Translate selection")), 5000))
+            assertTrue(device.wait(Until.hasObject(By.desc("Translate selection")), 5000))
             val original = draft().text
             click("Translate selection")
             englishResult()
@@ -231,6 +236,49 @@ class KeyboardTranslationSmokeTest {
             assertTrue(device.wait(Until.hasObject(By.text("No replacement returned")), 5000))
             openKeyboard(); englishResult()
             assertEquals("Before | main kal nahi aa sakta | After", draft().text)
+        }
+    }
+    @Test fun languagePickersKeepDraftAllowRomanOutputAndPersistChoices() = configured {
+        openKeyboard(); click("Translate")
+        panelDraft().text = "hello there"
+        desc("Choose target language")
+        val list = requireNotNull(device.wait(Until.findObject(By.clazz("android.widget.ScrollView")), 5000))
+        for (attempt in 0..12) {
+            if (device.hasObject(By.desc("Target: Hindi (Roman)"))) break
+            list.scroll(androidx.test.uiautomator.Direction.DOWN, 0.6f)
+        }
+        desc("Target: Hindi (Roman)")
+        assertEquals("hello there", panelDraft().text)
+        assertTrue(device.hasObject(By.desc("Choose target language").textContains("Hindi (Roman)")))
+        desc("Close"); click("Translate")
+        assertTrue(device.hasObject(By.desc("Choose target language").textContains("Hindi (Roman)")))
+        desc("Choose source language")
+        assertTrue(device.wait(Until.hasObject(By.desc("Source: Detect language")), 5000))
+        desc("Source: Detect language")
+    }
+
+    @Test fun rapidTypingAndScreenshotsWorkWithLargeKeyTargets() = configured {
+        draft().text = ""; openKeyboard()
+        val density = context.resources.displayMetrics.density
+        val q = requireNotNull(device.findObject(By.text("q")))
+        assertTrue("Key touch target too short", q.visibleBounds.height() / density >= 54)
+        val letters = listOf("h", "e", "l", "l", "o")
+        val points = letters.map { requireNotNull(device.findObject(By.text(it))).visibleCenter }
+        repeat(4) { points.forEach { point -> device.click(point.x, point.y) } }
+        assertTrue(device.wait(Until.hasObject(By.desc("Writing draft").text("hello".repeat(4))), 3000))
+        val file = java.io.File(context.getExternalFilesDir(null), "lingoboard-screenshot.png")
+        assertTrue("Screenshot capture failed", device.takeScreenshot(file))
+        assertTrue(file.length() > 0)
+    }
+
+    @Test fun nativeHindiDraftIsDetectedAndInsertedInEnglish() {
+        live()
+        configured {
+            draft().text = ""; openKeyboard(); click("Translate")
+            panelDraft().text = "मैं कल नहीं आ सकता"
+            click("Translate & insert")
+            assertTrue(device.wait(Until.hasObject(By.desc("Writing draft").textContains("tomorrow")), 35_000))
+            assertFalse(draft().text.any { it in '\u0900'..'\u097f' })
         }
     }
 }

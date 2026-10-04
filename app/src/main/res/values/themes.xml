@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.InstantTranslate" parent="Theme.Material3.DayNight.NoActionBar" />
+    <style name="Theme.InstantTranslate" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">#445DCE</item>
+        <item name="colorSecondary">#566A9E</item>
+        <item name="android:fontFamily">sans</item>
+    </style>
 
     <!--
         ProcessTextActivity never draws its own UI — it validates, delegates to ResultActivity,

@@ -1,0 +1,337 @@
+[
+  {
+    "id": "en",
+    "name": "English",
+    "romanized": false
+  },
+  {
+    "id": "as",
+    "name": "Assamese",
+    "romanized": false
+  },
+  {
+    "id": "as-Latn",
+    "name": "Assamese (Roman)",
+    "romanized": true
+  },
+  {
+    "id": "bn",
+    "name": "Bengali",
+    "romanized": false
+  },
+  {
+    "id": "bn-Latn",
+    "name": "Bengali (Roman)",
+    "romanized": true
+  },
+  {
+    "id": "brx",
+    "name": "Bodo",
+    "romanized": false
+  },
+  {
+    "id": "brx-Latn",
+    "name": "Bodo (Roman)",
+    "romanized": true
+  },
+  {
+    "id": "doi",
+    "name": "Dogri",
+    "romanized": false
+  },
+  {
+    "id": "doi-Latn",
+    "name": "Dogri (Roman)",
+    "romanized": true
+  },
+  {
+    "id": "gu",
+    "name": "Gujarati",
+    "romanized": false
+  },
+  {
+    "id": "gu-Latn",
+    "name": "Gujarati (Roman)",
+    "romanized": true
+  },
+  {
+    "id": "hi",
+    "name": "Hindi",
+    "romanized": false
+  },
+  {
+    "id": "hi-Latn",
+    "name": "Hindi (Roman)",
+    "romanized": true
+  },
+  {
+    "id": "kn",
+    "name": "Kannada",
+    "romanized": false
+  },
+  {
+    "id": "kn-Latn",
+    "name": "Kannada (Roman)",
+    "romanized": true
+  },
+  {
+    "id": "ks",
+    "name": "Kashmiri",
+    "romanized": false
+  },
+  {
+    "id": "ks-Latn",
+    "name": "Kashmiri (Roman)",
+    "romanized": true
+  },
+  {
+    "id": "kok",
+    "name": "Konkani",
+    "romanized": false
+  },
+  {
+    "id": "kok-Latn",
+    "name": "Konkani (Roman)",
+    "romanized": true
+  },
+  {
+    "id": "mai",
+    "name": "Maithili",
+    "romanized": false
+  },
+  {
+    "id": "mai-Latn",
+    "name": "Maithili (Roman)",
+    "romanized": true
+  },
+  {
+    "id": "ml",
+    "name": "Malayalam",
+    "romanized": false
+  },
+  {
+    "id": "ml-Latn",
+    "name": "Malayalam (Roman)",
+    "romanized": true
+  },
+  {
+    "id": "mni",
+    "name": "Manipuri",
+    "romanized": false
+  },
+  {
+    "id": "mni-Latn",
+    "name": "Manipuri (Roman)",
+    "romanized": true
+  },
+  {
+    "id": "mr",
+    "name": "Marathi",
+    "romanized": false
+  },
+  {
+    "id": "mr-Latn",
+    "name": "Marathi (Roman)",
+    "romanized": true
+  },
+  {
+    "id": "ne",
+    "name": "Nepali",
+    "romanized": false
+  },
+  {
+    "id": "ne-Latn",
+    "name": "Nepali (Roman)",
+    "romanized": true
+  },
+  {
+    "id": "or",
+    "name": "Odia",
+    "romanized": false
+  },
+  {
+    "id": "or-Latn",
+    "name": "Odia (Roman)",
+    "romanized": true
+  },
+  {
+    "id": "pa",
+    "name": "Punjabi",
+    "romanized": false
+  },
+  {
+    "id": "pa-Latn",
+    "name": "Punjabi (Roman)",
+    "romanized": true
+  },
+  {
+    "id": "sa",
+    "name": "Sanskrit",
+    "romanized": false
+  },
+  {
+    "id": "sa-Latn",
+    "name": "Sanskrit (Roman)",
+    "romanized": true
+  },
+  {
+    "id": "sat",
+    "name": "Santali",
+    "romanized": false
+  },
+  {
+    "id": "sat-Latn",
+    "name": "Santali (Roman)",
+    "romanized": true
+  },
+  {
+    "id": "sd",
+    "name": "Sindhi",
+    "romanized": false
+  },
+  {
+    "id": "sd-Latn",
+    "name": "Sindhi (Roman)",
+    "romanized": true
+  },
+  {
+    "id": "ta",
+    "name": "Tamil",
+    "romanized": false
+  },
+  {
+    "id": "ta-Latn",
+    "name": "Tamil (Roman)",
+    "romanized": true
+  },
+  {
+    "id": "te",
+    "name": "Telugu",
+    "romanized": false
+  },
+  {
+    "id": "te-Latn",
+    "name": "Telugu (Roman)",
+    "romanized": true
+  },
+  {
+    "id": "ur",
+    "name": "Urdu",
+    "romanized": false
+  },
+  {
+    "id": "ur-Latn",
+    "name": "Urdu (Roman)",
+    "romanized": true
+  },
+  {
+    "id": "ko",
+    "name": "Korean",
+    "romanized": false
+  },
+  {
+    "id": "id",
+    "name": "Indonesian",
+    "romanized": false
+  },
+  {
+    "id": "zh",
+    "name": "Chinese (Simplified)",
+    "romanized": false
+  },
+  {
+    "id": "ja",
+    "name": "Japanese",
+    "romanized": false
+  },
+  {
+    "id": "ru",
+    "name": "Russian",
+    "romanized": false
+  },
+  {
+    "id": "fr",
+    "name": "French",
+    "romanized": false
+  },
+  {
+    "id": "es",
+    "name": "Spanish",
+    "romanized": false
+  },
+  {
+    "id": "de",
+    "name": "German",
+    "romanized": false
+  },
+  {
+    "id": "ar",
+    "name": "Arabic",
+    "romanized": false
+  },
+  {
+    "id": "pt",
+    "name": "Portuguese",
+    "romanized": false
+  },
+  {
+    "id": "it",
+    "name": "Italian",
+    "romanized": false
+  },
+  {
+    "id": "tr",
+    "name": "Turkish",
+    "romanized": false
+  },
+  {
+    "id": "vi",
+    "name": "Vietnamese",
+    "romanized": false
+  },
+  {
+    "id": "th",
+    "name": "Thai",
+    "romanized": false
+  },
+  {
+    "id": "nl",
+    "name": "Dutch",
+    "romanized": false
+  },
+  {
+    "id": "pl",
+    "name": "Polish",
+    "romanized": false
+  },
+  {
+    "id": "uk",
+    "name": "Ukrainian",
+    "romanized": false
+  },
+  {
+    "id": "ms",
+    "name": "Malay",
+    "romanized": false
+  },
+  {
+    "id": "fil",
+    "name": "Filipino",
+    "romanized": false
+  },
+  {
+    "id": "fa",
+    "name": "Persian",
+    "romanized": false
+  },
+  {
+    "id": "he",
+    "name": "Hebrew",
+    "romanized": false
+  },
+  {
+    "id": "sv",
+    "name": "Swedish",
+    "romanized": false
+  }
+]

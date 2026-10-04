@@ -148,7 +148,7 @@ class ReadingWritingSmokeTest {
             editor.click(800)
             device.wait(Until.findObject(By.text("Select all")), 1500)?.click()
             device.wait(Until.findObject(By.desc("More options")), 1500)?.click()
-            click("Lingo-Translate")
+            click("LingoBoard Translate")
             assertTrue("Native host selection was not replaced", device.wait(Until.hasObject(
                 By.res(host, "edit_single_line").textContains("tomorrow")), 35_000))
             assertFalse("Replacement still needs a separate control", device.hasObject(By.res(app, "button_replace")))
@@ -165,9 +165,7 @@ class ReadingWritingSmokeTest {
             assertFalse(draft.contains("main kal nahi aa sakta"))
             click("Read selected message"); englishResult()
             assertTrue("Read-only host received replacement", device.wait(Until.hasObject(By.text("No replacement returned")), 5000))
-            click("Close"); click("Read unsupported script")
-            assertTrue(device.wait(Until.hasObject(By.textContains("Devanagari is not supported")), 5000))
-            click("Cancel")
+            click("Close")
         }
     }
 }

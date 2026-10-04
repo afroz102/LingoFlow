@@ -1,0 +1,78 @@
+{
+  "recorded_at": "2026-10-04T16:48:18.027Z",
+  "scope": "Synthetic hosted multilingual transport/script smoke; not human translation-quality evaluation",
+  "model_calls": 10,
+  "results": [
+    {
+      "case": "auto_roman_hindi_english",
+      "target": "en",
+      "status": 200,
+      "duration_ms": 1376,
+      "pass": true
+    },
+    {
+      "case": "auto_native_hindi_english",
+      "target": "en",
+      "status": 200,
+      "duration_ms": 1206,
+      "pass": true
+    },
+    {
+      "case": "english_roman_hindi",
+      "target": "hi-Latn",
+      "status": 200,
+      "duration_ms": 1225,
+      "pass": true
+    },
+    {
+      "case": "english_russian",
+      "target": "ru",
+      "status": 200,
+      "duration_ms": 1127,
+      "pass": true
+    },
+    {
+      "case": "english_french",
+      "target": "fr",
+      "status": 200,
+      "duration_ms": 1031,
+      "pass": true
+    },
+    {
+      "case": "english_spanish",
+      "target": "es",
+      "status": 200,
+      "duration_ms": 1146,
+      "pass": true
+    },
+    {
+      "case": "english_german",
+      "target": "de",
+      "status": 200,
+      "duration_ms": 1106,
+      "pass": true
+    },
+    {
+      "case": "english_japanese",
+      "target": "ja",
+      "status": 200,
+      "duration_ms": 1018,
+      "pass": true
+    },
+    {
+      "case": "english_roman_bengali",
+      "target": "bn-Latn",
+      "status": 200,
+      "duration_ms": 1282,
+      "pass": true
+    },
+    {
+      "case": "auto_korean_english",
+      "target": "en",
+      "status": 200,
+      "duration_ms": 899,
+      "pass": true
+    }
+  ],
+  "passed": true
+}

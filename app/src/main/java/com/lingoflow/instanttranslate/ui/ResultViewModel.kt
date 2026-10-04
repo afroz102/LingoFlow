@@ -8,7 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.lingoflow.instanttranslate.cloud.AndroidConnectivityChecker
 import com.lingoflow.instanttranslate.coordinator.TranslateCoordinator
 import com.lingoflow.instanttranslate.coordinator.TranslationOutcome
-import com.lingoflow.instanttranslate.direction.Direction
+import com.lingoflow.instanttranslate.direction.TranslationLanguagePair
 import com.lingoflow.instanttranslate.prefs.DisclosurePreferences
 import com.lingoflow.instanttranslate.provider.backend.BackendTranslationProvider
 import com.lingoflow.instanttranslate.timing.TranslationTimeline
@@ -44,7 +44,11 @@ class ResultViewModel(
     private val _uiState = MutableStateFlow<ResultUiState>(ResultUiState.Loading)
     val uiState: StateFlow<ResultUiState> = _uiState.asStateFlow()
 
-    private val requestedDirection = if (isReadOnly) Direction.READ_TO_ENGLISH else Direction.AUTO
+    private val languages = if (isReadOnly) TranslationLanguagePair() else {
+        val preferences = application.getSharedPreferences("translation_languages", 0)
+        TranslationLanguagePair(preferences.getString("source", "auto") ?: "auto",
+            preferences.getString("target", "en") ?: "en").takeIf { it.isValid() } ?: TranslationLanguagePair()
+    }
 
     init {
         // No startRun() here: ProcessTextActivity already opened this run when it received the
@@ -75,7 +79,7 @@ class ResultViewModel(
         if (isNewRun) TranslationTimeline.startRun()
         _uiState.value = ResultUiState.Loading
         viewModelScope.launch {
-            _uiState.value = when (val outcome = coordinator.translate(originalText, requestedDirection)) {
+            _uiState.value = when (val outcome = coordinator.translate(originalText, languages = languages)) {
                 is TranslationOutcome.Translated -> ResultUiState.Success(
                     original = outcome.original,
                     translated = outcome.translated,

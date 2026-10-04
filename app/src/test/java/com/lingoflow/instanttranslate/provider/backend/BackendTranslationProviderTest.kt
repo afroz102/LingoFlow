@@ -1,6 +1,7 @@
 package com.lingoflow.instanttranslate.provider.backend
 
 import com.lingoflow.instanttranslate.direction.Direction
+import com.lingoflow.instanttranslate.direction.TranslationLanguagePair
 import com.lingoflow.instanttranslate.provider.FailureReason
 import com.lingoflow.instanttranslate.provider.TranslationResult
 import kotlinx.coroutines.CancellationException
@@ -35,7 +36,7 @@ class BackendTranslationProviderTest {
     }
 
     @Test fun `every explicit direction is sent unchanged and mismatched response is rejected`() = runTest {
-        for (requested in Direction.entries.filter { it != Direction.AUTO }) {
+        for (requested in Direction.entries.filter { it != Direction.AUTO && it != Direction.MULTILINGUAL }) {
             val provider = BackendTranslationProvider(BackendHttp { body ->
                 assertEquals(requested.name, JSONObject(body).getString("direction"))
                 HttpResponse(200, JSONObject().put("translation", "sample").put("direction", requested.name).toString())
@@ -105,5 +106,37 @@ class BackendTranslationProviderTest {
         val provider = BackendTranslationProvider(BackendHttp { throw CancellationException("cancelled") })
         try { provider.translate("hello", direction); fail("cancellation must propagate") }
         catch (_: CancellationException) { }
+    }
+    @Test fun `multilingual native script request uses explicit language IDs and one call`() = runTest {
+        var calls = 0
+        val pair = TranslationLanguagePair("auto", "hi")
+        val provider = BackendTranslationProvider(BackendHttp { body ->
+            calls++
+            val json = JSONObject(body)
+            assertEquals("MULTILINGUAL", json.getString("direction"))
+            assertEquals("auto", json.getString("sourceLanguage"))
+            assertEquals("hi", json.getString("targetLanguage"))
+            HttpResponse(200, """{"translation":"नमस्ते","direction":"MULTILINGUAL","sourceLanguage":"auto","targetLanguage":"hi"}""")
+        })
+        assertEquals(TranslationResult.Success("नमस्ते", Direction.MULTILINGUAL), provider.translate("Hello", pair))
+        assertEquals(1, calls)
+    }
+
+    @Test fun `wrong target missing language metadata and wrong romanized script are rejected`() = runTest {
+        val pair = TranslationLanguagePair("auto", "hi-Latn")
+        for ((target, translation) in listOf("hi" to "namaste", "" to "namaste", "hi-Latn" to "नमस्ते")) {
+            val provider = BackendTranslationProvider(BackendHttp {
+                HttpResponse(200, JSONObject().put("translation", translation).put("direction", "MULTILINGUAL")
+                    .put("sourceLanguage", "auto").put("targetLanguage", target).toString())
+            })
+            assertEquals(TranslationResult.Failure(FailureReason.INVALID_RESPONSE), provider.translate("hello", pair))
+        }
+        val missingDirection = BackendTranslationProvider(BackendHttp {
+            HttpResponse(200, """{"translation":"namaste","sourceLanguage":"auto","targetLanguage":"hi-Latn"}""")
+        })
+        assertEquals(TranslationResult.Failure(FailureReason.INVALID_RESPONSE), missingDirection.translate("hello", pair))
+        val noNetwork = BackendTranslationProvider(BackendHttp { error("must not call") })
+        assertEquals(TranslationResult.Failure(FailureReason.UNSUPPORTED_INPUT),
+            noNetwork.translate("hello", TranslationLanguagePair("auto", "auto")))
     }
 }

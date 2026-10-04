@@ -33,7 +33,7 @@ import com.lingoflow.instanttranslate.R
 import com.lingoflow.instanttranslate.cloud.AndroidConnectivityChecker
 import com.lingoflow.instanttranslate.coordinator.TranslateCoordinator
 import com.lingoflow.instanttranslate.coordinator.TranslationOutcome
-import com.lingoflow.instanttranslate.direction.Direction
+import com.lingoflow.instanttranslate.direction.TranslationLanguagePair
 import com.lingoflow.instanttranslate.direction.DirectionDetector
 import com.lingoflow.instanttranslate.prefs.DisclosurePreferences
 import com.lingoflow.instanttranslate.provider.FailureReason
@@ -168,7 +168,7 @@ class ReadingOverlayService : Service() {
         TranslationTimeline.startRun()
         request = scope.launch {
             val outcome = TranslateCoordinator(BackendTranslationProvider(), DisclosurePreferences(this@ReadingOverlayService),
-                AndroidConnectivityChecker(this@ReadingOverlayService)).translate(text, Direction.READ_TO_ENGLISH)
+                AndroidConnectivityChecker(this@ReadingOverlayService)).translate(text, languages = TranslationLanguagePair())
             if (currentGeneration != generation) return@launch
             when (outcome) {
                 is TranslationOutcome.Translated -> { result = outcome.translated; phase = Phase.RESULT }
@@ -307,8 +307,7 @@ class ReadingOverlayService : Service() {
         removeWindow()
         val type = if (Build.VERSION.SDK_INT >= 26) WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
             else @Suppress("DEPRECATION") WindowManager.LayoutParams.TYPE_PHONE
-        val flags = WindowManager.LayoutParams.FLAG_SECURE or
-            if (focusable) WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM
+        val flags = if (focusable) WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM
             else WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
         val layout = WindowManager.LayoutParams(
             if (bubble) WindowManager.LayoutParams.WRAP_CONTENT else minOf(dp(360), resources.displayMetrics.widthPixels - dp(24)),

@@ -1,6 +1,8 @@
 package com.lingoflow.instanttranslate.provider.backend
 
 import com.lingoflow.instanttranslate.BuildConfig
+import com.lingoflow.instanttranslate.direction.TranslationLanguages
+import com.lingoflow.instanttranslate.direction.TranslationLanguagePair
 import com.lingoflow.instanttranslate.direction.DirectionDetector
 import com.lingoflow.instanttranslate.direction.Direction
 import com.lingoflow.instanttranslate.provider.FailureReason
@@ -23,16 +25,28 @@ class BackendTranslationProvider internal constructor(
 ) : TranslationProvider {
     constructor() : this(UrlConnectionHttp(BuildConfig.BACKEND_URL), BuildConfig.BACKEND_URL.startsWith("https://"))
 
-    override suspend fun translate(text: String, direction: Direction): TranslationResult {
+    override suspend fun translate(text: String, direction: Direction): TranslationResult = request(text, direction, null)
+
+    override suspend fun translate(text: String, languages: TranslationLanguagePair): TranslationResult =
+        if (languages.isValid()) request(text, Direction.MULTILINGUAL, languages)
+        else TranslationResult.Failure(FailureReason.UNSUPPORTED_INPUT)
+
+    private suspend fun request(text: String, direction: Direction, languages: TranslationLanguagePair?): TranslationResult {
+        if (direction == Direction.MULTILINGUAL && languages == null) return TranslationResult.Failure(FailureReason.UNSUPPORTED_INPUT)
+        if (languages == null && direction != Direction.READ_TO_ENGLISH &&
+            text.contains(Regex("[\\u0900-\\u097f\\ua8e0-\\ua8ff\\x{11B00}-\\x{11B09}]")))
+            return TranslationResult.Failure(FailureReason.UNSUPPORTED_INPUT)
         if (!configured) return TranslationResult.Failure(FailureReason.PROVIDER_ERROR)
         if (!DirectionDetector.isSupported(text)) return TranslationResult.Failure(FailureReason.UNSUPPORTED_INPUT)
         return try {
             withTimeout(30_000) {
                 TranslationTimeline.mark(TimingMark.T_CLIENT_READY)
-                val body = JSONObject().put("text", text).put("direction", direction.name).toString()
+                val payload = JSONObject().put("text", text).put("direction", direction.name)
+                languages?.let { payload.put("sourceLanguage", it.source).put("targetLanguage", it.target) }
+                val body = payload.toString()
                 TranslationTimeline.mark(TimingMark.T_REQUEST_SENT)
                 // Only explicit user Retry resends selected text; a timeout may have spent quota.
-                parseResponse(http.translate(body), direction)
+                parseResponse(http.translate(body), direction, languages)
             }
         } catch (deadline: TimeoutCancellationException) {
             TranslationResult.Failure(FailureReason.TIMEOUT)
@@ -45,7 +59,7 @@ class BackendTranslationProvider internal constructor(
         }
     }
 
-    private fun parseResponse(response: HttpResponse, requestedDirection: Direction): TranslationResult {
+    private fun parseResponse(response: HttpResponse, requestedDirection: Direction, languages: TranslationLanguagePair?): TranslationResult {
         if (response.status !in 200..299) {
             val reason = when (response.status) {
                 400, 413, 415 -> FailureReason.UNSUPPORTED_INPUT
@@ -61,14 +75,18 @@ class BackendTranslationProvider internal constructor(
         val json = try { JSONObject(response.body) } catch (_: JSONException) { null }
             ?: return TranslationResult.Failure(FailureReason.INVALID_RESPONSE)
         val translated = json.opt("translation") as? String
+        if (languages != null && (json.optString("sourceLanguage") != languages.source ||
+            json.optString("targetLanguage") != languages.target)) return TranslationResult.Failure(FailureReason.INVALID_RESPONSE)
         if (translated.isNullOrBlank() || translated.length > 16000 ||
-            translated.any { it in '\u0900'..'\u097f' || it in '\ua8e0'..'\ua8ff' } ||
-            translated.contains(Regex("[\\x{11B00}-\\x{11B09}]"))) return TranslationResult.Failure(FailureReason.INVALID_RESPONSE)
-        // Older servers may omit direction for explicit requests; AUTO must never guess it.
+            (languages == null && (translated.any { it in '\u0900'..'\u097f' || it in '\ua8e0'..'\ua8ff' } ||
+            translated.contains(Regex("[\\x{11B00}-\\x{11B09}]"))))) return TranslationResult.Failure(FailureReason.INVALID_RESPONSE)
+        if (languages != null && TranslationLanguages.find(languages.target)?.romanized == true &&
+            translated.contains(Regex("[^\\p{IsLatin}\\p{IsCommon}\\p{IsInherited}]"))) return TranslationResult.Failure(FailureReason.INVALID_RESPONSE)
+        // Older servers may omit direction for explicit requests; AUTO/MULTILINGUAL require explicit response direction.
         val direction = if (json.has("direction")) {
             val name = json.opt("direction") as? String
             Direction.entries.firstOrNull { it.name == name }
-        } else requestedDirection.takeUnless { it == Direction.AUTO }
+        } else requestedDirection.takeUnless { it == Direction.AUTO || it == Direction.MULTILINGUAL }
         if (direction == null || !requestedDirection.acceptsResolved(direction)) {
             return TranslationResult.Failure(FailureReason.INVALID_RESPONSE)
         }

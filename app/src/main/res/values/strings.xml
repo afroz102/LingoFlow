@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">LingoTranslate</string>
+    <string name="app_name">LingoBoard</string>
 
-    <string name="process_text_action_label">Lingo-Translate</string>
+    <string name="process_text_action_label">LingoBoard Translate</string>
 
     <string name="direction_auto">Writing: English ↔ Roman Hindi</string>
     <string name="direction_hinglish_to_en">Hinglish → English</string>
@@ -11,7 +11,7 @@
     <string name="direction_read_to_en">Reading → English</string>
     <string name="action_copy">Copy</string>
     <string name="copied_confirmation">Copied</string>
-    <string name="error_generic">Use English or Roman Hindi/Hinglish, up to 4,000 characters. Devanagari is not supported in this version.</string>
+    <string name="error_generic">Enter text to translate, up to 4,000 characters.</string>
 
     <!-- Shown before the first content request. Final public-release wording needs terms review. -->
     <string name="disclosure_message">Only text you ask to translate is sent through our translation server to Google\'s Gemini API. Under Google\'s free tier, content may be reviewed by people and used to improve its products. Please don\'t translate sensitive or confidential text. We don\'t save translation text or results. Our server stores total request counts to limit usage. No account or sign-in is needed.</string>
@@ -23,19 +23,19 @@
     <string name="error_timeout">That took too long. Try again.</string>
     <string name="error_provider">Couldn\'t reach the translation service. Try again.</string>
     <string name="error_invalid_response">Got an unexpected response. Try again.</string>
-    <string name="setup_intro">Translate inside your keyboard, without display-over-apps permission. Write English ↔ Roman Hindi/Hinglish, or read a message in English above the keys.</string>
+    <string name="setup_intro">Your conversations, in any language. Translate a draft or read a copied message right above your keyboard.</string>
     <string name="setup_overlay">Allow floating translations</string>
     <string name="setup_optional_floating">Optional: floating reading session</string>
-    <string name="setup_keyboard_explanation">Enable and choose Lingo keyboard, then open a chat input. Tap Translate to open a private draft, choose the direction and tap Translate &amp; insert. Read loads copied text for confirmation and shows the English result above the keys. Normal typing stays on your phone. Symbols, Shift/Caps Lock and 50 emoji are included; predictions and swipe typing are not yet included.</string>
-    <string name="setup_enable_keyboard">1. Enable Lingo keyboard</string>
-    <string name="setup_choose_keyboard">2. Choose Lingo keyboard</string>
+    <string name="setup_keyboard_explanation">Tap the translation icon to write, or the message icon to read a copy. Source language is detected automatically; English is the default target. Tap either language to change it. Indian languages include native-script and Roman options. Only explicit translation requests leave your phone.</string>
+    <string name="setup_enable_keyboard">1. Enable LingoBoard</string>
+    <string name="setup_choose_keyboard">2. Choose LingoBoard</string>
     <string name="setup_start">Start reading session</string>
     <string name="setup_stop">Stop reading session</string>
-    <string name="setup_writing">Keyboard translation needs no reading session. Selected text from the active editor is available through Translate selection. For received messages outside an editor, use copy + Read. Lingo-Translate also remains available in compatible selection menus.</string>
-    <string name="clipboard_automatic">Lingo keyboard selected: open a chat input to translate above the keys. No overlay permission required.</string>
-    <string name="clipboard_manual">Choose Lingo keyboard for translation above the keys. The optional floating mode can still work with another keyboard.</string>
+    <string name="setup_writing">Write: enter a private draft, choose languages, then Translate &amp; insert. Read: copy a message, open the chat input, tap the message icon and confirm Translate. Selected editor text can be read through the translation icon. Compatible selection menus also offer LingoBoard Translate.</string>
+    <string name="clipboard_automatic">LingoBoard selected: open a chat input to translate above the keys. No overlay permission required.</string>
+    <string name="clipboard_manual">Choose LingoBoard for translation above the keys. The optional floating mode can still work with another keyboard.</string>
     <string name="overlay_unavailable">Floating translations could not start. Allow display over other apps and try again. This phone or app may restrict overlays.</string>
-    <string name="reading_permission">Allow LingoTranslate to display over other apps so the English result can float over your current app.</string>
+    <string name="reading_permission">Allow LingoBoard to display over other apps so the English result can float over your current app.</string>
     <string name="session_started">Reading session started. Return to your chat or game.</string>
     <string name="session_stopped">Reading session stopped.</string>
     <string name="session_channel">Lingo reading session</string>
@@ -46,32 +46,27 @@
     <string name="reading_prompt">Message copied. Translate it to English?</string>
     <string name="reading_capturing">Reading copied text…</string>
     <string name="reading_loading">Translating meaning and context…</string>
-    <string name="clipboard_unavailable">No readable English or Roman Hindi message found. Copy a text message and try again. Passwords, sensitive clips and unsupported text are skipped.</string>
+    <string name="clipboard_unavailable">No readable text message found. Copy a message and try again. Passwords, sensitive clips and your own translation results are skipped.</string>
     <string name="action_translate">Translate</string>
     <string name="action_read_clipboard">Read copy</string>
     <string name="action_minimize">Minimize</string>
     <string name="action_close">Close</string>
     <string name="action_stop">Stop</string>
-    <string name="keyboard_name">Lingo Roman keyboard</string>
-    <string name="keyboard_switch">Keyboard</string>
+    <string name="keyboard_name">LingoBoard</string>
+    <string name="keyboard_switch">Switch keyboard</string>
     <string name="keyboard_space">Space</string>
     <string name="keyboard_translate_selection">Translate selection</string>
-    <string name="keyboard_translate_description">Open translation, or translate selected editor text into English</string>
     <string name="keyboard_read">Read</string>
-    <string name="keyboard_read_description">Read selected or copied text in English above the keyboard</string>
-    <string name="keyboard_read_title">Read · English</string>
-    <string name="keyboard_hindi_to_en">Roman Hindi → English</string>
-    <string name="keyboard_en_to_hindi">English → Roman Hindi</string>
     <string name="keyboard_swap">Swap translation languages</string>
     <string name="keyboard_insert">Insert here</string>
     <string name="keyboard_new">New</string>
     <string name="keyboard_draft_hint">Type a message to translate…</string>
-    <string name="keyboard_read_hint">Paste a received message to read in English…</string>
+    <string name="keyboard_read_hint">Paste a message to translate…</string>
     <string name="keyboard_draft_description">Translation draft</string>
     <string name="keyboard_paste">Paste copy</string>
     <string name="keyboard_translating">Translating…</string>
     <string name="keyboard_translate_insert">Translate &amp; insert</string>
-    <string name="keyboard_translate_read">Translate to English</string>
+    <string name="keyboard_translate_read">Translate</string>
     <string name="keyboard_result_description">Keyboard translation result</string>
     <string name="keyboard_shift">Shift</string>
     <string name="keyboard_shift_once">Shift on for one letter. Double tap for Caps Lock</string>
@@ -83,7 +78,9 @@
     <string name="keyboard_selection_unavailable">This app did not share selected editor text. Copy the message and use Read instead.</string>
     <string name="keyboard_inserted">Translation inserted. Review it before sending.</string>
     <string name="keyboard_target_changed">The chat cursor changed or insertion was unavailable. Review the result and tap Insert here, or copy it.</string>
-    <string name="keyboard_open_to_read">Open the chat input with Lingo keyboard to see this message in English. Available for 60 seconds.</string>
+    <string name="keyboard_open_to_read">Open the chat input with LingoBoard to read this message. Available for 60 seconds.</string>
     <string name="keyboard_go">Go</string>
     <string name="keyboard_send">Send</string>
+    <string name="direction_multilingual">Translation</string>
+    <string name="setup_version">TRANSLATION KEYBOARD · %1$s</string>
 </resources>

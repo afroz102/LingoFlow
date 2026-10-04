@@ -38,8 +38,8 @@ android {
         // Provisional minimum; physical-device compatibility review remains open.
         minSdk = 23
         targetSdk = 34
-        versionCode = 4
-        versionName = "0.7.0-keyboard-translate"
+        versionCode = 5
+        versionName = "1.0.1"
         buildConfigField("String", "BACKEND_URL", "\"$backendUrl\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -113,3 +113,12 @@ dependencies {
 }
 
 tasks.named("preBuild") { dependsOn(copyBenchmarkCorpus) }
+
+// Publish a predictable, versioned file for phone testing without changing the install identity.
+val exportDebugApk by tasks.registering(Copy::class) {
+    from(layout.buildDirectory.file("outputs/apk/debug/app-debug.apk"))
+    dependsOn("packageDebug")
+    into(layout.buildDirectory.dir("outputs/apk/lingoboard"))
+    rename { "LingoBoard-${android.defaultConfig.versionName}.apk" }
+}
+tasks.matching { it.name == "assembleDebug" }.configureEach { finalizedBy(exportDebugApk) }

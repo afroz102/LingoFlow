@@ -1,7 +1,8 @@
 # Benchmark tools and evidence
 
-The current V1 is English/Roman Hindi only with automatic writing replacement and floating
-reading. Earlier Devanagari/direction-picker findings are historical. The frozen corpus/timing
+The current app is LingoBoard 1.0.1: multilingual translation with Auto → English defaults,
+larger keys, light/dark themes, icon controls and screenshots enabled. Earlier UI and
+direction-enum findings are historical. The frozen corpus/timing
 protocol needs adaptation; the old latency instrumentation is explicitly skipped.
 
 The [validation plan](../docs/VALIDATION_PLAN.md) defines the quality, compatibility, resource
@@ -9,9 +10,11 @@ and release gates. Passing a connectivity smoke does not pass those gates.
 
 | File | Purpose |
 |---|---|
-| `keyboard_smoke.json` | Current keyboard translation, UI/build checks, denied-overlay and live translation evidence |
+| `lingoboard_1.0.1_android_smoke.json` | Current versioned APK, keyboard, language selector, screenshot and live UI evidence |
+| `lingoboard_multilingual_http_smoke.json` | Ten real multilingual requests; transport/script checks, not human quality scores |
+| `keyboard_smoke.json` | Earlier 0.7 keyboard translation, UI/build checks, denied-overlay and live translation evidence |
 | `reading_writing_android_smoke.json` | Earlier API 30/34 floating reading/writing, clipboard, basic keyboard and live transport evidence |
-| `reading_writing_http_smoke.json` | Current hosted V1 modes, script rejection and semantic smoke flags |
+| `reading_writing_http_smoke.json` | Earlier Roman-only hosted V1 modes, script rejection and semantic smoke flags |
 | `compatibility_matrix.csv` | Historical API 30/34 host/field discovery rows; physical coverage remains open |
 | `gate_0_result.md` | Platform-spike findings, fixes, privacy/lifecycle checks and consolidated scorecard |
 | `stage_0b_frozen_protocol.md` | Frozen matrix, draft corpus, reference-device/reviewer/budget decisions still pending |

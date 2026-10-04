@@ -10,12 +10,12 @@ class DirectionDetectorTest {
             assertTrue(DirectionDetector.isSupported(text))
         }
     }
-    @Test fun `unsupported scripts and bounded input are rejected locally`() {
-        for (text in listOf("नमस्ते", "please कल आना", "\uA8E0", String(Character.toChars(0x11B00)), " ", "x".repeat(4001))) {
+    @Test fun `all scripts are accepted but blank and oversized input are rejected locally`() {
+        for (text in listOf(" ", "x".repeat(4001))) {
             assertFalse(DirectionDetector.isSupported(text))
         }
         assertTrue(DirectionDetector.isSupported("x".repeat(4000)))
-        assertTrue(DirectionDetector.isSupported("kal milte hain 🎮"))
+        for (text in listOf("नमस्ते", "কাল আসব", "안녕하세요", "Привет", "こんにちは", "kal milte hain 🎮")) assertTrue(DirectionDetector.isSupported(text))
     }
     @Test fun `automatic writing cannot resolve into reading mode`() {
         assertTrue(Direction.AUTO.acceptsResolved(Direction.ENGLISH_TO_HINGLISH))

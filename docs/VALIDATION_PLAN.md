@@ -1,7 +1,7 @@
 # Validation plan — keyboard translation V1
 
-Updated 2026-10-04. The current scope is English ↔ Roman Hindi/Hinglish; read results always
-English. Keyboard translation no longer needs overlays. Earlier preview/Replace and Devanagari conversion are superseded.
+Updated 2026-10-04. The current scope is LingoBoard 1.0.1, with 45 languages/67 script options. Source defaults
+to Auto; target defaults to English. Keyboard translation no longer needs overlays. Earlier preview/Replace flows and direction enums are superseded.
 Historical records remain dated, not evidence for features that have changed.
 
 ## Automated checks
@@ -14,12 +14,12 @@ JAVA_HOME=/opt/homebrew/opt/openjdk@17 ./gradlew :app:testDebugUnitTest :app:lin
 Backend tests exercise atomic SQLite/D1 quota, concurrency/persistence, bounded bodies/deadlines,
 input/script/direction rejection before quota/model calls, literal prompt data, one-call AUTO
 resolution, reading instructions, Roman-only output and content-free failure categories.
-Android JVM tests exercise coordinator gating, script/input bounds, reading direction, output
+Android JVM tests exercise coordinator gating, script/output and input bounds, reading direction, output
 validation, resolved AUTO direction, malformed response, cancellation and explicit retry limits.
 
 `KeyboardTranslationSmokeTest` uses a different-UID host with overlay permission explicitly denied.
 Non-live cases verify one-shot Shift/Caps Lock, both symbol pages, emoji/code-point backspace,
-hold deletion, isolated translation draft, direction swap, Close, password controls, unsupported
+hold deletion, isolated translation draft, direction swap, Close, password controls, blank
 input, cloud-disclosure gating and landscape controls. Opt-in live cases check both writing
 directions and insertion without sending, copied reading with confirmation, reading while typing
 a reply, own-result suppression, active editor selection and read-only selection-action handoff.
@@ -33,7 +33,7 @@ input limits, 50 distinct emoji/symbol coverage and changed-editor/selection ins
 copy → confirmation (no loading/request), Close, duplicate/sensitive suppression, landscape overlay controls and Stop.
 Opt-in live cases verify confirmed-copy English result, own-copy suppression, Minimize/reopen,
 other-keyboard focused clipboard fallback, automatic writing result contract with unchanged
-prefix/suffix, actual standard Android editor selection-menu replacement, read-only no replacement and unsupported-script error. These are controlled
+prefix/suffix, actual standard Android editor selection-menu replacement, read-only no replacement and bounded-input errors. These are controlled
 fixtures, not proof that a target app supports the same path.
 
 An additional non-live case exercises Roman keyboard typing/case/numbers/backspace and
@@ -51,12 +51,12 @@ For each app, record app version, phone/OEM, Android version and all of these se
 | Surface | Verify |
 |---|---|
 | Keyboard writing | Separate draft stays out of chat; direction swap; one insertion on success; no automatic Send |
-| Keyboard reading | Copy → composer → Read → confirm; English inside IME; keep typing while result stays; no overlays |
+| Keyboard reading | Copy → composer → message icon → confirm; selected target inside IME; keep typing while result stays; no overlays |
 | Active editor selection | Translate selection appears; English card; original range unchanged |
 | Read-only keyboard handoff | Selection action → composer within 60 seconds; no replacement or overlay |
 | Editable text | Action discovery; successful replacement of only selected range; host cursor/format behavior |
 | Selectable read-only text | Action discovery; English floats; no host/clipboard modification |
-| Copy-only messages | Actual copy produces prompt with selected Lingo keyboard; confirmation only then sends |
+| Copy-only messages | Actual copy produces prompt with selected LingoBoard; confirmation only then sends |
 | Other keyboard | No automatic claim; bubble focus reads copy after tap and returns game/chat focus |
 | Overlay | App permits it; card drag, Copy, Minimize, Close, Stop; portrait/landscape and system bars |
 | Keyboard | Touch/hold typing, Shift/lock, two symbol pages, 50 emoji, numeric/password fields, draft cursor editing, editor actions, switch-back, selection retention |
@@ -70,15 +70,16 @@ Xiaomi/Redmi and another OEM are needed before broader support statements.
 
 ## Semantic quality
 
-Evaluate writing and reading separately with English→Roman Hindi, informal Hinglish→English,
+Evaluate writing and reading across all enabled languages/scripts, with native and romanized
+input, explicit source choices and ambiguous auto-detection. Include English→Roman Hindi, informal Hinglish→English,
 already-English reading unchanged, negation, names/numbers, timing, requests versus commands,
 sarcasm, game/alliance/raid vocabulary, abbreviations, slang, emoji, mixed English-Hindi and short
 ambiguous messages. Use at least two fluent bilingual reviewers with blind outputs and record
 material meaning changes separately from style. Gemini smoke flags are not human-quality scoring.
 
 The historical 458-item corpus includes Devanagari directions. Retain it as historical evidence;
-do not score the current V1 against removed directions or its outdated assertions. A frozen V1
-corpus should use the existing Roman pairs plus reviewed real gaming/messaging examples with
+do not score current requests against obsolete direction enums or its outdated assertions. A new
+corpus should cover multilingual pairs plus reviewed real gaming/messaging examples with
 explicit direction/mode and protected-token assertions. Do not collect private chats without consent.
 
 ## Performance, privacy and release
@@ -89,8 +90,8 @@ Report P50/P95 and failures. Measure idle-session battery/memory and keyboard ty
 on physical phones. The old `TranslationLatencyBenchmark` is skipped until it waits for an actual
 completed overlay frame; old T_RENDER timing must not imply measured overlay responsiveness.
 
-Verify no source/result/keystroke content in logs, disk, saved state, backups, screenshots or
-Recents. Copy is the explicit exception for Android clipboard output. Inspect APK/config for
+Verify no source/result/keystroke content in logs, disk, saved state or backups. Screenshots
+and Recents previews are explicitly allowed. Copy puts the requested result on Android clipboard. Inspect APK/config for
 server secrets. Read-only must never return replacement data, and writing failure/cancel must
 never return text. Confirm clipboard prompts do not send data before user confirmation.
 
@@ -100,7 +101,20 @@ per-user authentication or guaranteed free quota availability in this testing ba
 
 ## Evidence
 
-Current [keyboard evidence](../benchmark/keyboard_smoke.json): 27 Android JVM tests, app/host
+Current [LingoBoard 1.0.1 evidence](../benchmark/lingoboard_1.0.1_android_smoke.json): 31 Android
+JVM tests, 23 backend tests, APK builds and app lint (zero errors) passed. Core keyboard suites
+passed 16 cases on API 34 and eight on API 30, including eight live Gemini requests. Final
+icon padding and picker ordering were then checked on the final APK by focused five-case
+API 34 and four-case API 30 suites. These verify language picker persistence, rapid typing,
+screenshot capture, in-place cursor/emoji editing and native light/dark portrait/landscape renders.
+The final APK hash is retained in the record; core-suite APK bytes preceding the visual-only
+polish were not retained. The [multilingual HTTP smoke](../benchmark/lingoboard_multilingual_http_smoke.json)
+passed ten real Gemini requests including Indian native/Roman inputs and the requested global
+languages. Its flags check transport, language metadata and a few script/word markers; they
+are not a human semantic-quality score. No physical-phone validation is claimed.
+
+
+Earlier 0.7 [keyboard evidence](../benchmark/keyboard_smoke.json): 27 Android JVM tests, app/host
 lint and APK builds passed. Android 14/API 34 passed the 13-case main suite plus two focused
 landscape/hold-deletion checks (15 test instances, including a repeated typing case). Android
 11/API 30 passed five keyboard cases. The passing runs include seven live Gemini requests,

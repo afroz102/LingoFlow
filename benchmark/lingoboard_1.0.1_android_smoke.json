@@ -1,0 +1,57 @@
+{
+  "recorded_at": "2026-10-04T16:56:27.537722+00:00",
+  "app": "LingoBoard",
+  "version": "1.0.1",
+  "version_code": 5,
+  "apk_path": "app/build/outputs/apk/lingoboard/LingoBoard-1.0.1.apk",
+  "apk_sha256": "abb99eebc0e473ff0de976dc660249b2afc9c6255d2f232599824581350a69fa",
+  "backend_deployment": "a43b7cc6-8537-444d-a3ea-6b5b9d848178",
+  "android_jvm_tests": 31,
+  "backend_unit_tests": 23,
+  "android_lint_errors": 0,
+  "server_key_in_apk": false,
+  "translation_languages": 45,
+  "language_script_choices": 67,
+  "romanized_indian_languages": 22,
+  "default_source": "auto",
+  "default_target": "en",
+  "emulator_runs": [
+    {
+      "android_api": 34,
+      "tests": 16,
+      "passed": true,
+      "live_gemini_calls": 6,
+      "scope": "Core functional and live suite before final icon padding/picker ordering polish"
+    },
+    {
+      "android_api": 30,
+      "tests": 8,
+      "passed": true,
+      "live_gemini_calls": 2,
+      "scope": "Core typing, rendering, language picker, landscape, screenshots, live reading and Roman Hindi output before final visual polish"
+    },
+    {
+      "android_api": 34,
+      "tests": 5,
+      "passed": true,
+      "live_gemini_calls": 0,
+      "scope": "Final APK: light/dark portrait/landscape rendering, in-place draft editing, picker persistence, landscape controls, rapid typing and screenshot capture"
+    },
+    {
+      "android_api": 30,
+      "tests": 4,
+      "passed": true,
+      "live_gemini_calls": 0,
+      "scope": "Final APK: light/dark portrait/landscape rendering, in-place draft editing, picker persistence, rapid typing and screenshot capture"
+    }
+  ],
+  "hosted_multilingual_smoke": "lingoboard_multilingual_http_smoke.json",
+  "preview_scope": "Native keyboard views rendered on an Android emulator using synthetic samples; screenshots separately captured with keyboard visible",
+  "limits": [
+    "No physical phone or actual Game of Khans/Discord/WhatsApp/Telegram/Instagram testing",
+    "No claim of Gboard prediction/autocorrect/swipe/voice feature or latency parity",
+    "No fluent-speaker evaluation across all 45 languages",
+    "Final visual-only polish checked by focused suites after core live suites; the older successful APK bytes were not retained",
+    "No measured physical typing P50/P95 or battery benchmark"
+  ]
+}

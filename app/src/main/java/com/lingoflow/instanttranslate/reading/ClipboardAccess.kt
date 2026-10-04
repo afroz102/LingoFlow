@@ -11,7 +11,7 @@ import java.security.MessageDigest
 
 /** Never coerce clipboard URIs: resolving content can read unrelated files or grant payloads. */
 object ClipboardAccess {
-    const val OWN_CLIP_LABEL = "LingoTranslate result"
+    const val OWN_CLIP_LABEL = "LingoBoard result"
 
     fun hasKeyboardAccess(context: Context): Boolean =
         ComponentName.unflattenFromString(Settings.Secure.getString(context.contentResolver,

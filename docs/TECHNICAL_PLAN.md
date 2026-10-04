@@ -8,11 +8,11 @@ Updated 2026-10-04. Current Kotlin app uses the existing hosted JavaScript/SQLit
 cap; flattens spans and defaults uncertain editable flags to read-only. `ResultActivity` handles
 first-use disclosure and loading/errors.
 
-- Editable: `ResultViewModel`/`TranslateCoordinator` use AUTO writing. Success returns
+- Editable: `ResultViewModel`/`TranslateCoordinator` use the saved source/target languages (Auto → English by default). Success returns
   `RESULT_OK` and only `EXTRA_PROCESS_TEXT`; host replaces its selected range. Cancel/error
   returns no text. Activity ViewModel prevents duplicate calls on ordinary rotation.
-- Read-only: hand off to the selected Lingo keyboard, or use an explicitly running floating
-  session/other-keyboard overlay route. Finish with cancellation/no replacement. Selecting Lingo-Translate
+- Read-only: hand off to the selected LingoBoard, or use an explicitly running floating
+  session/other-keyboard overlay route. Finish with cancellation/no replacement. Selecting LingoBoard Translate
   already authorized the translation. No read-only ViewModel network request is started.
 
 No `noHistory` trampoline flag: it must remain alive for the result callback, including a trip
@@ -28,18 +28,18 @@ the session, with Stop available in the overlay/launcher. The system hides its n
 from the drawer when permission is denied. Public store approval of the service/IME combination has not been evaluated.
 
 The normal overlay is `TYPE_APPLICATION_OVERLAY` on API 26+ (legacy `TYPE_PHONE` below),
-`FLAG_NOT_FOCUSABLE` and `FLAG_SECURE`. It does not move focus from the game/chat. A draggable
+`FLAG_NOT_FOCUSABLE`. It does not move focus from the game/chat. A draggable
 header/bubble, bounded scrolling and viewport clamping support portrait/landscape.
 
 Automatic copy route:
 
 1. Android notifies the session's clipboard listener when the UID has access.
-2. Verify that Lingo keyboard is the current default IME, phone is unlocked/interactive,
+2. Verify that LingoBoard is the current default IME, phone is unlocked/interactive,
    password input is inactive, and the clip is a single text item, supported/bounded and not
    marked sensitive or labeled as Lingo's own result. Never coerce URI clips.
 3. Suppress consecutive duplicate texts with a memory-only SHA-256 fingerprint.
 4. Replace the current prompt/request locally; show Translate confirmation. No cloud call yet.
-5. Confirmation uses READ_TO_ENGLISH, then shows validated English output. Unconfirmed prompts
+5. Confirmation uses MULTILINGUAL with Auto → English, then shows validated English output. Unconfirmed prompts
    expire after 60 seconds. Close clears content; Stop removes windows/listeners/jobs/content.
 
 With another default keyboard there is no background-read claim. Tapping the bubble temporarily
@@ -58,15 +58,18 @@ it through system UI. `LingoKeyboardView` holds a stable toolbar/key grid with r
 keys, haptic feedback, one-shot/locked Shift, symbol pages, 50 emoji, hold-repeat backspace and
 local cursor-editable translation draft. Letter presses update labels only when Shift changes;
 they do not rebuild the grid or request translations. `KeyboardLayout` supplies deterministic
-key data and code-point-aware draft editing with a 4,000-unit cap.
+key data. Draft edits use Editable.replace/delete in place, with code-point-aware backspace
+and a 4,000-unit cap; they never recreate the Editable on each key. Key backgrounds are inset
+inside full touch cells, so visual gutters also accept touches. Portrait cells are 56dp high;
+landscape uses 36dp. Light/dark palettes follow system configuration; toolbar actions are icons.
 
-- Write: explicit HINGLISH_TO_ENGLISH/ENGLISH_TO_HINGLISH, local draft, bounded request on button
+- Write: explicit source/target IDs, Auto → English by default, local draft, bounded request on button
   press. `commitText` inserts/replaces the host selection on success, never performs Send. A
   session/selection revision guard prevents automatic insertion after editor/cursor changes;
   otherwise the result offers Copy/explicit Insert here.
 - Read: load eligible clipboard text only after Read/Paste copy is tapped, then show the source
   for confirmation. Active editor selection can be translated directly via the toolbar.
-  READ_TO_ENGLISH output remains inside the keyboard; no host replacement. Once the English card
+  MULTILINGUAL output remains inside the keyboard; no host replacement. Once the result card
   appears, typing/backspace/editor actions go to the chat again while the result stays above the keys.
 - Read-only Process Text: when this IME is selected and no floating session is running,
   `KeyboardReadingInbox` holds one validated source in process memory for at most 60 seconds.
@@ -77,24 +80,26 @@ The IME never requests surrounding chat history. Password variations disable clo
 reading handoffs and clipboard actions; no translation on keystrokes. Sensitive/own-output
 clipboard filters are shared with the overlay. Hide/finish/editor changes cancel and clear the
 panel; generation guards reject old responses. No drafts/results in saved state/disk/autofill;
-IME window is FLAG_SECURE. A process kill loses the draft. Landscape uses compact keys/panels,
+Screenshots and Recents previews are allowed at the user’s request. A process kill loses the draft. Landscape uses compact keys/panels,
 without fullscreen extraction. Word predictions/autocorrect/swipe/voice remain outside this build.
 
 ## Translation contract
 
-Only `{text, direction}` is sent over HTTPS to `/v1/translate`:
+Current UI requests send `{text, direction: "MULTILINGUAL", sourceLanguage, targetLanguage}`
+over HTTPS to `/v1/translate`. Source is `auto` or a catalog ID; target must be a catalog ID.
+Defaults are `auto` and `en`. Source/target selections are saved in local preferences, never
+source text. The response echoes both requested IDs and direction, which Android validates.
+`shared/translation-languages.json` contains 45 languages/67 native/Roman choices; a backend
+test checks that Android’s language IDs match it. Native scripts are accepted for multilingual
+requests. Roman targets reject non-Latin-script letters on both the server and client.
 
-| Direction | Behavior |
-|---|---|
-| AUTO | Writing detection and translation in one call; resolves to one of the next two |
-| ENGLISH_TO_HINGLISH | Natural Hindi in Roman letters |
-| HINGLISH_TO_ENGLISH | Informal Roman Hindi/mixed Hindi-English → natural English |
-| READ_TO_ENGLISH | Received text → English; already English unchanged |
+The backend retains old AUTO/HINGLISH_TO_ENGLISH/ENGLISH_TO_HINGLISH/READ_TO_ENGLISH routes
+for earlier APKs. Current UI uses MULTILINGUAL. Legacy Roman routes retain their script bounds.
 
-Old Devanagari directions are rejected. Both input and output reject Devanagari blocks, including
-extended characters. Gemini's fixed system prompt treats input as literal data, preserves semantic
-meaning and passage context, and forbids invented surrounding conversations or instructions in
-selected text. Temperature 0.2 and JSON schema remain; no tools, chat memory or separate detection call.
+Gemini detects and translates in one call, using allowlisted language descriptions rather than
+arbitrary user-supplied instructions. The fixed prompt treats text as literal data, preserves
+meaning, tone, negation, names and passage context, and forbids invented surrounding conversation.
+Temperature 0.2 and JSON schema remain; no tools, chat memory or separate detection call.
 
 Input ≤4,000 UTF-16 units/32 KiB request body; output ≤16,000 chars/128 KiB upstream body.
 Backend deadline 18 seconds, Android 30 seconds. Explicit Retry only. No automatic retries or cache.
@@ -109,8 +114,7 @@ Atomic quota: 10 requests/minute and 200/UTC day across all callers. Failure aft
 still consumes allowance. Database failure blocks Gemini. D1 stores only day/minute buckets and
 aggregate counts; old buckets pruned after seven days. No text, translations or identity columns.
 
-Text/results are memory-only, except explicit output Copy to Android's clipboard. App windows use
-FLAG_SECURE. No content logging/analytics; Worker observability disabled. Cloudflare/Google still
+Text/results are memory-only, except explicit output Copy to Android's clipboard. The app allows screenshots; no window uses FLAG_SECURE. No content logging/analytics; Worker observability disabled. Cloudflare/Google still
 process requests; unpaid Gemini terms and the app disclosure apply. A service/IME killed by Android
 loses its state. Universal clipboard/overlay reliability and public release are not assumed.
 

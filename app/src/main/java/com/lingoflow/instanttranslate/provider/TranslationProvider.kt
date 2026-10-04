@@ -1,5 +1,6 @@
 package com.lingoflow.instanttranslate.provider
 
+import com.lingoflow.instanttranslate.direction.TranslationLanguagePair
 import com.lingoflow.instanttranslate.direction.Direction
 
 /**
@@ -9,4 +10,6 @@ import com.lingoflow.instanttranslate.direction.Direction
  */
 interface TranslationProvider {
     suspend fun translate(text: String, direction: Direction): TranslationResult
+    suspend fun translate(text: String, languages: TranslationLanguagePair): TranslationResult =
+        TranslationResult.Failure(FailureReason.PROVIDER_ERROR)
 }

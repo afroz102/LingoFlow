@@ -8,7 +8,6 @@ import android.os.Build
 import android.os.SystemClock
 import android.text.InputType
 import android.view.View
-import android.view.WindowManager
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
@@ -17,6 +16,7 @@ import com.lingoflow.instanttranslate.cloud.AndroidConnectivityChecker
 import com.lingoflow.instanttranslate.coordinator.TranslateCoordinator
 import com.lingoflow.instanttranslate.coordinator.TranslationOutcome
 import com.lingoflow.instanttranslate.direction.Direction
+import com.lingoflow.instanttranslate.direction.TranslationLanguagePair
 import com.lingoflow.instanttranslate.direction.DirectionDetector
 import com.lingoflow.instanttranslate.prefs.DisclosurePreferences
 import com.lingoflow.instanttranslate.provider.FailureReason
@@ -41,7 +41,9 @@ class LingoKeyboardService : InputMethodService(), KeyboardActions {
     private var shiftState = ShiftState.OFF
     private var keyPage = KeyPage.LETTERS
     private var panel = TranslationPanel.NONE
-    private var direction = Direction.HINGLISH_TO_ENGLISH
+    private val languagePreferences by lazy { getSharedPreferences("translation_languages", MODE_PRIVATE) }
+    private var languages = TranslationLanguagePair()
+    private val direction = Direction.MULTILINGUAL
     private var draft = ""
     private var result: String? = null
     private var message: String? = null
@@ -62,12 +64,12 @@ class LingoKeyboardService : InputMethodService(), KeyboardActions {
         surface = it
         render()
         renderKeys()
-        // Text is held only in this IME instance, never saved into a view state or screenshots.
-        window?.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
     }
 
     override fun onStartInput(attribute: EditorInfo?, restarting: Boolean) {
         super.onStartInput(attribute, restarting)
+        languages = TranslationLanguagePair(languagePreferences.getString("source", "auto") ?: "auto",
+            languagePreferences.getString("target", "en") ?: "en").takeIf { it.isValid() } ?: TranslationLanguagePair()
         clearPanel()
         session++
         selectionRevision = 0
@@ -167,9 +169,24 @@ class LingoKeyboardService : InputMethodService(), KeyboardActions {
     override fun closePanel() { clearPanel(); render(); renderKeys() }
     override fun swapDirection() {
         if (busy) return
-        direction = if (direction == Direction.HINGLISH_TO_ENGLISH) Direction.ENGLISH_TO_HINGLISH else Direction.HINGLISH_TO_ENGLISH
+        languages = languages.swapped()
+        saveLanguages()
         result = null; message = null
-        render()
+        render(); renderKeys()
+    }
+
+    override fun languageChosen(source: Boolean, id: String) {
+        if (busy) return
+        val updated = if (source) languages.copy(source = id) else languages.copy(target = id)
+        if (!updated.isValid()) return
+        languages = updated
+        saveLanguages()
+        result = null; message = null
+        render(); renderKeys()
+    }
+
+    private fun saveLanguages() {
+        languagePreferences.edit().putString("source", languages.source).putString("target", languages.target).apply()
     }
 
     override fun draftChanged(text: String) { draft = text; message = null }
@@ -194,13 +211,14 @@ class LingoKeyboardService : InputMethodService(), KeyboardActions {
         if (!disclosure.isAcknowledged()) { needsDisclosure = true; render(); return }
         val text = draft
         val mode = panel
+        val requestedLanguages = languages
         val target = KeyboardInsertionTarget(session, selectionRevision)
         val connection = currentInputConnection
         val generation = ++requestGeneration
         busy = true; result = null; message = null
         render()
         request = scope.launch {
-            val outcome = coordinator.translate(text, if (mode == TranslationPanel.READ) Direction.READ_TO_ENGLISH else direction)
+            val outcome = coordinator.translate(text, languages = requestedLanguages)
             if (generation != requestGeneration) return@launch
             busy = false
             when (outcome) {
@@ -305,6 +323,7 @@ class LingoKeyboardService : InputMethodService(), KeyboardActions {
     }
 
     private fun clearPanel() {
+        surface?.dismissLanguagePicker()
         requestGeneration++
         request?.cancel(); request = null
         busy = false; needsDisclosure = false
@@ -314,7 +333,7 @@ class LingoKeyboardService : InputMethodService(), KeyboardActions {
 
     private fun render() {
         surface?.renderToolbar(selected, KeyboardPrivacy.passwordInputActive)
-        surface?.renderPanel(KeyboardPanelState(panel, direction, draft, busy, result, message, needsDisclosure, selected))
+        surface?.renderPanel(KeyboardPanelState(panel, direction, draft, busy, result, message, needsDisclosure, selected, languages))
     }
 
     private fun renderKeys() {

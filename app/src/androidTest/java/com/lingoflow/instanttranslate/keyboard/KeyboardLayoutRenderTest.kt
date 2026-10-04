@@ -46,8 +46,10 @@ class KeyboardLayoutRenderTest {
                 "reading" to KeyboardPanelState(TranslationPanel.READ, Direction.READ_TO_ENGLISH, "", false,
                     "I can't come tomorrow. Let's do the raid after reset.", null, false, false),
             )
-            for (landscape in listOf(false, true)) {
+            for (dark in listOf(false, true)) for (landscape in listOf(false, true)) {
                 val configuration = Configuration(context.resources.configuration).apply {
+                    uiMode = (uiMode and Configuration.UI_MODE_NIGHT_MASK.inv()) or
+                        (if (dark) Configuration.UI_MODE_NIGHT_YES else Configuration.UI_MODE_NIGHT_NO)
                     orientation = if (landscape) Configuration.ORIENTATION_LANDSCAPE else Configuration.ORIENTATION_PORTRAIT
                 }
                 val themedContext = context.createConfigurationContext(configuration)
@@ -64,12 +66,36 @@ class KeyboardLayoutRenderTest {
                     view.layout(0, 0, width, view.measuredHeight)
                     val bitmap = Bitmap.createBitmap(width, view.measuredHeight, Bitmap.Config.ARGB_8888)
                     view.draw(Canvas(bitmap))
-                    File(directory, "$name-${if (landscape) "landscape" else "portrait"}.png").outputStream().use {
+                    File(directory, "$name-${if (landscape) "landscape" else "portrait"}${if (dark) "-dark" else ""}.png").outputStream().use {
                         bitmap.compress(Bitmap.CompressFormat.PNG, 100, it)
                     }
                     bitmap.recycle()
                 }
             }
+        }
+    }
+    @Test fun draftEditingKeepsEditableAndCursorAndDeletesWholeEmoji() {
+        val instrumentation = InstrumentationRegistry.getInstrumentation()
+        instrumentation.runOnMainSync {
+            val view = LingoKeyboardView(instrumentation.targetContext, noActions)
+            view.renderPanel(KeyboardPanelState(TranslationPanel.WRITE, Direction.MULTILINGUAL, "hello", false, null, null, false, false))
+            fun findEditor(group: android.view.ViewGroup): android.widget.EditText? {
+                for (index in 0 until group.childCount) {
+                    val child = group.getChildAt(index)
+                    if (child is android.widget.EditText) return child
+                    if (child is android.view.ViewGroup) findEditor(child)?.let { return it }
+                }
+                return null
+            }
+            val editor = requireNotNull(findEditor(view))
+            val editable = editor.text
+            editor.setSelection(1, 4)
+            view.editDraft("😀")
+            org.junit.Assert.assertSame(editable, editor.text)
+            org.junit.Assert.assertEquals("h😀o", editor.text.toString())
+            view.editDraft(delete = true)
+            org.junit.Assert.assertEquals("ho", editor.text.toString())
+            org.junit.Assert.assertEquals(1, editor.selectionStart)
         }
     }
 }

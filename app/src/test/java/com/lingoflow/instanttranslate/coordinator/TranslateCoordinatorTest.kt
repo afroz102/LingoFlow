@@ -104,13 +104,13 @@ class TranslateCoordinatorTest {
         assertEquals(1, provider.callCount)
     }
 
-    @Test fun `reading always requests English and unsupported script never calls provider`() = runTest {
+    @Test fun `reading always requests English and blank input never calls provider`() = runTest {
         val provider = FakeProvider(TranslationResult.Success("I cannot come tomorrow", Direction.READ_TO_ENGLISH))
         val coordinator = TranslateCoordinator(provider, FakeDisclosureGate(true), FakeConnectivityChecker(true))
         coordinator.translate("main kal nahi aa sakta", Direction.READ_TO_ENGLISH)
         assertEquals(Direction.READ_TO_ENGLISH, provider.requestedDirection)
         assertEquals(1, provider.callCount)
-        assertEquals(TranslationOutcome.Failed(FailureReason.UNSUPPORTED_INPUT), coordinator.translate("कल आना"))
+        assertEquals(TranslationOutcome.Failed(FailureReason.UNSUPPORTED_INPUT), coordinator.translate(" "))
         assertEquals(1, provider.callCount)
     }
 
