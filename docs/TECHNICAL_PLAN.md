@@ -1,6 +1,6 @@
 # Architecture — reading and writing V1
 
-Updated 2026-10-05. Current Kotlin app uses the existing hosted JavaScript/SQLite/Gemini backend.
+Updated 2026-10-05 for LingoBoard 1.1.0. Current Kotlin app uses the existing hosted JavaScript/SQLite/Gemini backend.
 
 ## Selection entry
 
@@ -77,12 +77,15 @@ height. `KeyboardPalette` follows system light/dark mode. Toolbar actions are ic
   The next non-password composer consumes it. The selection action confirmed the request;
   opening the keyboard starts it. This does not force a keyboard onto non-editable message UI.
 
-The IME never requests surrounding chat history. Password variations disable cloud controls,
+The IME never requests received-message history. Suggestions inspect only a short tail of the
+active editor around the cursor; translation sends only the explicitly requested source.
+Password variations disable cloud controls,
 reading handoffs and clipboard actions; no translation on keystrokes. Sensitive/own-output
 clipboard filters are shared with the overlay. Hide/finish/editor changes cancel and clear the
 panel; generation guards reject old responses. No drafts/results in saved state/disk/autofill;
 Screenshots and Recents previews are allowed at the user’s request. A process kill loses the draft. Landscape uses compact keys/panels,
-without fullscreen extraction. Word predictions/autocorrect/swipe/voice remain outside this build.
+without fullscreen extraction. Local English/Hinglish suggestions are included; automatic
+correction on Space, swipe and voice remain outside this build.
 
 ## Translation contract
 
@@ -115,7 +118,10 @@ Atomic quota: 10 requests/minute and 200/UTC day across all callers. Failure aft
 still consumes allowance. Database failure blocks Gemini. D1 stores only day/minute buckets and
 aggregate counts; old buckets pruned after seven days. No text, translations or identity columns.
 
-Text/results are memory-only, except explicit output Copy to Android's clipboard. The app allows screenshots; no window uses FLAG_SECURE. No content logging/analytics; Worker observability disabled. Cloudflare/Google still
+Translation drafts/results are memory-only, except explicit output Copy to Android's clipboard.
+Local suggestions additionally persist learned words and word-pair counts in private app storage;
+Android backup is disabled, and setup provides Clear learned words. The app allows screenshots;
+no window uses FLAG_SECURE. No content logging/analytics; Worker observability disabled. Cloudflare/Google still
 process requests; unpaid Gemini terms and the app disclosure apply. A service/IME killed by Android
 loses its state. Universal clipboard/overlay reliability and public release are not assumed.
 
@@ -130,7 +136,7 @@ loses its state. Universal clipboard/overlay reliability and public release are 
 ### Compact translation controls
 
 Write/Read icons, source/swap/target controls and close/switch action occupy one header
-(46dp portrait, 40dp landscape).
+(44dp portrait, 38dp landscape).
 Language controls are invisible until a panel opens; no logo occupies the keyboard header.
 Paste sits inside the draft field, with an icon-only round translation arrow alongside it.
 Read is selected while its panel is active; its translation action never opens a write/insert
@@ -144,6 +150,31 @@ preserve the panel while invalidating write insertion targets. Backspace uses th
 selection instead of querying the remote editor on every press. During a reading request,
 key/delete/enter actions continue targeting the chat; the submitted reading source stays
 unchanged. Write drafts remain disabled during their request.
+
+### 1.1.0 tabs and offline suggestions
+
+Tabs: the service keeps the open tab's draft/result/message in its fields and parks the other
+tab's in `parkedTabs`. A request remembers its `requestTab` and is delivered there even if the user
+switched away; a Write result still auto-inserts only while its insertion target is current.
+`renderPanel` reuses the composer (same EditText, swapped hint/text) across tab switches, and a
+single indicator view animates between the tab icons. Closing/hiding clears both tab states.
+Starting a request in the other tab cancels the old one. A parked Write result can still insert
+into its validated original editor target while Read remains open.
+
+Suggestions: `WordPredictor` (pure Kotlin) ranks bundled lists in `assets/dictionary/` (2,400+
+English words, 400+ Roman-Hindi words, a next-word table) with `PersonalDictionary` counts. Prefixes
+are binary-searched; typo matches use a prefix edit distance (≤1, ≤2 from six letters) only when the
+typed word is unknown. `SuggestionEngine` loads lists and `learned_words.tsv` off the main thread.
+The service mirrors the text before the cursor while typing (no editor query per key) and reconciles
+with `getTextBeforeCursor` 120ms after typing pauses; a mismatch (cursor moved, field cleared) hides
+the strip until the next key. Picking a word queries the editor once, replaces the word around the
+cursor in one batch edit and adds a space. Translate remains visible beside the strip.
+
+Learning is limited to plain 2–24-letter words and word-pair counts, with caps of 3,000 words
+and 6,000 pairs. Suggestions are disabled for passwords, numbers, email/URL/filter fields and
+NO_SUGGESTIONS editors. NO_PERSONALIZED_LEARNING additionally disables learning. Translation
+drafts are not learned. Snapshots are written when the IME closes or is destroyed; setup can
+clear the in-memory dictionary and file. Sentence capitalization follows the editor flag.
 
 ### Drawn key grid
 

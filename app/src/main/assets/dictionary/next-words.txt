@@ -1,0 +1,75 @@
+# Built-in next-word predictions shown after a space, before the keyboard has learned the user's
+# own word pairs. Format: "word: next next next", most likely first. Keys are lowercase.
+i: am will have don't think can was love
+i'm: not going so just sorry fine good on
+you: are can have know want will need guys
+are: you we they not going there doing
+is: it the a not that this there going
+it: is was will would has
+it's: ok okay fine not a the so
+what: is are do the time about happened
+how: are is was about much many do long
+where: are is do did
+when: are is will did you
+can: you i we be
+will: be you do
+do: you it not we
+don't: know worry think have want
+thank: you
+thanks: for a so
+see: you
+good: morning night luck job one
+have: a you to been fun
+going: to
+want: to
+need: to a
+let's: go do meet
+on: the my it
+in: the a my
+at: the home work
+to: the be do go me
+of: the my course
+for: the a me you your
+the: same best way
+see you: soon later tomorrow
+are you: ok free coming
+how are: you
+love: you it
+miss: you
+happy: birthday new
+take: care
+good night: and
+call: me you
+i'll: be call let send
+we: are can will should
+please: let send call
+sorry: for i
+no: problem worries
+oh: no my ok
+so: much what i
+hi: there how
+hello: there how
+kya: hai hua kar haal baat
+kaise: ho hai hain
+kaisa: hai
+main: bhi nahi kal aa
+mai: bhi nahi
+mujhe: bhi nahi pata lagta
+tum: kya kaise kahan
+aap: kaise kya kahan
+kal: milte aana se
+aaj: kya raat
+theek: hai
+thik: hai
+accha: hai
+acha: hai
+koi: nahi baat
+kuch: nahi bhi
+bahut: accha acha badhiya
+nahi: pata hai aa
+pata: nahi hai
+chalo: theek
+haan: bhai
+kab: aa tak
+kahan: ho hai
+ho: gaya gayi

@@ -130,6 +130,36 @@ class KeyboardLayoutRenderTest {
         }
     }
 
+    @Test fun tabSwitchReusesTheComposerAndSuggestionsReplaceTheTools() {
+        val instrumentation = InstrumentationRegistry.getInstrumentation()
+        instrumentation.runOnMainSync {
+            val picked = mutableListOf<String>()
+            val view = LingoKeyboardView(instrumentation.targetContext, object : KeyboardActions by noActions {
+                override fun suggestionPicked(text: String) { picked.add(text) }
+            })
+            val write = KeyboardPanelState(TranslationPanel.WRITE, Direction.MULTILINGUAL, "hi", false, null, null, false, false)
+            view.renderPanel(write)
+            val editor = children(view).filterIsInstance<android.widget.EditText>().single()
+            view.renderPanel(write.copy(panel = TranslationPanel.READ, draft = "main kal nahi aa sakta"))
+            org.junit.Assert.assertSame("Switching tabs must not rebuild the composer", editor,
+                children(view).filterIsInstance<android.widget.EditText>().single())
+            org.junit.Assert.assertEquals("main kal nahi aa sakta", editor.text.toString())
+            org.junit.Assert.assertEquals(instrumentation.targetContext.getString(com.lingoflow.instanttranslate.R.string.keyboard_read_hint), editor.hint)
+            assertTrue(children(view).single { it.contentDescription == "Read" }.isSelected)
+
+            view.renderPanel(write.copy(panel = TranslationPanel.NONE, draft = ""))
+            view.renderSuggestions(listOf(Suggestion("tomorrow"), Suggestion("tom"), Suggestion("tomato")))
+            val slots = children(view).filterIsInstance<android.widget.TextView>()
+                .filter { it !is android.widget.Button && it !is android.widget.EditText && it.isClickable && it.text.isNotEmpty() }
+            org.junit.Assert.assertEquals("Best guess sits in the centre", listOf("tom", "tomorrow", "tomato"), slots.map { it.text.toString() })
+            org.junit.Assert.assertEquals(View.GONE, children(view).single { it.contentDescription == "Read" }.visibility)
+            slots[1].performClick()
+            org.junit.Assert.assertEquals(listOf("tomorrow"), picked)
+            view.renderSuggestions(emptyList())
+            org.junit.Assert.assertEquals(View.VISIBLE, children(view).single { it.contentDescription == "Read" }.visibility)
+        }
+    }
+
     /** Records what the grid fires so touch rules can be checked without a host editor. */
     private class RecordingKeys : KeyGridListener {
         val keys = mutableListOf<String>()

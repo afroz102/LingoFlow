@@ -8,6 +8,13 @@ target defaults to **English**. Gemini translates the meaning and context of the
   type in the separate draft → round arrow (**Translate & insert**). The result enters the chat; it is never sent automatically.
 - **Keyboard reading:** copy a received message → open the chat input → message icon →
   the round **Translate** arrow. The result card appears above the keys, leaving your chat draft untouched.
+- **Write ↔ Read tabs:** the Translate and Read icons are tabs. Switching keeps each tab's own
+  draft and result, keeps the composer in place and slides one highlight between the icons; a
+  running translation finishes in its own tab unless a new request replaces it. Tapping the open
+  tab closes the panel and discards both drafts/results.
+- **Suggestions:** while typing, a local suggestion strip replaces Read/language tools with three words
+  (best guess in the centre): completions, one/two-typo corrections, next-word predictions and
+  Roman-Hindi (Hinglish) words. Translate stays accessible. Tapping one replaces the word at the cursor and adds a space.
 - **Selected editor text:** selecting text in the active typing field changes the translation icon’s
   accessible label to **Translate selection**. Tap it to read the selection above the keyboard.
 
@@ -22,8 +29,11 @@ chips appear once a translation panel opens. The draft composer holds Paste insi
 round Translate button beside it. Read stays highlighted and offers translation without insertion.
 One-shot Shift, double-tap/hold Caps Lock, three symbol pages (111 symbols), 50 smiley emoji,
 hold-to-delete and hold-Space keyboard switching are included. Translation in the keyboard needs
-**no overlay permission or reading session**. Typing is local; there is no word prediction,
-autocorrect, swipe typing or voice input yet. Physical-device smoothness still needs testing.
+**no overlay permission or reading session**. Typing and suggestions are local: the word lists
+ship in the app. Finished words and word-pair counts can be saved in private app storage to
+personalize suggestions. Learning is disabled in password, email, URL and app-marked incognito
+fields; **Clear learned words** in setup erases the local dictionary. Sentences auto-capitalise after ". " when the
+field asks for it. There is no autocorrect-on-space, swipe typing or voice input yet. Physical-device smoothness still needs testing.
 Screenshots are allowed. Setup uses a dim slate theme and collapses optional floating tools.
 
 The existing **LingoBoard Translate** selection action still replaces editable selections. For
@@ -32,7 +42,7 @@ for 60 seconds. A keyboard cannot inspect arbitrary message selections outside i
 copying and opening the composer is the reliable fallback.
 
 [Keyboard layout](docs/images/keyboard-typing.png) · [Writing panel](docs/images/keyboard-writing.png) ·
-[Reading card](docs/images/keyboard-reading.png) · [Landscape](docs/images/keyboard-landscape.png) ·
+[Reading card](docs/images/keyboard-reading.png) · [Suggestion strip](docs/images/keyboard-suggestions.png) · [Landscape](docs/images/keyboard-landscape.png) ·
 [Dark keyboard](docs/images/keyboard-typing-dark.png) · [Dark reading](docs/images/keyboard-reading-dark.png).
 These show the actual view rendered on an emulator with synthetic samples.
 [Dim setup screen](docs/images/lingoboard-setup.png) · [LingoBoard logo](docs/images/lingoboard-logo.svg).
@@ -48,7 +58,7 @@ the phone. Gemini's unpaid service is for non-sensitive test samples. Shared all
 
 ## Test on your phone
 
-Install `app/build/outputs/apk/lingoboard/LingoBoard-1.0.2.apk`, then open **LingoBoard**.
+Install `app/build/outputs/apk/lingoboard/LingoBoard-1.1.0.apk`, then open **LingoBoard**.
 Tap **1. Enable LingoBoard**, enable it in system settings, then tap **2. Choose LingoBoard**.
 Open a chat input in your game/messaging app. Use the **translation icon** to write or the **message icon** to load a
 copied message, and acknowledge the disclosure before your first translation.
@@ -89,7 +99,7 @@ npm --prefix backend test
 ```
 
 The backend is deployed at `https://lingoflow-backend.lingoflow-backend.workers.dev`.
-The APK version is **1.0.2**, version code 6. No phone-side server/key setup.
+The APK version is **1.1.0**, version code 7. No phone-side server/key setup.
 
 ## Support and evidence
 

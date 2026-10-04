@@ -69,6 +69,11 @@ class MainActivity : AppCompatActivity() {
         text(R.string.setup_keyboard_explanation)
         button(R.string.setup_enable_keyboard) { startActivity(Intent(Settings.ACTION_INPUT_METHOD_SETTINGS)) }
         button(R.string.setup_choose_keyboard) { getSystemService(InputMethodManager::class.java).showInputMethodPicker() }
+        // Suggestions learn typed words on this device only; users must be able to wipe them.
+        button(R.string.setup_clear_learned) {
+            com.lingoflow.instanttranslate.keyboard.SuggestionEngine.clearLearned(this)
+            Toast.makeText(this, R.string.setup_learned_cleared, Toast.LENGTH_SHORT).show()
+        }
         text(R.string.setup_writing)
         val optionalStart = content.childCount
         button(R.string.setup_optional_floating) {

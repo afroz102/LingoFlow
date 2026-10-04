@@ -1,6 +1,6 @@
 # Product requirements — LingoBoard
 
-Updated 2026-10-05 for the canvas-keyboard revision (APK version `1.0.2`). This expands the earlier Roman Hindi/English-only keyboard. Historical evidence remains dated in `benchmark/` and Git history.
+Updated 2026-10-05 for the tabs and local suggestions release (APK version `1.1.0`). This expands the earlier Roman Hindi/English-only keyboard. Historical evidence remains dated in `benchmark/` and Git history.
 
 ## Language and purpose
 
@@ -98,8 +98,23 @@ or guaranteed model behavior follows from a smoke test.
 
 Full target-app/OEM compatibility, physical performance/battery, process-death and permission
 revocation stress testing, TalkBack/font scaling, and public distribution review remain open.
-The keyboard has no prediction, autocorrect, swipe or voice input. Physical typing latency,
+The keyboard has local English/Hinglish word suggestions, but no automatic correction on Space,
+swipe or voice input. Physical typing latency,
 font scaling, numeric layouts and target-app behavior still need broader device testing.
+
+### 1.1.0 tabs and suggestions
+
+Write and Read behave as tabs: switching must feel instant (no panel rebuild or flash), keep each
+tab's draft/result, and never move received (Read) text into the Write draft. Add Gboard-style
+suggestions: a three-slot strip while typing that completes, corrects and predicts words (English
+and Hinglish), inserting the tapped word at the cursor. Translate remains reachable while the
+strip is shown; Read returns when suggestions clear. Ordinary typing stays local. Finished words
+and word-pair counts are stored in a bounded private-app dictionary, skipped in password, email,
+URL and app-marked incognito fields, and erasable from setup. Suggestions are unavailable in
+translation drafts; the translation backend receives only explicit requests. Closing the panel
+or hiding the keyboard discards both tab states. Only one translation request runs at a time;
+starting one in the other tab cancels the previous request. A Write request may still insert while
+Read is open if its original editor/cursor target remains valid.
 
 ### Current usability requirements
 

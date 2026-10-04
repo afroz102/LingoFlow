@@ -38,8 +38,8 @@ android {
         // Provisional minimum; physical-device compatibility review remains open.
         minSdk = 23
         targetSdk = 34
-        versionCode = 6
-        versionName = "1.0.2"
+        versionCode = 7
+        versionName = "1.1.0"
         buildConfigField("String", "BACKEND_URL", "\"$backendUrl\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"

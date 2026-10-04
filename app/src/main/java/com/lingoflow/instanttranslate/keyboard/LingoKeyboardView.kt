@@ -1,5 +1,7 @@
 package com.lingoflow.instanttranslate.keyboard
 
+import android.animation.ArgbEvaluator
+import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.ColorStateList
@@ -20,6 +22,8 @@ import android.text.TextUtils
 import android.text.TextWatcher
 import android.text.style.ForegroundColorSpan
 import android.view.Gravity
+import android.view.HapticFeedbackConstants
+import android.view.animation.DecelerateInterpolator
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
@@ -69,6 +73,8 @@ interface KeyboardActions {
     fun backspace()
     fun enter()
     fun draftChanged(text: String)
+    /** A suggestion-strip word was tapped; it replaces the word at the editor's cursor. */
+    fun suggestionPicked(text: String) = Unit
 }
 
 /**
@@ -80,9 +86,17 @@ internal class LingoKeyboardView(context: Context, private val actions: Keyboard
     LinearLayout(context), KeyGridListener {
     private val palette = KeyboardPalette.of(context)
     private val compact = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-    private val toolbarHeight = if (compact) 40 else 46
+    private val toolbarHeight = if (compact) 38 else 44
     private val toolbar = LinearLayout(context)
+    private val tabGroup = FrameLayout(context)
+    private val tabIndicator = View(context)
     private val languageBar = LinearLayout(context)
+    private val suggestionStrip = LinearLayout(context)
+    private val suggestionSlots = mutableListOf<TextView>()
+    private val suggestionDividers = mutableListOf<View>()
+    private var suggestions: List<Suggestion> = emptyList()
+    /** Set while the view itself replaces draft text, so that isn't echoed back as user typing. */
+    private var applyingDraft = false
     private val panel = LinearLayout(context)
     private val keyGrid = KeyGridView(context, palette, compact, this)
     private var languagePopup: PopupWindow? = null
@@ -112,10 +126,11 @@ internal class LingoKeyboardView(context: Context, private val actions: Keyboard
         if (Build.VERSION.SDK_INT >= 26) importantForAutofill = IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS
         isSaveEnabled = false
         toolbar.gravity = Gravity.CENTER_VERTICAL
-        toolbar.setPadding(dp(4), 0, dp(4), 0)
+        // 2dp + the 4dp ripple inset lines the first icon's highlight up with the key edges (6dp).
+        toolbar.setPadding(dp(2), 0, dp(2), 0)
         addView(toolbar, LayoutParams(LayoutParams.MATCH_PARENT, dp(toolbarHeight)))
         panel.orientation = VERTICAL
-        panel.setPadding(dp(8), dp(2), dp(8), dp(6))
+        panel.setPadding(dp(6), 0, dp(6), dp(4))
         addView(panel)
         keyGrid.setPadding(dp(3), dp(2), dp(3), dp(4))
         keyGrid.previewHost = this
@@ -131,9 +146,19 @@ internal class LingoKeyboardView(context: Context, private val actions: Keyboard
         translateButton = toolbarIcon(R.drawable.ic_keyboard_translate, context.getString(R.string.action_translate)) {
             actions.translateIcon()
         }
-        toolbar.addView(translateButton, LayoutParams(dp(44), dp(toolbarHeight)))
         readButton = toolbarIcon(R.drawable.ic_keyboard_read, context.getString(R.string.keyboard_read)) { actions.readIcon() }
-        toolbar.addView(readButton, LayoutParams(dp(44), dp(toolbarHeight)))
+        // Write and Read act as tabs: one highlight slides between them instead of each icon
+        // repainting its own background, so a switch reads as a single smooth motion.
+        tabIndicator.background = rounded(palette.softAccent, 14f)
+        tabIndicator.alpha = 0f
+        tabIndicator.importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_NO
+        tabGroup.addView(tabIndicator, FrameLayout.LayoutParams(dp(TAB_WIDTH - 8), dp(toolbarHeight - 8), Gravity.CENTER_VERTICAL)
+            .apply { leftMargin = dp(4) })
+        val tabs = LinearLayout(context)
+        tabs.addView(translateButton, LayoutParams(dp(TAB_WIDTH), dp(toolbarHeight)))
+        tabs.addView(readButton, LayoutParams(dp(TAB_WIDTH), dp(toolbarHeight)))
+        tabGroup.addView(tabs, FrameLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT))
+        toolbar.addView(tabGroup, LayoutParams(LayoutParams.WRAP_CONTENT, dp(toolbarHeight)))
         // Language choice only matters once a translation panel is open, so the default header
         // stays as quiet as Gboard's; the bar keeps its space to avoid shifting the other icons.
         languageBar.gravity = Gravity.CENTER_VERTICAL
@@ -147,6 +172,8 @@ internal class LingoKeyboardView(context: Context, private val actions: Keyboard
         languageBar.addView(swapButton, LayoutParams(dp(34), dp(34)))
         languageBar.addView(targetButton, chipParams())
         toolbar.addView(languageBar, LayoutParams(0, dp(toolbarHeight), 1f))
+        createSuggestionStrip()
+        toolbar.addView(suggestionStrip, LayoutParams(0, dp(toolbarHeight), 1f))
         trailingButton = toolbarIcon(R.drawable.ic_keyboard_globe, context.getString(R.string.keyboard_switch)) {
             if (toolbarPanel == TranslationPanel.NONE) actions.switchKeyboard() else actions.closePanel()
         }
@@ -181,17 +208,22 @@ internal class LingoKeyboardView(context: Context, private val actions: Keyboard
             languageBar.addView(targetButton, 2, chipParams())
         }
         val panelOpened = toolbarPanel == TranslationPanel.NONE && mode != TranslationPanel.NONE
+        val tabChanged = toolbarPanel != mode
         toolbarPanel = mode; toolbarLanguages = languages; toolbarBusy = busy; toolbarPassword = password
+        // Tabs stay enabled while a request runs so users can switch away; it finishes in its own tab.
         translateButton?.apply {
             contentDescription = context.getString(if (selected) R.string.keyboard_translate_selection else R.string.action_translate)
-            isEnabled = !password && !busy
+            isEnabled = !password
+            alpha = if (isEnabled) 1f else DISABLED_ALPHA
             styleModeIcon(this, mode == TranslationPanel.WRITE)
         }
         readButton?.apply {
             isEnabled = !password
+            alpha = if (isEnabled) 1f else DISABLED_ALPHA
             styleModeIcon(this, mode == TranslationPanel.READ)
         }
-        languageBar.visibility = if (mode == TranslationPanel.NONE) INVISIBLE else VISIBLE
+        if (tabChanged) moveTabIndicator(mode)
+        updateToolbarMode()
         if (panelOpened) fadeIn(languageBar)
         sourceButton?.apply {
             val label = TranslationLanguages.find(languages.source)?.label ?: languages.source
@@ -223,18 +255,104 @@ internal class LingoKeyboardView(context: Context, private val actions: Keyboard
         }
     }
 
+    /** Icon colour cross-fades in step with the sliding highlight. */
     private fun styleModeIcon(button: ImageButton, active: Boolean) {
         if (button.isSelected == active && button.tag == active) return
+        val firstStyle = button.tag == null
         button.isSelected = active; button.isActivated = active; button.tag = active
-        button.imageTintList = ColorStateList.valueOf(if (active) palette.accent else palette.muted)
-        setBackgroundKeepingPadding(button, ripple(if (active) palette.softAccent else Color.TRANSPARENT, 14f, inset = 4))
+        val target = if (active) palette.accent else palette.muted
+        val start = button.imageTintList?.defaultColor ?: palette.muted
+        if (firstStyle || !button.isAttachedToWindow) { button.imageTintList = ColorStateList.valueOf(target); return }
+        ValueAnimator.ofObject(ArgbEvaluator(), start, target).apply {
+            duration = TAB_ANIMATION_MS
+            addUpdateListener { button.imageTintList = ColorStateList.valueOf(it.animatedValue as Int) }
+        }.start()
     }
 
-    /** InsetDrawable reports its insets as padding; without this the icon would grow to fill the button. */
-    private fun setBackgroundKeepingPadding(view: View, drawable: Drawable) {
-        val left = view.paddingLeft; val top = view.paddingTop; val right = view.paddingRight; val bottom = view.paddingBottom
-        view.background = drawable
-        view.setPadding(left, top, right, bottom)
+    private fun moveTabIndicator(mode: TranslationPanel) {
+        val targetX = if (mode == TranslationPanel.READ) dp(TAB_WIDTH).toFloat() else 0f
+        val targetAlpha = if (mode == TranslationPanel.NONE) 0f else 1f
+        tabIndicator.animate().cancel()
+        if (!tabIndicator.isAttachedToWindow) { tabIndicator.translationX = targetX; tabIndicator.alpha = targetAlpha; return }
+        // Appearing: fade in under the chosen tab rather than sliding in from the other one.
+        if (tabIndicator.alpha == 0f) tabIndicator.translationX = targetX
+        tabIndicator.animate().translationX(targetX).alpha(targetAlpha).setDuration(TAB_ANIMATION_MS)
+            .setInterpolator(DecelerateInterpolator()).start()
+    }
+
+    /**
+     * Gboard-style header: while words are being suggested the strip takes the space of Read,
+     * the language bar and the switcher; Translate stays as the one-tap entry to translation.
+     */
+    private fun updateToolbarMode() {
+        val suggesting = toolbarPanel == TranslationPanel.NONE && suggestions.isNotEmpty()
+        readButton?.visibility = if (suggesting) GONE else VISIBLE
+        languageBar.visibility = when {
+            toolbarPanel != TranslationPanel.NONE -> VISIBLE
+            suggesting -> GONE
+            else -> INVISIBLE
+        }
+        trailingButton?.visibility = if (suggesting) GONE else VISIBLE
+        val stripWasVisible = suggestionStrip.visibility == VISIBLE
+        suggestionStrip.visibility = if (suggesting) VISIBLE else GONE
+        if (suggesting && !stripWasVisible) fadeIn(suggestionStrip)
+    }
+
+    // ---- Suggestion strip ------------------------------------------------------------------
+
+    private fun createSuggestionStrip() {
+        suggestionStrip.gravity = Gravity.CENTER_VERTICAL
+        suggestionStrip.visibility = GONE
+        repeat(3) { index ->
+            if (index > 0) {
+                val divider = View(context).apply { setBackgroundColor((palette.muted and 0x00FFFFFF) or 0x47000000) }
+                suggestionDividers.add(divider)
+                suggestionStrip.addView(divider, LayoutParams(dp(1), dp(18)))
+            }
+            val slot = TextView(context).apply {
+                gravity = Gravity.CENTER
+                textSize = if (compact) 15f else 16.5f
+                maxLines = 1; ellipsize = TextUtils.TruncateAt.END
+                setTextColor(palette.ink)
+                // The centre slot holds the best guess, emphasised like Gboard's.
+                typeface = Typeface.create(if (index == 1) "sans-serif-medium" else "sans-serif", Typeface.NORMAL)
+                background = ripple(Color.TRANSPARENT, 12f, inset = 3)
+                setPadding(dp(6), 0, dp(6), 0)
+                isSoundEffectsEnabled = false
+                setOnClickListener {
+                    val suggestion = tag as? Suggestion ?: return@setOnClickListener
+                    performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
+                    actions.suggestionPicked(suggestion.text)
+                }
+            }
+            suggestionSlots.add(slot)
+            suggestionStrip.addView(slot, LayoutParams(0, LayoutParams.MATCH_PARENT, 1f))
+        }
+    }
+
+    /** [next] is best-first; the best goes in the centre, and a kept-as-typed word on the left. */
+    fun renderSuggestions(next: List<Suggestion>) {
+        if (next == suggestions) return
+        suggestions = next
+        val literal = next.firstOrNull()?.literal == true
+        val ordered = if (literal) listOf(next.getOrNull(0), next.getOrNull(1), next.getOrNull(2))
+        else listOf(next.getOrNull(1), next.getOrNull(0), next.getOrNull(2))
+        suggestionSlots.forEachIndexed { index, slot ->
+            val suggestion = ordered[index]
+            slot.tag = suggestion
+            slot.text = when {
+                suggestion == null -> ""
+                suggestion.literal -> "“${suggestion.text}”"
+                else -> suggestion.text
+            }
+            slot.contentDescription = suggestion?.let { if (it.literal) "Keep ${it.text}" else it.text }
+            slot.isClickable = suggestion != null
+            slot.importantForAccessibility = if (suggestion == null) IMPORTANT_FOR_ACCESSIBILITY_NO else IMPORTANT_FOR_ACCESSIBILITY_YES
+        }
+        suggestionDividers.forEachIndexed { index, divider ->
+            divider.visibility = if (ordered[index] != null && ordered[index + 1] != null) VISIBLE else INVISIBLE
+        }
+        updateToolbarMode()
     }
 
     private fun toolbarIcon(iconRes: Int, label: String, action: () -> Unit): ImageButton = ImageButton(context).apply {
@@ -288,12 +406,18 @@ internal class LingoKeyboardView(context: Context, private val actions: Keyboard
         renderToolbar(next.selected, password, next.panel, next.languages, next.busy)
         val previous = renderedPanel
         renderedPanel = next
-        // Keep the draft editor, cursor and key grid alive across language/status/request updates.
-        if (previous?.panel == next.panel && next.panel != TranslationPanel.NONE &&
+        val tabChanged = previous != null && previous.panel != TranslationPanel.NONE &&
+            next.panel != TranslationPanel.NONE && previous.panel != next.panel
+        // Keep the draft editor, cursor and key grid alive across language/status/request updates,
+        // and across Write/Read tab switches, so switching never rebuilds or flashes the panel.
+        if (previous != null && previous.panel != TranslationPanel.NONE && next.panel != TranslationPanel.NONE &&
             previous.result == null && next.result == null && !previous.disclosure && !next.disclosure && draftField != null) {
             val field = draftField!!
+            if (tabChanged) field.hint = context.getString(draftHint(next.panel))
             if (field.text.toString() != next.draft) {
+                applyingDraft = true
                 field.text.replace(0, field.text.length, next.draft)
+                applyingDraft = false
                 field.setSelection(field.text.length)
             }
             field.isEnabled = !next.busy
@@ -312,8 +436,13 @@ internal class LingoKeyboardView(context: Context, private val actions: Keyboard
             next.result != null -> renderResult(next, next.result)
             else -> renderComposer(next)
         }
-        if (wasHidden) fadeIn(panel)
+        // Opening fades in fully; a tab switch that needs new content only dips briefly, so the
+        // swap feels continuous instead of blinking.
+        if (wasHidden) fadeIn(panel) else if (tabChanged) fadeIn(panel, from = 0.35f)
     }
+
+    private fun draftHint(mode: TranslationPanel) =
+        if (mode == TranslationPanel.WRITE) R.string.keyboard_draft_hint else R.string.keyboard_read_hint
 
     private fun renderDisclosure() {
         panel.addView(scrollingText(context.getString(R.string.disclosure_message), result = false),
@@ -360,7 +489,7 @@ internal class LingoKeyboardView(context: Context, private val actions: Keyboard
             setText(next.draft)
             setSelection(text.length)
             setTextColor(palette.ink); setHintTextColor(palette.muted); textSize = 15.5f
-            hint = context.getString(if (next.panel == TranslationPanel.WRITE) R.string.keyboard_draft_hint else R.string.keyboard_read_hint)
+            hint = context.getString(draftHint(next.panel))
             contentDescription = context.getString(R.string.keyboard_draft_description)
             inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE or InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS
             filters = arrayOf(InputFilter.LengthFilter(4000))
@@ -375,7 +504,7 @@ internal class LingoKeyboardView(context: Context, private val actions: Keyboard
             addTextChangedListener(object : TextWatcher {
                 override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) = Unit
                 override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                    actions.draftChanged(s?.toString().orEmpty())
+                    if (!applyingDraft) actions.draftChanged(s?.toString().orEmpty())
                 }
                 override fun afterTextChanged(s: Editable?) = Unit
             })
@@ -522,11 +651,11 @@ internal class LingoKeyboardView(context: Context, private val actions: Keyboard
         accessibilityLiveRegion = View.ACCESSIBILITY_LIVE_REGION_POLITE
     }
 
-    private fun fadeIn(view: View) {
+    private fun fadeIn(view: View, from: Float = 0f) {
         view.animate().cancel()
         // Detached views (previews, first render) never get an animation frame; show them directly.
         if (!view.isAttachedToWindow) { view.alpha = 1f; return }
-        view.alpha = 0f
+        view.alpha = from
         view.animate().alpha(1f).setDuration(140).start()
     }
 
@@ -550,4 +679,10 @@ internal class LingoKeyboardView(context: Context, private val actions: Keyboard
     private fun dp(value: Int) = (value * resources.displayMetrics.density).toInt()
     private fun dp(value: Float) = (value * resources.displayMetrics.density).toInt()
     override fun onDetachedFromWindow() { languagePopup?.dismiss(); super.onDetachedFromWindow() }
+
+    private companion object {
+        const val TAB_WIDTH = 44
+        const val TAB_ANIMATION_MS = 180L
+        const val DISABLED_ALPHA = 0.38f
+    }
 }

@@ -1,0 +1,193 @@
+{
+  "recorded_at_utc": "2026-10-04T19:55:17.184990+00:00",
+  "revision": "LingoBoard 1.1.0: independent Write/Read tabs and offline English/Hinglish suggestions",
+  "base_commit": "2c3cbb42f3802b1c4c466be0967e7b73fbb8e739",
+  "apk": {
+    "version_name": "1.1.0",
+    "version_code": 7,
+    "path": "app/build/outputs/apk/lingoboard/LingoBoard-1.1.0.apk",
+    "sha256": "b1242dad0da91d7f5b6af3571cd706d931683dc15aca2b5892b3c5108088161b",
+    "bytes": 6121634
+  },
+  "gradle_checks": {
+    "result": "passed",
+    "tasks": [
+      ":app:testDebugUnitTest",
+      ":app:lintDebug",
+      ":app:assembleDebug",
+      ":app:assembleDebugAndroidTest",
+      ":testhost:assembleWithQueriesDebug"
+    ],
+    "jvm_tests": 43,
+    "jvm_failures": 0,
+    "jvm_errors": 0,
+    "note": "Gradle reused up-to-date compilation and unit-test results where applicable.",
+    "lint_errors": 0,
+    "lint_warnings": 43
+  },
+  "android_instrumentation": {
+    "device": "lingoflow_smoke owned emulator",
+    "android_version": "14",
+    "api_level": 34,
+    "result": "passed",
+    "tests": 26,
+    "passed": 19,
+    "skipped": 7,
+    "failures": 0,
+    "errors": 0,
+    "report_timestamp": "2026-10-04T19:54:51",
+    "live_cloud": false,
+    "live_gemini_calls": 0,
+    "suites": [
+      "KeyboardLayoutRenderTest",
+      "KeyboardTranslationSmokeTest"
+    ],
+    "cases": [
+      {
+        "suite": "KeyboardLayoutRenderTest",
+        "name": "keysTypeOnReleaseAndCancelOrSlideNeverDoubleType",
+        "status": "passed"
+      },
+      {
+        "suite": "KeyboardLayoutRenderTest",
+        "name": "tabSwitchReusesTheComposerAndSuggestionsReplaceTheTools",
+        "status": "passed"
+      },
+      {
+        "suite": "KeyboardLayoutRenderTest",
+        "name": "draftEditingKeepsEditableAndCursorAndDeletesWholeEmoji",
+        "status": "passed"
+      },
+      {
+        "suite": "KeyboardLayoutRenderTest",
+        "name": "holdingSpaceSwitchesKeyboardsWithoutTypingASpaceAndLettersHaveNoAlternates",
+        "status": "passed"
+      },
+      {
+        "suite": "KeyboardLayoutRenderTest",
+        "name": "panelUpdatesKeepCursorAndKeysMountedAndReadingHasNoInsertAction",
+        "status": "passed"
+      },
+      {
+        "suite": "KeyboardLayoutRenderTest",
+        "name": "keyboardAndPanelsFitPortraitAndLandscapeAndRenderPreviews",
+        "status": "passed"
+      },
+      {
+        "suite": "KeyboardLayoutRenderTest",
+        "name": "setupUsesDimSlateLogoAndCollapsesFloatingTools",
+        "status": "passed"
+      },
+      {
+        "suite": "KeyboardLayoutRenderTest",
+        "name": "secondFingerCommitsTheFirstKeyInTypingOrder",
+        "status": "passed"
+      },
+      {
+        "suite": "KeyboardLayoutRenderTest",
+        "name": "languagePickersAppearOnlyWithATranslationPanel",
+        "status": "passed"
+      },
+      {
+        "suite": "KeyboardTranslationSmokeTest",
+        "name": "rapidTypingAndScreenshotsWorkWithLargeKeyTargets",
+        "status": "passed"
+      },
+      {
+        "suite": "KeyboardTranslationSmokeTest",
+        "name": "passwordDisablesCloudControlsAndBlankDraftLeavesChatUnchanged",
+        "status": "passed"
+      },
+      {
+        "suite": "KeyboardTranslationSmokeTest",
+        "name": "readingTranslationDoesNotBlockFastChatTyping",
+        "status": "skipped"
+      },
+      {
+        "suite": "KeyboardTranslationSmokeTest",
+        "name": "compactHeaderReadingModeAndCommaOrderAreCorrect",
+        "status": "passed"
+      },
+      {
+        "suite": "KeyboardTranslationSmokeTest",
+        "name": "copiedReadingConfirmsThenShowsEnglishAboveKeysWithoutChangingChat",
+        "status": "skipped"
+      },
+      {
+        "suite": "KeyboardTranslationSmokeTest",
+        "name": "languagePickersKeepDraftAllowRomanOutputAndPersistChoices",
+        "status": "passed"
+      },
+      {
+        "suite": "KeyboardTranslationSmokeTest",
+        "name": "richKeyboardTypesSymbolsEmojiAndOneShotShiftWithoutTranslating",
+        "status": "passed"
+      },
+      {
+        "suite": "KeyboardTranslationSmokeTest",
+        "name": "englishWritingSwapsDirectionAndInsertsRomanHindi",
+        "status": "skipped"
+      },
+      {
+        "suite": "KeyboardTranslationSmokeTest",
+        "name": "receivedSelectionActionHandsOffToKeyboardWithoutOverlay",
+        "status": "skipped"
+      },
+      {
+        "suite": "KeyboardTranslationSmokeTest",
+        "name": "landscapeKeepsWriteAndReadControlsAboveTheKeys",
+        "status": "passed"
+      },
+      {
+        "suite": "KeyboardTranslationSmokeTest",
+        "name": "suggestionStripCompletesTheWordAtTheCursorAndToolsReturnWhenEmpty",
+        "status": "passed"
+      },
+      {
+        "suite": "KeyboardTranslationSmokeTest",
+        "name": "nativeHindiDraftIsDetectedAndInsertedInEnglish",
+        "status": "skipped"
+      },
+      {
+        "suite": "KeyboardTranslationSmokeTest",
+        "name": "writeAndReadTabsKeepTheirDraftsAndSwitchInPlace",
+        "status": "passed"
+      },
+      {
+        "suite": "KeyboardTranslationSmokeTest",
+        "name": "firstRequestShowsDisclosureAndClosingLeavesChatUnchanged",
+        "status": "passed"
+      },
+      {
+        "suite": "KeyboardTranslationSmokeTest",
+        "name": "translationDraftStaysLocalDirectionSwapsAndCloseDiscardsIt",
+        "status": "passed"
+      },
+      {
+        "suite": "KeyboardTranslationSmokeTest",
+        "name": "editorSelectionShowsTranslateIconAndReadResultNeverReplacesSelection",
+        "status": "skipped"
+      },
+      {
+        "suite": "KeyboardTranslationSmokeTest",
+        "name": "writingTranslatesSeparateDraftAndInsertsWithoutSending",
+        "status": "skipped"
+      }
+    ]
+  },
+  "scope": [
+    "English/Hinglish predictor, prefix/case/typo/next-word candidates and dictionary serialization/bounds in JVM tests",
+    "independent Write/Read drafts, in-place composer and tab highlight",
+    "suggestion insertion at the editor cursor, Translate access and tools returning after field clear",
+    "canvas release/cancel/sliding input and two-finger rollover",
+    "hold-Space without extra insertion, stable grid/cursor and read-only translation controls",
+    "native light/dark portrait/landscape rendering, rapid typing and screenshot capture",
+    "cross-UID host with overlays denied, password/blank-input/disclosure checks"
+  ],
+  "limitations": [
+    "Seven live-only Gemini cases skipped; no live translation or request-completion/tab-switch validation in this run.",
+    "No physical-phone latency, TalkBack user evaluation, font-scaling or actual target-app compatibility validation.",
+    "Real-device learned-word persistence, clear/restart and app-marked incognito suppression remain validation targets.",
+    "Backend unchanged; earlier live results remain historical."
+  ]
+}

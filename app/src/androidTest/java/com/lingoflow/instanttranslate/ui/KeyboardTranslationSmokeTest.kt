@@ -23,7 +23,9 @@ class KeyboardTranslationSmokeTest {
     private val ime = "$app/.keyboard.LingoKeyboardService"
 
     private fun click(text: String) {
-        requireNotNull(device.wait(Until.findObject((if (text in descLabels) By.desc(text) else By.text(text))), 5000)) { "Missing $text" }.click()
+        requireNotNull(device.wait(Until.findObject((if (text in descLabels) By.desc(text)
+            // Single characters are keys; the class filter keeps a same-text suggestion ("A") from matching.
+            else if (text.length == 1) By.text(text).clazz("android.widget.Button") else By.text(text))), 5000)) { "Missing $text" }.click()
     }
     // Icon-only controls are found by content description; keys and text buttons by their label.
     private val descLabels = listOf("Translate", "Read", "Translate selection", "Translate & insert", "Translate message")
@@ -202,8 +204,8 @@ class KeyboardTranslationSmokeTest {
             assertFalse(device.hasObject(By.desc("Translate & insert")))
             assertFalse(device.hasObject(By.desc("Keyboard translation result")))
             assertEquals(original, draft().text)
-            // The toolbar translation icon must retain reading mode, never open writing/insertion.
-            desc("Translate"); englishResult()
+            // Read translates through its own button; the toolbar Translate icon is the Write tab.
+            click("Translate message"); englishResult()
             assertEquals("Reading changed chat", original, draft().text)
             click("h"); click("i")
             assertEquals("Keyboard did not resume chat typing below reading result", original.length + 2, draft().text.length)
@@ -338,5 +340,42 @@ class KeyboardTranslationSmokeTest {
             assertTrue(device.wait(Until.hasObject(By.desc("Writing draft").textContains("tomorrow")), 35_000))
             assertFalse(draft().text.any { it in '\u0900'..'\u097f' })
         }
+    }
+
+    @Test fun writeAndReadTabsKeepTheirDraftsAndSwitchInPlace() = configured {
+        click("Copy received message")
+        openKeyboard(); click("Translate")
+        click("h"); click("i")
+        assertEquals("hi", panelDraft().text)
+        val editor = panelDraft().visibleBounds
+        desc("Read")
+        assertEquals("Read pulls in the copied message", "main kal nahi aa sakta", panelDraft().text)
+        assertTrue(requireNotNull(device.findObject(By.desc("Read"))).isSelected)
+        assertEquals("The composer stays in place when switching tabs", editor, panelDraft().visibleBounds)
+        click("Translate")
+        assertEquals("Write keeps its own draft", "hi", panelDraft().text)
+        assertTrue(requireNotNull(device.findObject(By.desc("Translate"))).isSelected)
+        desc("Read")
+        assertEquals("Read never receives the Write draft", "main kal nahi aa sakta", panelDraft().text)
+        desc("Read")
+        assertFalse("Tapping the open tab closes the panel", device.hasObject(By.desc("Translation draft")))
+    }
+
+    @Test fun suggestionStripCompletesTheWordAtTheCursorAndToolsReturnWhenEmpty() = configured {
+        draft().text = ""; openKeyboard()
+        click("t"); click("o"); click("m")
+        // Strip words are TextViews (keys are virtual Buttons), so filter by class and poll the IME window.
+        fun stripWord(text: String) = device.findObjects(By.clazz("android.widget.TextView").pkg(app)).firstOrNull { it.text == text }
+        val deadline = android.os.SystemClock.uptimeMillis() + 5000
+        while (stripWord("tomorrow") == null && android.os.SystemClock.uptimeMillis() < deadline) android.os.SystemClock.sleep(100)
+        val suggestion = requireNotNull(stripWord("tomorrow")) {
+            "Suggestion strip did not offer tomorrow; saw " + device.findObjects(By.clazz("android.widget.TextView").pkg(app)).map { it.text }
+        }
+        assertFalse("Read gives way to suggestions while typing", device.hasObject(By.desc("Read")))
+        assertTrue("Translate stays reachable", device.hasObject(By.desc("Translate")))
+        suggestion.click()
+        assertTrue(device.wait(Until.hasObject(By.desc("Writing draft").text("tomorrow ")), 3000))
+        draft().text = ""
+        assertTrue("Tools return once the field is empty", device.wait(Until.hasObject(By.desc("Read")), 5000))
     }
 }

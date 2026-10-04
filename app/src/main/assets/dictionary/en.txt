@@ -1,0 +1,221 @@
+# LingoBoard English suggestion list. Ranked most-frequent first (rank drives suggestion order);
+# whitespace-separated, '#' starts a comment. Curated for everyday chat, so conversational words
+# rank higher than in written-corpus lists. Words keep their display case (I, I'm, OK).
+the I to you a and is it of in that for me my be have do on this are with your not was we so but
+can just what at like if will all know get it's I'm don't no yes ok okay be good how up out about
+go one time they he she or there now from as want think see would come then when love her him
+them our us got going really here why too did by back day today well thanks thank right more
+make some people because still need way much tomorrow tonight yeah hey hi hello please sorry
+an has had been were said say tell sure also very where who which their his could should first
+new any last over after only even other these those than into its then off take give find mean
+work feel look let let's thing things something nothing everything anything someone everyone
+lol haha hahaha omg btw idk np pls plz thx ty bro dude guys man oh ah hmm wow nice cool great
+awesome amazing perfect fine done happy home call text message phone send sent talk free busy
+wait soon later morning night evening week weekend month year minute minutes hour hours days
+again always never sometimes maybe probably already almost actually literally definitely
+can't won't didn't doesn't isn't aren't wasn't weren't couldn't shouldn't wouldn't haven't hasn't
+I'll I've I'd you're you'll you've you'd he's she's we're we'll we've they're they'll they've
+that's there's what's where's who's how's here's it'll it'd let's y'all ain't gonna wanna gotta
+little big long best better bad worse worst old young real full high low small large next same
+own few many most every each both such kind sort lot lots bit enough less least around through
+before during until while since between under above down away without within against along
+again ever once twice yet though although however whether either neither else instead quite
+rather pretty super so totally exactly absolutely seriously honestly basically anyway anyways
+two three four five six seven eight nine ten hundred thousand million half second third
+Monday Tuesday Wednesday Thursday Friday Saturday Sunday
+January February March April May June July August September October November December
+morning afternoon tonight yesterday weekday holiday birthday party dinner lunch breakfast food
+eat ate eating drink drinking water coffee tea beer wine sleep sleeping slept tired sick ill
+school college class exam test study homework teacher student office job meeting boss team
+money pay paid buy bought shop shopping store order price cost cheap expensive bill card cash
+car bus train flight ticket trip travel drive driving ride walk walking road traffic late early
+family mom mum dad mother father brother sister son daughter baby kid kids wife husband friend
+friends girlfriend boyfriend parents uncle aunt cousin grandma grandpa child children guy girl
+boy woman women men person house room place city country world town area street office hospital
+doctor health medicine pain help hope wish miss missed missing meet meeting met see saw seen
+watch watching watched movie movies show music song songs game games play playing played fun
+picture photo photos pic video videos news story book read reading write writing wrote written
+name number address email account password link website online app update download upload
+problem issue question answer reason idea point fact case part end start stop open close change
+keep stay leave left move put turn bring brought hold run running try trying tried use used using
+learn learning teach understand remember forget forgot believe guess hope worry care mind matter
+ask asked asking tell told telling speak said says talk talked talking listen hear heard sound
+seem seems looks looked looking feel feeling felt felt happen happened happening wanted wants
+need needed needs make made making take took taking taken give gave giving given go went gone
+come came coming get got getting gotten know knew known think thought thinking see saw say
+like liked likes love loved loves hate hated enjoy enjoyed glad excited sad angry upset mad
+scared afraid worried nervous bored lonely proud sorry lucky ready alone together
+yes no not maybe sure true false right wrong correct exactly okay alright fine whatever
+congratulations congrats welcome bye goodbye goodnight morning cheers dear honey babe sweetie
+beautiful pretty cute handsome funny smart crazy stupid silly weird strange hard easy difficult
+simple important special different possible impossible available interesting boring serious
+hot cold warm cool wet dry clean dirty fast slow quick quiet loud dark light bright heavy soft
+open closed safe dangerous healthy hungry thirsty full empty rich poor strong weak sick fresh
+sure ready able unable free busy late early on time
+believe agree disagree decide decided plan plans planning promise promised suppose expect expected
+arrive arrived reach reached return returned visit visited join joined invite invited share shared
+check checked fix fixed finish finished complete completed save saved lose lost win won fail failed
+wear wore cook cooked clean cleaned wash washed sit stand lie fall fell break broke broken cut
+pick picked drop dropped carry follow followed lead led catch caught throw threw pull push
+build built create created grow grew grown live lived living die died kill born raise
+sell sold spend spent cost borrow lend owe earn save
+open opened close closed lock locked start started stop stopped begin began begun end ended
+call called calling text texted texting reply replied respond message messaged chat chatting
+post posted like follow share comment tag story status online offline profile group admin
+charge charging battery screen laptop computer mobile phone wifi internet network signal data
+the a an this that these those my your his her its our their mine yours ours theirs
+myself yourself himself herself itself ourselves themselves
+what which who whom whose when where why how whatever whenever wherever whoever however
+and or but nor so for yet because although though unless until while whereas if then than
+in on at by for with about against between into through during before after above below
+to from up down out off over under again further once here there all any both each few
+more most other some such only own same so than too very can will just should now
+government company system program service market business industry economy policy law court
+group member members community public private national local social political economic
+information data research report history science technology energy power development
+education level process result results example form type rate support care service experience
+student students teacher teachers class classes course courses university degree knowledge
+human body head face eye eyes hand hands heart mind life death age health brain blood skin hair
+war peace police military security nation state city society culture art music sport sports
+water air fire earth sun moon star sky sea river mountain tree trees flower garden field land
+dog dogs cat cats animal animals bird birds fish horse cow chicken egg eggs rice bread milk
+fruit apple banana mango orange vegetables salad pizza burger sandwich cake chocolate ice cream
+sugar salt spicy sweet tasty delicious hungry snack snacks meal meals restaurant hotel menu
+weather rain raining sunny cloudy windy snow summer winter spring autumn season temperature
+clothes shirt dress shoes jeans jacket bag watch glasses ring gift present
+bed bedroom bathroom kitchen door window wall floor table chair sofa TV light fan AC key keys
+morning noon midnight o'clock am pm date calendar schedule appointment deadline today's
+first last next previous final early late recent current future past present modern ancient
+north south east west left right center middle top bottom front back side inside outside
+here there everywhere somewhere anywhere nowhere near far close nearby away abroad
+ask answer explain describe discuss mention suggest recommend complain apologize thank
+probably possibly certainly clearly obviously especially particularly usually generally
+really very quite rather too enough almost nearly hardly barely just only even also
+sorry excuse pardon thanks welcome please kindly
+alright whatsoever otherwise meanwhile therefore thus hence besides furthermore moreover
+yesterday's tomorrow's
+account accounts action activity actor actress add added adding addition additional admit
+adult advance advantage adventure advice advise affair affect afford age agency agent ago agreement
+ahead aim air airport alarm album alcohol alive allow allowed alone along aloud alphabet already
+alright alternative amazing ambulance among amount analysis ancient anger angle animal announce
+announcement annual another answer anxious anybody anymore anyone apart apartment apparently
+appear appearance apply appreciate appreciated approach approve area argue argument arm army
+arrange arrangement arrest arrival art article artist aside asleep assignment assistant assume
+atmosphere attack attempt attend attention attitude attract audience author authority
+automatic average avoid award aware awful awkward
+background balance ball band bank bar base basic basket bath battle beach bear beat beauty
+become becomes became bedroom beer beginning behave behavior behind belong below belt bench
+benefit beside bet beyond bike bill billion bird birth bite bitter black blame blank blind block
+blog blood blow blue board boat body boil bomb bone bonus boot border bored borrow boss bother
+bottle bottom bowl box brain branch brand brave bread break breath breathe brick bridge brief
+bright brilliant broad brown brush budget bug building bunch burn business button
+cabinet calculate calm camera camp campaign cancel cancelled cancer candidate candle cap capital
+captain career careful carefully carry case cash castle category cause celebrate celebration
+cell center central century certain certainly certificate chain chair challenge champion
+chance channel chapter character charge chart cheap cheat cheese chef chest chicken chief
+choice choose chose chosen church cinema circle citizen claim class classic clear clearly
+clever click client climate climb clock cloud club coach coast coat code coin collect collection
+colour color column combination comedy comfortable command comment commercial common
+communicate communication company compare comparison competition complain complaint complete
+completely complex complicated computer concentrate concept concern concert conclusion condition
+conference confidence confident confirm confirmed confused confusing congratulate connect
+connection consider consist constant contact contain content contest context continue contract
+control conversation convince cook cookie copy corner cost costume cotton couch count counter
+couple courage course court cover crash cream credit crew crime criminal crisis critical cross
+crowd crown cry crying culture cup cupboard curious currency current customer cycle
+daily damage dance dancing danger dare deal dealt death debate debt decision deep deeply defeat
+defend degree delay delete deliver delivery demand dentist deny department depend deposit depth
+describe description desert design designer desk despite destroy detail details develop device
+diary dictionary diet difference digital dinner direct direction directly director disappear
+disappointed disaster discount discover discovery discussion disease dish display distance
+divide document doll dollar door double doubt download draft drama draw drawing dream dreams
+drug due dust duty
+earlier earn earth easily eastern easy edge edit effect effective efficient effort elect election
+electric electricity element elephant else emergency emotion emotional employ employee empty
+encourage ending enemy energy engine engineer enjoy enormous ensure enter entertainment entire
+entrance entry environment equal equipment error escape essay essential establish estate
+evening event events eventually evidence evil exact exam examine excellent except exchange
+excited exciting exercise exhibition exist exit expand expensive experience expert explain
+explanation explore express expression extra extreme extremely
+fabulous facility factor factory fair fairly faith familiar famous fan fancy fantastic farm
+farmer fashion fat fault favour favor favorite favourite fear feature fee feed female festival
+fever fight figure file fill film final finally finance financial finger fit flat flight float
+floor flow fly flying focus fold folk follow following fool foot football force foreign forest
+forever forgive fork formal former fortune forward found foundation frame freedom frequently
+fridge friendly friendship frightened frog front fruit fuel fully function fund funny furniture
+gain gallery gap garage gas gate gather gear general generation generous gentle gentleman
+genuine giant gift girl glass global goal god gold golf gone gorgeous grab grade gradually
+grand grandfather grandmother grass grateful green grey gray ground group grow guard guest guide
+guilty guitar gun gym
+habit hall handle hang hardly harm hat headache heading health hear heat heaven height helpful
+hero hey hide highly hill hire historical hit hobby hole holiday honest honestly honey honor
+hope horrible horror host hot hotel huge humor hurry hurt
+ice idea ideal identify identity ignore illegal image imagine immediately impact improve
+improvement include including income increase incredible indeed independent individual indoor
+industry influence inform initial injury inner innocent insect inside insist install instance
+instead instruction instrument insurance intelligent intend intention interest interested
+international interview introduce introduction invent invention investigate invitation involve
+iron island item
+jacket jam jealous jewelry job joke journey joy judge juice jump junior justice
+keen key keyboard kick kid kill kilometer kind kindly king kiss kit kitchen knee knife knock
+lab label lack lady lake lamp land language laptop largely laugh laughing launch lazy leader
+league lean leg legal lemon length lesson letter library license lie lift likely limit line
+lion lip list literature location lonely loose lord lose loss lot lovely lower luck lucky luggage
+machine magazine magic mail main mainly maintain major majority male manage manager manner map
+mark marriage married marry mass master match material math maths meal measure meat media medical
+medium memory mental menu mess message metal method middle mild military milk mind minor minus
+mirror mission mistake mix mixed model moment mood moral motor mountain mouse mouth movement
+mud murder museum mystery
+nail narrow nation natural naturally nature nearby nearly neat necessary neck negative neighbor
+neighbour nervous net network newspaper nice noise noisy none normal normally nose note notice
+novel nowhere nurse
+object obvious occasion ocean odd offer officer official oil onion operate operation opinion
+opportunity opposite option ordinary organization organize original otherwise ought outdoor
+outfit overall owner
+pack package page painting pair palace pan panic paper parent park parking partner pass passenger
+passion passport pasta patient pattern pause peace pen pencil pension percent perfectly perform
+performance perhaps period permission personal personality pet petrol phase photograph physical
+piano pick piece pile pilot pink pipe plan plane planet plant plastic plate platform plenty plus
+pocket poem poet poetry police polite politics pollution pool popular population position
+positive possibility post pot potato pound practice practise praise pray prayer prefer
+pregnant prepare prepared presence presentation president press pressure pretend prevent
+previous pride priest prince princess principal principle print prison prize process produce
+product production profession professional professor profit progress project proper properly
+property proposal protect protest proud prove provide public pull punish pupil purple purpose
+purse puzzle
+quality quantity quarter queen quick quickly quiet quietly quit quite quiz quote
+race radio railway rain raise range rare rarely rat raw reach react reaction reader real
+realise realize reality reasonable receive received recent recently recipe record recover red
+reduce refer reflect refuse regard region regular regularly relate relationship relax relaxed
+release relevant relief religion religious remain remind remote remove rent repair repeat replace
+report represent request require rescue reserve resident resource respect responsibility
+responsible rest restaurant result retire review reward rice ride ring rise risk river rock role
+roll romantic roof root rope rough round route routine row royal rubbish rude rule rush
+sale salary sample sand satisfied sauce scale scene scheme scientist score screen sea search
+seat secret secretary section sector secure seed seek select self sense sensitive sentence
+separate series servant serve session set settle several sex shake shame shape sharp sheet shelf
+shell shift shine ship shock shoot shop shore short shot shoulder shout shower shut shy sick
+sight sign signal silent silver similar simply sing singer single sink sir site situation size
+skill skin skirt sleep slice slightly slip smell smile smoke smooth snake soap social society sock
+soldier solid solution solve somebody somehow somewhat song soul source space speaker speech speed
+spell spirit split spoon spot spread square staff stage stairs stamp standard star station stay
+steal step stick stomach stone storm strange stranger strategy stream strength stress strict
+string structure stuck stuff style subject success successful suddenly suffer suggestion suit
+suitable summer supply suppose surface surprise surprised surprising survey survive suspect
+swim swimming switch symbol sympathy
+tail talent tall tank tape target task taste tax taxi teaching tear technique teenager telephone
+television temple tend tennis tent term terrible terribly terrific text thanks theatre theater
+theme theory therefore thick thin thirsty thought threat throat throughout ticket tie tight till
+tiny tip title toast toe toilet tomato tone tongue tool tooth topic total touch tough tour tourist
+towel tower toy track trade tradition traditional train training transfer transport trash
+treat treatment trend trial trick trouble truck truly trust truth tune tunnel twin typical
+typically
+ugly umbrella uncle unique unit unite universe unless unlikely unusual upper upset upstairs urban
+urgent useful useless user usual
+valley valuable value van variety various vast vegetable vehicle version victim victory view
+village violence violent virtual virus vision visitor vital voice volume vote
+wage waiter wake wallet war warm warn warning waste wave weak wealth weapon wedding weekly weigh
+weight weird welcome western wheel whisper white whole wide wild willing wind window wine wing
+winner winter wire wise wish witness wonder wonderful wood wooden wool worker worried worry
+worth worthy wound wow wrap wrist writer
+yard yeah yell yellow yesterday young youth zero zone

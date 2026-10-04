@@ -7,6 +7,9 @@ Android selection / confirmed clipboard text → LingoBoard Translate → HTTPS 
 → our JavaScript Worker → atomic SQLite quota reservation → Gemini → result
 ```
 
+Normal typing and English/Hinglish word suggestions stay on the phone; they do not call
+Gemini. The network flow above runs only for an explicit translation request.
+
 No account, sign-in, device identifier, session, or authentication token is required.
 The API is public; anyone who knows its URL can call it. Aggregate limits protect the
 shared testing allowance: **10 requests per minute and 200 per UTC day**, across all callers.
@@ -83,10 +86,10 @@ separate from D1. Production builds require HTTPS. Debug builds allow HTTP only 
 
 ## Test on a real Android phone
 
-The `1.0.2` APK includes the public backend URL. No account, Gemini key
+The `1.1.0` APK includes the public backend URL. No account, Gemini key
 entry or server configuration is needed on the phone. Internet is required for translation.
 
-1. Transfer `app/build/outputs/apk/lingoboard/LingoBoard-1.0.2.apk` to your phone and install/update it.
+1. Transfer `app/build/outputs/apk/lingoboard/LingoBoard-1.1.0.apk` to your phone and install/update it.
    Allow installation from that file/browser app if Android asks.
 2. Open **LingoBoard**, tap **1. Enable LingoBoard**, and enable **LingoBoard**
    in system settings. Return and tap **2. Choose LingoBoard** to select it.
@@ -102,6 +105,7 @@ entry or server configuration is needed on the phone. Internet is required for t
    explicit languages; from Auto → English it offers English → Hindi (Roman).
    Translation failures keep the source; tap Translate & insert again for an explicit retry.
 6. **Read a copied message:** copy a received message, open the chat input and tap the **message icon**.
+   If suggestions hide Read, tap Translate to open the panel, then tap Read.
    Read stays highlighted in the header and offers no insertion action. The copied source appears
    in the keyboard panel. Tap the round **Translate** arrow; the English
    result appears above the keys. Translation leaves your existing chat draft unchanged; you can then type a reply below the result. **Copy**, **New**
@@ -115,7 +119,10 @@ entry or server configuration is needed on the phone. Internet is required for t
    for lowercase. **?123** opens numbers/signs; the page-number key cycles through three symbol pages.
    The number row gives direct digit access. **☺** opens 50 smiley emoji. Hold Backspace to delete
    repeatedly. Tap the **globe icon** or hold Space to switch keyboards. Translation-panel Enter creates a newline.
-10. Try your actual target apps, part-selection, long input, offline failure and landscape.
+10. Switch between the Translate and Read tabs: each keeps its draft/result while the panel
+    remains open. Tap the active tab or × to close and discard both states. A request can finish
+    after switching tabs; a writing request still inserts if its original chat cursor is valid.
+11. Try your actual target apps, part-selection, long input, offline failure and landscape.
     Closing/hiding the keyboard clears the translation draft/result and cancels pending work.
     If the chat cursor moves during a writing request, review the held result and use **Insert here** or **Copy**.
 
@@ -129,7 +136,12 @@ and a dedicated number row; letters have no long-press alternates. All key pages
 height. Reading requests allow continued chat typing. Tap the highlighted Read icon or × to leave reading mode.
 Screenshots are enabled in LingoBoard. Context comes only
 from the requested passage. Normal typing stays local; only explicit translation requests go
-to Gemini. No word prediction, autocorrect, swipe or voice typing yet.
+to Gemini. English/Hinglish word completion, typo suggestions and next-word guesses work offline. Tapping
+a suggestion replaces the word at the cursor and adds a space; Translate stays accessible.
+Read returns when suggestions clear. There is no automatic correction on Space, swipe or voice
+typing yet. Finished words and word-pair counts can be saved locally for personalization; use
+**Clear learned words** in setup to erase them. Learning is disabled in password, email, URL
+and app-marked incognito fields.
 
 **Optional floating mode:** if your app permits overlays, tap **Optional: floating reading session**
 to expand its tools, allow **floating translations**, then tap **Start reading session**. With LingoBoard selected, copy prompts can appear above the app;

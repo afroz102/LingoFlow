@@ -80,6 +80,8 @@
     <string name="keyboard_inserted">Translation inserted. Review it before sending.</string>
     <string name="keyboard_target_changed">The chat cursor changed or insertion was unavailable. Review the result and tap Insert here, or copy it.</string>
     <string name="keyboard_open_to_read">Open the chat input with LingoBoard to read this message. Available for 60 seconds.</string>
+    <string name="setup_clear_learned">Clear learned words</string>
+    <string name="setup_learned_cleared">Learned words cleared from this device.</string>
     <string name="keyboard_go">Go</string>
     <string name="keyboard_send">Send</string>
     <string name="direction_multilingual">Translation</string>

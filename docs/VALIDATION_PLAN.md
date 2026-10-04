@@ -1,6 +1,6 @@
 # Validation plan — keyboard translation V1
 
-Updated 2026-10-05. The current scope is the LingoBoard 1.0.2 canvas-keyboard revision, with
+Updated 2026-10-05. The current scope is LingoBoard 1.1.0 with tabs and local suggestions, with
 45 languages/67 script options. Source defaults to Auto; target defaults to English. Keyboard translation no longer needs overlays. Earlier preview/Replace flows and direction enums are superseded.
 Historical records remain dated, not evidence for features that have changed.
 
@@ -26,7 +26,12 @@ a reply, own-result suppression, active editor selection and read-only selection
 `KeyboardLayoutRenderTest` measures portrait/landscape heights and renders the actual view using
 synthetic samples for visual review; it does not capture private screen content. It also checks
 release/cancel/sliding input, two-finger rollover, hold-Space without duplicate input, stable
-grid/draft identity, panel-only language controls and read-only translation actions.
+grid/draft identity, panel-only language controls and read-only translation actions. New cases
+check independent Write/Read drafts, in-place tab switches, suggestion replacement at the
+cursor, Translate access during suggestions and tools returning when the field clears.
+
+Predictor JVM tests cover bundled English/Hinglish lists, prefix/case matching, typo candidates,
+next-word context, learned ranking, dictionary bounds, serialization and rejected non-words.
 
 Keyboard JVM tests cover selection replacement/reversed ranges, whole emoji deletion,
 input limits, 50 distinct emoji, 111 symbols, layout rows and changed-editor/selection insertion guards.
@@ -61,7 +66,7 @@ For each app, record app version, phone/OEM, Android version and all of these se
 | Copy-only messages | Actual copy produces prompt with selected LingoBoard; confirmation only then sends |
 | Other keyboard | No automatic claim; bubble focus reads copy after tap and returns game/chat focus |
 | Overlay | App permits it; card drag, Copy, Minimize, Close, Stop; portrait/landscape and system bars |
-| Keyboard | Touch/hold/sliding and two-finger typing, Shift/lock, number row, three symbol pages, 50 emoji, stable page height, numeric/password fields, draft cursor editing, editor actions, switch-back, selection retention, TalkBack virtual keys and font scaling |
+| Keyboard | Touch/hold/sliding and two-finger typing, Shift/lock, number row, three symbol pages, 50 emoji, stable page height, numeric/password fields, draft cursor editing, editor actions, switch-back, selection retention, TalkBack virtual keys and font scaling, tab isolation, word suggestions, Clear learned words |
 | Lifecycle | Loading cancel, new copy during request, permission revoke, screen lock, process kill, app switch |
 
 Game of Khans may render custom text and can pause when focus is acquired. Do not infer its
@@ -92,7 +97,10 @@ Report P50/P95 and failures. Measure idle-session battery/memory and keyboard ty
 on physical phones. The old `TranslationLatencyBenchmark` is skipped until it waits for an actual
 completed overlay frame; old T_RENDER timing must not imply measured overlay responsiveness.
 
-Verify no source/result/keystroke content in logs, disk, saved state or backups. Screenshots
+Verify no translation drafts/results or raw keystroke logs in disk, saved state or backups.
+Local personalization intentionally saves bounded finished words and word-pair counts; test
+Clear learned words, restart persistence, and learning suppression in password/email/URL and
+app-marked incognito fields. Verify that suggestions do not make network requests. Screenshots
 and Recents previews are explicitly allowed. Copy puts the requested result on Android clipboard. Inspect APK/config for
 server secrets. Read-only must never return replacement data, and writing failure/cancel must
 never return text. Confirm clipboard prompts do not send data before user confirmation.
@@ -103,7 +111,15 @@ per-user authentication or guaranteed free quota availability in this testing ba
 
 ## Evidence
 
-Current [canvas-keyboard evidence](../benchmark/keyboard_canvas_smoke.json), recorded 2026-10-05
+Current [LingoBoard 1.1.0 evidence](../benchmark/lingoboard_1.1.0_android_smoke.json): build tasks
+and 43 Android JVM tests passed; lint reported zero errors and 43 warnings. Android 14/API 34
+passed all 19 non-live cases across the native render/touch and cross-UID keyboard suites,
+including independent tab drafts and suggestion insertion. Seven live-only Gemini cases were
+explicitly skipped. The record retains the APK hash and per-case results. Gradle reused
+up-to-date results where applicable. Current live translation/tab-request completion, physical
+phone responsiveness, accessibility and target-app compatibility remain unverified.
+
+Earlier 1.0.2 [canvas-keyboard evidence](../benchmark/keyboard_canvas_smoke.json), recorded 2026-10-05
 (local date): build tasks and 35 Android JVM tests passed; lint reported zero errors and 42
 warnings. Android 14/API 34 passed all 16 non-live cases across the render/touch and cross-UID
 keyboard suites. Seven live-only Gemini cases were explicitly skipped. The record retains the
