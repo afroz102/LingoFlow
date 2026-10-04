@@ -1,9 +1,8 @@
 package com.lingoflow.instanttranslate.direction
 
 /**
- * Cheap script signal: any Devanagari routes to English; other text routes to Hindi.
- * This does not resolve Latin Hinglish or mixed/short-text ambiguity. User-correctable
- * direction and output-script controls remain requirements in docs/PRODUCT_REQUIREMENTS.md.
+ * Devanagari routes to English. Latin text needs the model to distinguish English from
+ * Romanized Hindi; a word list would misclassify shared words, spelling variants and names.
  */
 object DirectionDetector {
 
@@ -13,6 +12,6 @@ object DirectionDetector {
         if (text.any { it in DEVANAGARI_RANGE }) {
             Direction.HINDI_TO_ENGLISH
         } else {
-            Direction.ENGLISH_TO_HINDI
+            Direction.AUTO
         }
 }

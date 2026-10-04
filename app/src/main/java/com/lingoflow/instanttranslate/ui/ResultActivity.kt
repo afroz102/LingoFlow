@@ -16,6 +16,8 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.lingoflow.instanttranslate.R
 import com.lingoflow.instanttranslate.databinding.ActivityResultBinding
+import com.lingoflow.instanttranslate.direction.Direction
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.lingoflow.instanttranslate.timing.TimingMark
 import com.lingoflow.instanttranslate.timing.TimingOutcome
 import com.lingoflow.instanttranslate.timing.TranslationTimeline
@@ -61,6 +63,7 @@ class ResultActivity : AppCompatActivity() {
         binding.buttonReplace.setOnClickListener { replaceAndFinish() }
         binding.buttonDisclosureContinue.setOnClickListener { viewModel.acknowledgeDisclosureAndRetry() }
         binding.buttonRetry.setOnClickListener { viewModel.retry() }
+        binding.buttonDirection.setOnClickListener { showDirectionChoices() }
 
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -74,6 +77,7 @@ class ResultActivity : AppCompatActivity() {
         binding.disclosure.isVisible = state is ResultUiState.DisclosureRequired
         binding.errorGroup.isVisible = state is ResultUiState.Error
         binding.content.isVisible = state is ResultUiState.Success
+        binding.buttonDirection.isVisible = state is ResultUiState.Success || state is ResultUiState.Error
 
         if (state is ResultUiState.Success) {
             binding.textOriginal.text = state.original
@@ -87,6 +91,22 @@ class ResultActivity : AppCompatActivity() {
         }
 
         state.timingOutcome()?.let(::recordRenderTiming)
+    }
+
+    private fun showDirectionChoices() {
+        val choices = Direction.entries
+        val labels = choices.map { getString(it.displayNameRes) }.toTypedArray()
+        val selected = viewModel.requestedDirection ?: Direction.AUTO
+        val dialog = MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.action_change_direction)
+            .setSingleChoiceItems(labels, choices.indexOf(selected)) { dialog, index ->
+                dialog.dismiss()
+                viewModel.changeDirection(choices[index])
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .create()
+        dialog.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        dialog.show()
     }
 
     /**

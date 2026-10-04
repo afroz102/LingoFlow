@@ -6,8 +6,8 @@ import org.junit.Test
 class DirectionDetectorTest {
 
     @Test
-    fun `plain English text detects as English to Hindi`() {
-        assertEquals(Direction.ENGLISH_TO_HINDI, DirectionDetector.detect("hello there"))
+    fun `Latin English asks the model to resolve the language`() {
+        assertEquals(Direction.AUTO, DirectionDetector.detect("hello there"))
     }
 
     @Test
@@ -21,9 +21,7 @@ class DirectionDetectorTest {
     }
 
     @Test
-    fun `Romanized Hindi with no Devanagari codepoints detects as English to Hindi`() {
-        // Hinglish ambiguity classification is Stage 2 scope (docs/TECHNICAL_PLAN.md) —
-        // Stage 0A's cheap script signal cannot and must not claim certainty here.
-        assertEquals(Direction.ENGLISH_TO_HINDI, DirectionDetector.detect("aap kaise ho"))
+    fun `Romanized Hindi is not incorrectly forced to English to Hindi`() {
+        assertEquals(Direction.AUTO, DirectionDetector.detect("aap kaise ho"))
     }
 }

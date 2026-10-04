@@ -195,7 +195,8 @@ Measure:
 
 - `T_action`: automated tap on the selection action;
 - `T_receive`: Process Text Activity receives and validates input;
-- `T_direction`: direction available;
+- `T_direction`: requested routing mode available; `AUTO` resolves the source language during the
+  provider call, so this mark does not separately measure model language detection;
 - `T_client_ready`: backend client configured;
 - `T_attested`: not applicable to this unauthenticated test build;
 - `T_request_sent`: request body sent;

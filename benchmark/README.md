@@ -11,6 +11,8 @@ and release gates. Passing a connectivity smoke does not pass those gates.
 | `corpus/` | 458-item English/Hindi/Hinglish draft corpus and generated coverage report |
 | `TIMING_HARNESS.md` | On-device selection-to-render timing procedure and measurement limitations |
 | `backend_smoke_result.json` | Dated content-free hosted HTTP smoke evidence |
+| `hinglish_android_smoke_result.json` | Live API 34 transport and result UI direction-selector evidence |
+| `hinglish_smoke_result.json` | Hosted automatic routing, mixed Hinglish, negation and output-script evidence |
 | `backend_android_smoke_result.json` | Dated live Android transport evidence, separate from full cross-app UI testing |
 
 `validate_corpus.py` checks balance, critical subsets, slices, protected tokens and input caps.

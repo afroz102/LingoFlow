@@ -1,0 +1,33 @@
+{
+  "checkedAt": "2026-10-04T13:30:46.810350+00:00",
+  "appVersion": "0.5.0-hinglish",
+  "versionCode": 2,
+  "backend": "https://lingoflow-backend.lingoflow-backend.workers.dev",
+  "workerVersion": "1f58af37-6a33-427a-a252-0535b0a62a79",
+  "device": "lingoflow_smoke API 34 emulator",
+  "physicalDevice": false,
+  "passed": true,
+  "checks": [
+    {
+      "class": "com.lingoflow.instanttranslate.provider.backend.BackendTranslationSmokeTest",
+      "name": "englishHindiAndHinglishTranslateThroughOurBackend",
+      "seconds": 9.684,
+      "passed": true
+    },
+    {
+      "class": "com.lingoflow.instanttranslate.ui.HinglishResultSmokeTest",
+      "name": "romanizedInputCanBeConvertedToDevanagariFromTheResult",
+      "seconds": 8.458,
+      "passed": true
+    }
+  ],
+  "scope": [
+    "Seven real HTTP translations through the Android provider",
+    "Automatic English and Hinglish routing; explicit Romanized and Devanagari output",
+    "Live result UI direction selector, resolved labels and read-only Copy/Replace boundary"
+  ],
+  "notes": [
+    "Initial run overlapped the HTTP smoke and hit the shared minute quota. Both tests passed on rerun in a fresh window.",
+    "This is a connectivity and interaction smoke, not full cross-app compatibility or blinded model-quality evidence."
+  ]
+}

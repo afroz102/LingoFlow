@@ -1,8 +1,10 @@
 package com.lingoflow.instanttranslate.provider
 
-/** Content-free provider result. Backend/Gemini errors never expose upstream bodies to UI. */
+import com.lingoflow.instanttranslate.direction.Direction
+
+/** Typed provider result. Backend/Gemini errors never expose upstream bodies to UI. */
 sealed interface TranslationResult {
-    data class Success(val translatedText: String) : TranslationResult
+    data class Success(val translatedText: String, val direction: Direction) : TranslationResult
     data class Failure(val reason: FailureReason) : TranslationResult
 }
 

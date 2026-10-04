@@ -1,0 +1,79 @@
+{
+  "checkedAt": "2026-10-04T13:27:59.222Z",
+  "backend": "https://lingoflow-backend.lingoflow-backend.workers.dev",
+  "checks": [
+    {
+      "name": "health_configuration_and_database",
+      "status": 200,
+      "ms": 267,
+      "passed": true
+    },
+    {
+      "name": "no_auth_route",
+      "status": 404,
+      "ms": 66,
+      "passed": true
+    },
+    {
+      "name": "wrong_method",
+      "status": 405,
+      "ms": 18,
+      "passed": true
+    },
+    {
+      "name": "invalid_direction",
+      "status": 400,
+      "ms": 23,
+      "passed": true
+    },
+    {
+      "name": "english_to_hindi_without_credentials",
+      "status": 200,
+      "ms": 1661,
+      "passed": true
+    },
+    {
+      "name": "hindi_to_english_without_credentials",
+      "status": 200,
+      "ms": 1282,
+      "passed": true
+    },
+    {
+      "name": "auto_english_direction",
+      "status": 200,
+      "ms": 1497,
+      "passed": true
+    },
+    {
+      "name": "auto_hinglish_preserves_negation",
+      "status": 200,
+      "ms": 1676,
+      "passed": true
+    },
+    {
+      "name": "auto_mixed_hinglish",
+      "status": 200,
+      "ms": 1023,
+      "passed": true
+    },
+    {
+      "name": "english_to_romanized_hindi",
+      "status": 200,
+      "ms": 1433,
+      "passed": true
+    },
+    {
+      "name": "hindi_to_romanized_hindi_preserves_negation",
+      "status": 200,
+      "ms": 1336,
+      "passed": true
+    },
+    {
+      "name": "hinglish_to_devanagari",
+      "status": 200,
+      "ms": 1463,
+      "passed": true
+    }
+  ],
+  "passed": true
+}

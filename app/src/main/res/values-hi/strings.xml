@@ -7,6 +7,12 @@
     <string name="label_translated">अनुवाद</string>
     <string name="direction_en_to_hi">अंग्रेज़ी → हिन्दी</string>
     <string name="direction_hi_to_en">हिन्दी → अंग्रेज़ी</string>
+    <string name="direction_auto">अपने आप (अंग्रेज़ी / हिन्दी / हिंग्लिश)</string>
+    <string name="direction_hinglish_to_en">हिंग्लिश → अंग्रेज़ी</string>
+    <string name="direction_en_to_hinglish">अंग्रेज़ी → हिंग्लिश (रोमन हिन्दी)</string>
+    <string name="direction_hi_to_hinglish">हिन्दी → हिंग्लिश (रोमन हिन्दी)</string>
+    <string name="direction_hinglish_to_hi">हिंग्लिश → हिन्दी (देवनागरी)</string>
+    <string name="action_change_direction">भाषा / लिपि बदलें</string>
 
     <string name="action_copy">कॉपी करें</string>
     <string name="action_replace">बदलें</string>

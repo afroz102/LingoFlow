@@ -31,7 +31,7 @@ class BackendTranslationProvider internal constructor(
                 val body = JSONObject().put("text", text).put("direction", direction.name).toString()
                 TranslationTimeline.mark(TimingMark.T_REQUEST_SENT)
                 // Only explicit user Retry resends selected text; a timeout may have spent quota.
-                parseResponse(http.translate(body))
+                parseResponse(http.translate(body), direction)
             }
         } catch (deadline: TimeoutCancellationException) {
             TranslationResult.Failure(FailureReason.TIMEOUT)
@@ -44,7 +44,7 @@ class BackendTranslationProvider internal constructor(
         }
     }
 
-    private fun parseResponse(response: HttpResponse): TranslationResult {
+    private fun parseResponse(response: HttpResponse, requestedDirection: Direction): TranslationResult {
         if (response.status !in 200..299) {
             val reason = when (response.status) {
                 400, 413, 415 -> FailureReason.UNSUPPORTED_INPUT
@@ -57,10 +57,19 @@ class BackendTranslationProvider internal constructor(
             }
             return TranslationResult.Failure(reason)
         }
-        val translated = try { JSONObject(response.body).get("translation") as? String }
-            catch (_: JSONException) { null }
+        val json = try { JSONObject(response.body) } catch (_: JSONException) { null }
+            ?: return TranslationResult.Failure(FailureReason.INVALID_RESPONSE)
+        val translated = json.opt("translation") as? String
         if (translated.isNullOrBlank() || translated.length > 16000) return TranslationResult.Failure(FailureReason.INVALID_RESPONSE)
+        // Older servers may omit direction for explicit requests; AUTO must never guess it.
+        val direction = if (json.has("direction")) {
+            val name = json.opt("direction") as? String
+            Direction.entries.firstOrNull { it.name == name }
+        } else requestedDirection.takeUnless { it == Direction.AUTO }
+        if (direction == null || !requestedDirection.acceptsResolved(direction)) {
+            return TranslationResult.Failure(FailureReason.INVALID_RESPONSE)
+        }
         TranslationTimeline.mark(TimingMark.T_RESPONSE_END)
-        return TranslationResult.Success(translated)
+        return TranslationResult.Success(translated, direction)
     }
 }

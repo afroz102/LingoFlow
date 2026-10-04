@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.lingoflow.instanttranslate.cloud.AndroidConnectivityChecker
 import com.lingoflow.instanttranslate.coordinator.TranslateCoordinator
 import com.lingoflow.instanttranslate.coordinator.TranslationOutcome
+import com.lingoflow.instanttranslate.direction.Direction
 import com.lingoflow.instanttranslate.prefs.DisclosurePreferences
 import com.lingoflow.instanttranslate.provider.backend.BackendTranslationProvider
 import com.lingoflow.instanttranslate.timing.TranslationTimeline
@@ -43,6 +44,9 @@ class ResultViewModel(
     private val _uiState = MutableStateFlow<ResultUiState>(ResultUiState.Loading)
     val uiState: StateFlow<ResultUiState> = _uiState.asStateFlow()
 
+    var requestedDirection: Direction? = null
+        private set
+
     init {
         // No startRun() here: ProcessTextActivity already opened this run when it received the
         // intent, and restarting it would discard that T_RECEIVE mark.
@@ -62,6 +66,13 @@ class ResultViewModel(
         runTranslation(isNewRun = true)
     }
 
+    /** Choosing a direction explicitly requests another translation, with the same selection. */
+    fun changeDirection(direction: Direction) {
+        if (_uiState.value !is ResultUiState.Success && _uiState.value !is ResultUiState.Error) return
+        requestedDirection = direction
+        runTranslation(isNewRun = true)
+    }
+
     /**
      * @param isNewRun true when the user asked for another attempt (retry, or continuing past the
      * disclosure gate). Each attempt is its own provider request with its own latency, so it gets
@@ -72,7 +83,7 @@ class ResultViewModel(
         if (isNewRun) TranslationTimeline.startRun()
         _uiState.value = ResultUiState.Loading
         viewModelScope.launch {
-            _uiState.value = when (val outcome = coordinator.translate(originalText)) {
+            _uiState.value = when (val outcome = coordinator.translate(originalText, requestedDirection)) {
                 is TranslationOutcome.Translated -> ResultUiState.Success(
                     original = outcome.original,
                     translated = outcome.translated,

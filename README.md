@@ -11,10 +11,14 @@ unpaid service is for non-sensitive test samples.
 
 ## Status
 
-English↔Devanagari Hindi works through the deployed backend. Backend tests and Android JVM tests
-pass; hosted HTTP and real Android transport smoke checks passed on 2026-10-04. Historical
-Process Text evidence exists on API 30 and 34. Physical-phone/OEM compatibility, full quality
-scoring, Hinglish direction correction and Romanized output preferences remain open.
+English, Devanagari Hindi and Hinglish (Romanized Hindi) are supported. Latin input uses a single
+Gemini request to distinguish English→Hindi from Hinglish→English; Devanagari input defaults to
+English output. **Change language / script** offers explicit direction correction, English→Hinglish,
+Hindi→Hinglish and Hinglish→Devanagari conversion. Choices apply to the current selection only.
+Historical Process Text evidence exists on API 30 and 34. Physical-phone/OEM compatibility and
+full blinded model-quality scoring remain open. The Hinglish update passed 19 backend and
+21 Android JVM tests, plus [hosted HTTP](benchmark/hinglish_smoke_result.json) and
+[Android transport/result UI](benchmark/hinglish_android_smoke_result.json) smoke checks.
 
 Shared testing allowance: **10 translations/minute, 200/UTC day** across all callers. The API is
 public, so other callers can exhaust that allowance. No public-release reliability/privacy

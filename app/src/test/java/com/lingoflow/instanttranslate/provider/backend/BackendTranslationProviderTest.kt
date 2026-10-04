@@ -13,6 +13,41 @@ import java.net.SocketTimeoutException
 class BackendTranslationProviderTest {
     private val direction = Direction.ENGLISH_TO_HINDI
 
+    @Test fun `automatic Hinglish translation uses one request and validates the resolved direction`() = runTest {
+        var calls = 0
+        val provider = BackendTranslationProvider(BackendHttp { body ->
+            calls++
+            assertEquals("AUTO", JSONObject(body).getString("direction"))
+            HttpResponse(200, """{"translation":"How are you?","direction":"HINGLISH_TO_ENGLISH"}""")
+        })
+        assertEquals(TranslationResult.Success("How are you?", Direction.HINGLISH_TO_ENGLISH),
+            provider.translate("aap kaise ho", Direction.AUTO))
+        assertEquals(1, calls)
+    }
+
+    @Test fun `automatic response cannot omit direction or resolve to an output preference`() = runTest {
+        for (resolved in listOf(null, "AUTO", "OTHER", "ENGLISH_TO_HINGLISH", 123)) {
+            val body = JSONObject().put("translation", "hello")
+            if (resolved != null) body.put("direction", resolved)
+            val provider = BackendTranslationProvider(BackendHttp { HttpResponse(200, body.toString()) })
+            assertEquals(TranslationResult.Failure(FailureReason.INVALID_RESPONSE), provider.translate("hello", Direction.AUTO))
+        }
+    }
+
+    @Test fun `every explicit direction is sent unchanged and mismatched response is rejected`() = runTest {
+        for (requested in Direction.entries.filter { it != Direction.AUTO }) {
+            val provider = BackendTranslationProvider(BackendHttp { body ->
+                assertEquals(requested.name, JSONObject(body).getString("direction"))
+                HttpResponse(200, JSONObject().put("translation", "sample").put("direction", requested.name).toString())
+            })
+            assertEquals(TranslationResult.Success("sample", requested), provider.translate("sample", requested))
+        }
+        val mismatch = BackendTranslationProvider(BackendHttp {
+            HttpResponse(200, """{"translation":"sample","direction":"HINGLISH_TO_ENGLISH"}""")
+        })
+        assertEquals(TranslationResult.Failure(FailureReason.INVALID_RESPONSE), mismatch.translate("sample", direction))
+    }
+
     @Test fun `one translation sends only selected text and direction`() = runTest {
         var calls = 0
         val provider = BackendTranslationProvider(BackendHttp { body ->
@@ -23,7 +58,7 @@ class BackendTranslationProviderTest {
             assertEquals(direction.name, json.getString("direction"))
             HttpResponse(200, """{"translation":"नमस्ते"}""")
         })
-        assertEquals(TranslationResult.Success("नमस्ते"), provider.translate("hello", direction))
+        assertEquals(TranslationResult.Success("नमस्ते", direction), provider.translate("hello", direction))
         assertEquals(1, calls)
     }
 

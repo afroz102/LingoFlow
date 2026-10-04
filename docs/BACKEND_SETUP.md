@@ -93,8 +93,12 @@ account, or Gemini key entry is needed on the phone.
 3. Open the test host or another app that supports third-party text-selection actions.
 4. Long-press English text, select it, then choose **More → Translate** (or **अनुवाद करें**).
 5. Accept the cloud-processing disclosure. Check that the Hindi result appears and Copy works.
-6. Try Hindi text for English output. In an editable field, verify Replace changes only the
-   selected text. In a read-only field, verify Copy is available without Replace.
+6. Try Hindi and `aap kaise ho?` for English output. Latin Hinglish is detected by Gemini in
+   the translation request. Select **Change language / script** to correct the direction, choose
+   English→Hinglish or Hindi→Hinglish for Romanized output, or Hinglish→Hindi for Devanagari.
+   Each choice sends one new request and uses the shared quota; it is not saved for later selections.
+7. In an editable field, verify Replace changes only the selected text. In a read-only field,
+   verify Copy is available without Replace.
 
 The translator has no launcher icon; it is opened through the selection menu. If Translate
 is missing in one host, try the controlled test host. Host apps choose whether they expose
@@ -109,13 +113,14 @@ JAVA_HOME=/opt/homebrew/opt/openjdk@17 ./gradlew :app:assembleDebug :app:testDeb
 
 ## Live verification
 
-Hosted HTTP smoke (two harmless translations, content-free report):
+Hosted HTTP smoke (eight harmless translations, content-free report):
 
 ```sh
-node backend/smoke.mjs --live https://lingoflow-backend.lingoflow-backend.workers.dev benchmark/backend_smoke_result.json
+node backend/smoke.mjs --live https://lingoflow-backend.lingoflow-backend.workers.dev benchmark/hinglish_smoke_result.json
 ```
 
-Opt-in Android test (two harmless translations, no automatic retry):
+Opt-in Android transport test (seven harmless translations, no automatic retry). Run in a
+different UTC minute from the HTTP smoke to avoid the shared 10/minute allowance:
 
 ```sh
 JAVA_HOME=/opt/homebrew/opt/openjdk@17 ./gradlew :app:connectedDebugAndroidTest \
@@ -147,8 +152,34 @@ hostname initially returned TLS handshake failures, then became reachable after 
 no certificate checks were bypassed.
 
 This remains a testing build:
-physical-device compatibility, Hinglish controls/output preferences, and the full blinded
-model-quality benchmark are still open.
+physical-device compatibility, saved language preferences, and the full blinded model-quality
+benchmark are still open. Hinglish controls and Romanized output are implemented for the current
+selection; use the latest `0.5.0-hinglish` APK, since older builds always routed Latin input to Hindi.
+
+
+## Hinglish update verification
+
+The `0.5.0-hinglish` APK (version code 2) and Worker version
+`1f58af37-6a33-427a-a252-0535b0a62a79` were checked on 2026-10-04:
+
+| Check | Result |
+|---|---|
+| Backend tests | 19 passed; includes one-call automatic detection, supported directions and Romanized-script validation |
+| Android JVM tests | 21 passed; includes resolved labels, explicit overrides and invalid-direction rejection |
+| Hosted HTTP smoke | All 12 checks passed, including 8 real translations; mixed Hinglish and negation flags passed |
+| Android API 34 transport | 7 live translation requests passed, including automatic English/Hinglish and script conversion |
+| Android result UI | Hinglish→English result, direction selector, Hinglish→Devanagari conversion, Copy availability and hidden read-only Replace passed |
+| Build/credential boundary | App and test APKs built; configured Gemini key absent from changed source files and app APK |
+
+Content-free records: [HTTP](../benchmark/hinglish_smoke_result.json) and
+[Android](../benchmark/hinglish_android_smoke_result.json). The first Android run overlapped
+the HTTP smoke and hit the shared minute cap; both tests passed after rerunning in a fresh
+quota window. No automatic retry or quota-limit change was added.
+
+For the result-UI smoke, use the same Android command above with
+`com.lingoflow.instanttranslate.ui.HinglishResultSmokeTest` as the class argument (two live
+requests). Run it and the transport test in a different UTC minute from the HTTP smoke.
+These checks do not replace physical-phone, complete cross-app or blinded quality validation.
 
 
 ## Free-tier references

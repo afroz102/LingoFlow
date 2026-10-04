@@ -32,8 +32,13 @@ It enables no tools, grounding, URL fetching or conversation history.
   editability to read-only, launches the result and relays only its explicit result.
 - **Coordinator:** resolves direction, checks disclosure before connectivity, invokes the provider
   and exposes typed outcomes. No Android SDK/model-specific response types cross this boundary.
-- **Direction policy:** current script heuristic detects any Devanagari as Hindi→English. Latin
-  Hinglish and mixed/short text still require future correction controls; no full detector exists.
+- **Direction policy:** any Devanagari defaults to Hindi→English. Latin input requests `AUTO`: Gemini
+  chooses English→Hindi or Hinglish→English and translates in a single call. The backend requires
+  a supported resolved direction and the app displays it. Ambiguous short Latin words default to
+  English→Hindi; the result/error surface offers explicit direction/script correction.
+  Choices live only in the ViewModel, survive rotation, and apply only to the current selection.
+  Changing a choice sends one new request; Retry retains that choice. Neither is available while
+  loading, and disclosure/connectivity gates apply to every request.
 - **Cloud readiness and disclosure:** no selected-content request until disclosure acknowledgement.
   SharedPreferences stores only the acknowledged notice version; a changed notice prompts again.
 - **Provider:** one bounded HTTPS request, response validation, typed content-free failures and
@@ -76,7 +81,13 @@ There is no guaranteed app-only access or production availability claim.
 
 - Android: 8-second connect, 22-second socket read, 30-second provider deadline; no redirects.
 - Backend: 18-second quota/model deadline, 5-second health database deadline.
-- Input: JSON only, streamed body at most 32 KiB, nonblank text ≤4,000 code units, two directions.
+- Input: JSON only, streamed body at most 32 KiB, nonblank text ≤4,000 code units; `AUTO` or six
+  explicit directions from the shared Android/backend enum. Explicit modes include Romanized
+  Hindi output and Hinglish→Devanagari conversion.
+- Success: `{translation, direction}`; `AUTO` must resolve to English→Hindi, Hindi→English or
+  Hinglish→English. Invalid/missing automatic directions and Devanagari in Romanized output fail
+  validation. Old clients can ignore the added direction; new clients accept direction-less
+  responses only for explicit requests, never `AUTO`.
 - Upstream/Android response: at most 128 KiB; translated string ≤16,000 code units and nonblank.
 - Gemini must complete with STOP; malformed/truncated/non-string output fails validation.
 - Model ID pinned to `gemini-3.5-flash-lite`; model changes require quality/terms/quota rechecking.

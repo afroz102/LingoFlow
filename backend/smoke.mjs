@@ -38,6 +38,27 @@ await check('hindi_to_english_without_credentials', '/v1/translate', 200,
   post({ text: 'आप कैसे हैं?', direction: 'HINDI_TO_ENGLISH' }),
   body => typeof body.translation === 'string' && /[a-z]/i.test(body.translation));
 
+const romanized = body => typeof body.translation === 'string' && /[a-z]/i.test(body.translation) &&
+  !/[\u0900-\u097f]/u.test(body.translation);
+await check('auto_english_direction', '/v1/translate', 200,
+  post({ text: 'How are you?', direction: 'AUTO' }),
+  body => body.direction === 'ENGLISH_TO_HINDI' && /[\u0900-\u097f]/u.test(body.translation));
+await check('auto_hinglish_preserves_negation', '/v1/translate', 200,
+  post({ text: 'main kal nahi aa sakta', direction: 'AUTO' }),
+  body => body.direction === 'HINGLISH_TO_ENGLISH' && romanized(body) && /not|cannot|can.t|won.t|unable/i.test(body.translation));
+await check('auto_mixed_hinglish', '/v1/translate', 200,
+  post({ text: 'main meeting mein late aaunga, please wait', direction: 'AUTO' }),
+  body => body.direction === 'HINGLISH_TO_ENGLISH' && romanized(body) && /late/i.test(body.translation) && /wait/i.test(body.translation));
+await check('english_to_romanized_hindi', '/v1/translate', 200,
+  post({ text: 'How are you?', direction: 'ENGLISH_TO_HINGLISH' }),
+  body => body.direction === 'ENGLISH_TO_HINGLISH' && romanized(body) && /kaise|kaisey|kaisi/i.test(body.translation));
+await check('hindi_to_romanized_hindi_preserves_negation', '/v1/translate', 200,
+  post({ text: 'मैं कल नहीं आ सकता।', direction: 'HINDI_TO_HINGLISH' }),
+  body => body.direction === 'HINDI_TO_HINGLISH' && romanized(body) && /nahi|nahin|nhi/i.test(body.translation));
+await check('hinglish_to_devanagari', '/v1/translate', 200,
+  post({ text: 'aap kaise ho?', direction: 'HINGLISH_TO_HINDI' }),
+  body => body.direction === 'HINGLISH_TO_HINDI' && /[\u0900-\u097f]/u.test(body.translation));
+
 report.passed = report.checks.every(result => result.passed);
 if (process.argv[4]) writeFileSync(process.argv[4], JSON.stringify(report, null, 2) + '\n');
 process.exitCode = report.passed ? 0 : 1;

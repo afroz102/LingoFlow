@@ -28,7 +28,7 @@ test('translation works without authorization, cookies, API keys, or a user iden
     return modelResponse();
   } }));
   assert.equal(response.status, 200);
-  assert.deepEqual(await response.json(), { translation: 'नमस्ते' });
+  assert.deepEqual(await response.json(), { translation: 'नमस्ते', direction: 'ENGLISH_TO_HINDI' });
   assert.equal(calls, 1);
   assert.equal(response.headers.get('cache-control'), 'no-store');
   assert.equal(response.headers.get('set-cookie'), null);
@@ -36,11 +36,80 @@ test('translation works without authorization, cookies, API keys, or a user iden
 
 test('invalid inputs spend neither database quota nor model requests', async () => {
   for (const body of [null, [], {}, { ...payload, text: ' ' }, { ...payload, text: 'x'.repeat(4001) },
-    { ...payload, direction: ['ENGLISH_TO_HINDI'] }, { ...payload, direction: 'OTHER' }]) {
+    { ...payload, direction: ['ENGLISH_TO_HINDI'] }, { ...payload, direction: 'OTHER' },
+    { ...payload, direction: 'toString' }, { ...payload, direction: '__proto__' }]) {
     const response = await handleRequest(request(body), options({
       consumeQuota: () => assert.fail('must not reserve'), fetcher: () => assert.fail('must not fetch'),
     }));
     assert.equal(response.status, 400);
+  }
+});
+
+const automaticResponse = direction => Response.json({ candidates: [{ finishReason: 'STOP',
+  content: { parts: [{ text: JSON.stringify({ translation: 'sample', direction }) }] } }] });
+
+test('automatic detection and translation share one quota reservation and one model call', async () => {
+  for (const [text, direction] of [
+    ['How are you?', 'ENGLISH_TO_HINDI'],
+    ['aap kaise ho', 'HINGLISH_TO_ENGLISH'],
+    ['main meeting mein late aaunga, please wait', 'HINGLISH_TO_ENGLISH'],
+    ['आप कैसे हैं?', 'HINDI_TO_ENGLISH'],
+  ]) {
+    let reservations = 0;
+    let calls = 0;
+    const response = await handleRequest(request({ text, direction: 'AUTO' }), options({
+      consumeQuota: async () => { reservations++; return true; },
+      fetcher: async (_, init) => {
+        calls++;
+        const input = JSON.parse(init.body);
+        const selected = JSON.parse(input.contents[0].parts[0].text);
+        assert.equal(selected.selected_text, text);
+        assert.match(selected.instruction, /informal spellings/);
+        assert.deepEqual(input.generationConfig.responseSchema.required, ['translation', 'direction']);
+        return automaticResponse(direction);
+      },
+    }));
+    assert.equal(response.status, 200);
+    assert.deepEqual(await response.json(), { translation: 'sample', direction });
+    assert.equal(reservations, 1);
+    assert.equal(calls, 1);
+  }
+});
+
+test('automatic responses require a supported resolved direction', async () => {
+  for (const direction of [undefined, null, 123, 'AUTO', 'OTHER', 'ENGLISH_TO_HINGLISH']) {
+    const response = await handleRequest(request({ ...payload, direction: 'AUTO' }), options({
+      fetcher: async () => automaticResponse(direction),
+    }));
+    assert.equal(response.status, 502);
+    assert.deepEqual(await response.json(), { error: 'INVALID_RESPONSE' });
+  }
+});
+
+test('explicit Hinglish input, Romanized output and Devanagari conversion have bounded instructions', async () => {
+  for (const [direction, translation, instruction] of [
+    ['HINGLISH_TO_ENGLISH', 'I cannot come tomorrow', /do not simply transliterate/],
+    ['ENGLISH_TO_HINGLISH', 'Aap kaise hain?', /do not leave the whole sentence in English/],
+    ['HINDI_TO_HINGLISH', 'Main kal nahi aa sakta', /Preserve meaning/],
+    ['HINGLISH_TO_HINDI', 'मैं कल नहीं आ सकता', /Devanagari script/],
+  ]) {
+    const response = await handleRequest(request({ text: 'literal text', direction }), options({
+      fetcher: async (_, init) => {
+        const input = JSON.parse(JSON.parse(init.body).contents[0].parts[0].text);
+        assert.match(input.instruction, instruction);
+        assert.equal(input.selected_text, 'literal text');
+        return modelResponse(translation);
+      },
+    }));
+    assert.equal(response.status, 200);
+    assert.deepEqual(await response.json(), { translation, direction });
+  }
+});
+
+test('Romanized output does not silently return Devanagari', async () => {
+  for (const direction of ['ENGLISH_TO_HINGLISH', 'HINDI_TO_HINGLISH']) {
+    const response = await handleRequest(request({ ...payload, direction }), options());
+    assert.equal(response.status, 502);
   }
 });
 

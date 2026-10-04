@@ -9,6 +9,12 @@
     <string name="label_translated">Translation</string>
     <string name="direction_en_to_hi">English → Hindi</string>
     <string name="direction_hi_to_en">Hindi → English</string>
+    <string name="direction_auto">Automatic (English / Hindi / Hinglish)</string>
+    <string name="direction_hinglish_to_en">Hinglish → English</string>
+    <string name="direction_en_to_hinglish">English → Hinglish (Roman Hindi)</string>
+    <string name="direction_hi_to_hinglish">Hindi → Hinglish (Roman Hindi)</string>
+    <string name="direction_hinglish_to_hi">Hinglish → Hindi (Devanagari)</string>
+    <string name="action_change_direction">Change language / script</string>
 
     <string name="action_copy">Copy</string>
     <string name="action_replace">Replace</string>
