@@ -5,21 +5,26 @@ Android translation keyboard with **45 languages and 67 language/script choices*
 target defaults to **English**. Gemini translates the meaning and context of the supplied passage.
 
 - **Keyboard writing:** tap the translation icon → choose source/target languages →
-  type in the separate draft → **Translate & insert**. The result enters the chat; it is never sent automatically.
+  type in the separate draft → round arrow (**Translate & insert**). The result enters the chat; it is never sent automatically.
 - **Keyboard reading:** copy a received message → open the chat input → message icon →
-  **Translate**. The result card appears above the keys, leaving your chat draft untouched.
+  the round **Translate** arrow. The result card appears above the keys, leaving your chat draft untouched.
 - **Selected editor text:** selecting text in the active typing field changes the translation icon’s
   accessible label to **Translate selection**. Tap it to read the selection above the keyboard.
 
-The keyboard follows system light/dark mode, with a compact icon toolbar, larger 56dp portrait
-key targets, and in-place draft editing. The logo, mode icons and language selectors share one header;
-Read stays highlighted and offers translation without insertion. Comma sits left of emoji.
-Letter keys show long-press digit/symbol shortcuts. Screenshots are allowed. The keyboard has rounded keys, one-shot Shift, double-tap/hold Caps Lock, three symbol pages (81 symbols),
-50 smiley emoji, hold-to-delete and a keyboard switcher. Translation in the keyboard needs
+The keyboard follows system light/dark mode with a graphite + indigo palette and a familiar five-row
+layout: a number row above three letter rows, a 10-key grid and a 56dp base row height in portrait.
+The bottom row is ?123, comma, emoji, Space, period and Enter. Letters have no long-press alternates. Keys are drawn on one
+canvas: the pressed shade, key preview balloon and haptic tick appear on touch-down, characters
+type on release, Delete/Shift act on touch-down, and a second finger commits the first key
+(rollover). Every page keeps the same height, so switching pages never resizes the host app.
+The header shows only the Translate/Read icons and keyboard switcher; source/target language
+chips appear once a translation panel opens. The draft composer holds Paste inside the field and a
+round Translate button beside it. Read stays highlighted and offers translation without insertion.
+One-shot Shift, double-tap/hold Caps Lock, three symbol pages (111 symbols), 50 smiley emoji,
+hold-to-delete and hold-Space keyboard switching are included. Translation in the keyboard needs
 **no overlay permission or reading session**. Typing is local; there is no word prediction,
-autocorrect, swipe typing or voice input yet. Key releases commit immediately, the key grid stays
-mounted across panel updates, and reading requests leave chat typing available. Physical-device
-smoothness still needs testing. Setup uses a dim slate theme and collapses optional floating tools.
+autocorrect, swipe typing or voice input yet. Physical-device smoothness still needs testing.
+Screenshots are allowed. Setup uses a dim slate theme and collapses optional floating tools.
 
 The existing **LingoBoard Translate** selection action still replaces editable selections. For
 read-only selections, with LingoBoard selected, it hands off to the next opened chat input

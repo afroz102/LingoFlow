@@ -1,0 +1,178 @@
+{
+  "recorded_at_utc": "2026-10-04T18:56:26.088771+00:00",
+  "revision": "Canvas keyboard; supersedes the Button-based 1.0.2 record",
+  "base_commit": "b84fa82e01b5cdfb2f87b95ecb32bc49a08f4f7a",
+  "apk": {
+    "version_name": "1.0.2",
+    "version_code": 6,
+    "path": "app/build/outputs/apk/lingoboard/LingoBoard-1.0.2.apk",
+    "sha256": "8f65ba8e83b8b4c6f81cad64cdcc9be57e33d1f8ecd8eefa0900d4be643b8770",
+    "bytes": 6132905
+  },
+  "gradle_checks": {
+    "result": "passed",
+    "tasks": [
+      ":app:testDebugUnitTest",
+      ":app:lintDebug",
+      ":app:assembleDebug",
+      ":app:assembleDebugAndroidTest",
+      ":testhost:assembleWithQueriesDebug"
+    ],
+    "jvm_tests": 35,
+    "jvm_failures": 0,
+    "jvm_errors": 0,
+    "note": "Gradle reused up-to-date compilation and unit-test results where applicable.",
+    "lint_errors": 0,
+    "lint_warnings": 42
+  },
+  "android_instrumentation": {
+    "device": "lingoflow_smoke owned emulator",
+    "android_version": "14",
+    "api_level": 34,
+    "result": "passed",
+    "tests": 23,
+    "passed": 16,
+    "skipped": 7,
+    "failures": 0,
+    "errors": 0,
+    "report_timestamp": "2026-10-04T18:55:52",
+    "live_cloud": false,
+    "live_gemini_calls": 0,
+    "suites": [
+      "KeyboardLayoutRenderTest",
+      "KeyboardTranslationSmokeTest"
+    ],
+    "cases": [
+      {
+        "suite": "KeyboardLayoutRenderTest",
+        "name": "keysTypeOnReleaseAndCancelOrSlideNeverDoubleType",
+        "status": "passed"
+      },
+      {
+        "suite": "KeyboardLayoutRenderTest",
+        "name": "draftEditingKeepsEditableAndCursorAndDeletesWholeEmoji",
+        "status": "passed"
+      },
+      {
+        "suite": "KeyboardLayoutRenderTest",
+        "name": "holdingSpaceSwitchesKeyboardsWithoutTypingASpaceAndLettersHaveNoAlternates",
+        "status": "passed"
+      },
+      {
+        "suite": "KeyboardLayoutRenderTest",
+        "name": "panelUpdatesKeepCursorAndKeysMountedAndReadingHasNoInsertAction",
+        "status": "passed"
+      },
+      {
+        "suite": "KeyboardLayoutRenderTest",
+        "name": "keyboardAndPanelsFitPortraitAndLandscapeAndRenderPreviews",
+        "status": "passed"
+      },
+      {
+        "suite": "KeyboardLayoutRenderTest",
+        "name": "setupUsesDimSlateLogoAndCollapsesFloatingTools",
+        "status": "passed"
+      },
+      {
+        "suite": "KeyboardLayoutRenderTest",
+        "name": "secondFingerCommitsTheFirstKeyInTypingOrder",
+        "status": "passed"
+      },
+      {
+        "suite": "KeyboardLayoutRenderTest",
+        "name": "languagePickersAppearOnlyWithATranslationPanel",
+        "status": "passed"
+      },
+      {
+        "suite": "KeyboardTranslationSmokeTest",
+        "name": "rapidTypingAndScreenshotsWorkWithLargeKeyTargets",
+        "status": "passed"
+      },
+      {
+        "suite": "KeyboardTranslationSmokeTest",
+        "name": "passwordDisablesCloudControlsAndBlankDraftLeavesChatUnchanged",
+        "status": "passed"
+      },
+      {
+        "suite": "KeyboardTranslationSmokeTest",
+        "name": "readingTranslationDoesNotBlockFastChatTyping",
+        "status": "skipped"
+      },
+      {
+        "suite": "KeyboardTranslationSmokeTest",
+        "name": "compactHeaderReadingModeAndCommaOrderAreCorrect",
+        "status": "passed"
+      },
+      {
+        "suite": "KeyboardTranslationSmokeTest",
+        "name": "copiedReadingConfirmsThenShowsEnglishAboveKeysWithoutChangingChat",
+        "status": "skipped"
+      },
+      {
+        "suite": "KeyboardTranslationSmokeTest",
+        "name": "languagePickersKeepDraftAllowRomanOutputAndPersistChoices",
+        "status": "passed"
+      },
+      {
+        "suite": "KeyboardTranslationSmokeTest",
+        "name": "richKeyboardTypesSymbolsEmojiAndOneShotShiftWithoutTranslating",
+        "status": "passed"
+      },
+      {
+        "suite": "KeyboardTranslationSmokeTest",
+        "name": "englishWritingSwapsDirectionAndInsertsRomanHindi",
+        "status": "skipped"
+      },
+      {
+        "suite": "KeyboardTranslationSmokeTest",
+        "name": "receivedSelectionActionHandsOffToKeyboardWithoutOverlay",
+        "status": "skipped"
+      },
+      {
+        "suite": "KeyboardTranslationSmokeTest",
+        "name": "landscapeKeepsWriteAndReadControlsAboveTheKeys",
+        "status": "passed"
+      },
+      {
+        "suite": "KeyboardTranslationSmokeTest",
+        "name": "nativeHindiDraftIsDetectedAndInsertedInEnglish",
+        "status": "skipped"
+      },
+      {
+        "suite": "KeyboardTranslationSmokeTest",
+        "name": "firstRequestShowsDisclosureAndClosingLeavesChatUnchanged",
+        "status": "passed"
+      },
+      {
+        "suite": "KeyboardTranslationSmokeTest",
+        "name": "translationDraftStaysLocalDirectionSwapsAndCloseDiscardsIt",
+        "status": "passed"
+      },
+      {
+        "suite": "KeyboardTranslationSmokeTest",
+        "name": "editorSelectionShowsTranslateIconAndReadResultNeverReplacesSelection",
+        "status": "skipped"
+      },
+      {
+        "suite": "KeyboardTranslationSmokeTest",
+        "name": "writingTranslatesSeparateDraftAndInsertsWithoutSending",
+        "status": "skipped"
+      }
+    ]
+  },
+  "scope": [
+    "canvas release/cancel/sliding input and two-finger rollover",
+    "hold-Space and no letter long-press alternates",
+    "stable draft cursor and grid identity",
+    "panel-only language controls and reading without insertion controls",
+    "number row, symbol and emoji entry",
+    "rapid typing and screenshot capture",
+    "native-view light/dark portrait/landscape rendering",
+    "cross-UID host with overlays denied, password/blank-input/disclosure checks"
+  ],
+  "limitations": [
+    "No live Gemini requests in this run; seven live-only cases were skipped.",
+    "No physical-phone latency, TalkBack user evaluation, font-scaling or actual target-app compatibility validation.",
+    "Backend unchanged; earlier live records remain historical, not current canvas-keyboard end-to-end evidence."
+  ]
+}

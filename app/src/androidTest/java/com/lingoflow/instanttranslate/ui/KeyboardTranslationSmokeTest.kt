@@ -23,8 +23,10 @@ class KeyboardTranslationSmokeTest {
     private val ime = "$app/.keyboard.LingoKeyboardService"
 
     private fun click(text: String) {
-        requireNotNull(device.wait(Until.findObject((if (text in listOf("Translate", "Read", "Translate selection")) By.desc(text) else By.text(text))), 5000)) { "Missing $text" }.click()
+        requireNotNull(device.wait(Until.findObject((if (text in descLabels) By.desc(text) else By.text(text))), 5000)) { "Missing $text" }.click()
     }
+    // Icon-only controls are found by content description; keys and text buttons by their label.
+    private val descLabels = listOf("Translate", "Read", "Translate selection", "Translate & insert", "Translate message")
     private fun desc(text: String) {
         val selector = if (text.startsWith("Choose ")) By.descStartsWith(text) else By.desc(text)
         requireNotNull(device.wait(Until.findObject(selector), 5000)) { "Missing $text" }.click()
@@ -82,12 +84,12 @@ class KeyboardTranslationSmokeTest {
         openKeyboard()
         click("⇧"); click("H"); click("i"); click("Space")
         assertEquals("Hi ", draft().text)
-        click("?123"); click(";"); click("?")
-        desc("Switch symbol page"); click("["); click("]")
+        click("?123"); click(";"); click("?"); click("["); click("]")
         assertEquals("Hi ;?[]", draft().text)
+        desc("Switch symbol page"); click("€")
         desc("Switch symbol page"); click("—"); click("¿")
-        assertEquals("Hi ;?[]—¿", draft().text)
-        click("⌫"); click("⌫")
+        assertEquals("Hi ;?[]€—¿", draft().text)
+        click("⌫"); click("⌫"); click("⌫")
         desc("Open 50 emoji"); click("😀")
         assertEquals("Hi ;?[]😀", draft().text)
         click("⌫")
@@ -129,12 +131,12 @@ class KeyboardTranslationSmokeTest {
         try {
             openKeyboard()
             click("Translate")
-            assertTrue(device.hasObject(By.text("Translate & insert")))
+            assertTrue(device.hasObject(By.desc("Translate & insert")))
             click("h"); click("i")
             assertEquals("hi", panelDraft().text)
             desc("Close"); click("Read")
             assertEquals("main kal nahi aa sakta", panelDraft().text)
-            val confirmation = requireNotNull(device.findObject(By.text("Translate"))).visibleBounds
+            val confirmation = requireNotNull(device.findObject(By.desc("Translate message"))).visibleBounds
             assertTrue(confirmation.top > 0 && confirmation.bottom < device.displayHeight)
             assertTrue(device.hasObject(By.text("Space")))
         } finally { device.setOrientationNatural(); device.unfreezeRotation() }
@@ -197,7 +199,7 @@ class KeyboardTranslationSmokeTest {
             openKeyboard(); click("Read")
             assertEquals("main kal nahi aa sakta", panelDraft().text)
             assertTrue("Read mode is not marked active", requireNotNull(device.findObject(By.desc("Read"))).isSelected)
-            assertFalse(device.hasObject(By.text("Translate & insert")))
+            assertFalse(device.hasObject(By.desc("Translate & insert")))
             assertFalse(device.hasObject(By.desc("Keyboard translation result")))
             assertEquals(original, draft().text)
             // The toolbar translation icon must retain reading mode, never open writing/insertion.
@@ -221,7 +223,7 @@ class KeyboardTranslationSmokeTest {
             click("Copy received message"); openKeyboard(); desc("Read")
             val original = draft().text
             val keys = listOf("h", "e", "l", "l", "o").map { requireNotNull(device.findObject(By.text(it))).visibleCenter }
-            val translate = requireNotNull(device.findObject(By.text("Translate"))).visibleCenter
+            val translate = requireNotNull(device.findObject(By.desc("Translate message"))).visibleCenter
             device.click(translate.x, translate.y)
             keys.forEach { device.click(it.x, it.y) }
             englishResult()
@@ -293,16 +295,20 @@ class KeyboardTranslationSmokeTest {
         val comma = requireNotNull(device.findObject(By.text(","))).visibleBounds
         val emoji = requireNotNull(device.findObject(By.desc("Open 50 emoji"))).visibleBounds
         assertTrue("Comma must sit left of emoji", comma.right <= emoji.left)
+        assertFalse("Language pickers are hidden until a translation panel opens",
+            device.hasObject(By.descStartsWith("Choose source language")))
         desc("Read")
         assertTrue(requireNotNull(device.findObject(By.desc("Read"))).isSelected)
         assertFalse(requireNotNull(device.findObject(By.desc("Translate"))).isSelected)
-        assertFalse(device.hasObject(By.text("Translate & insert")))
+        assertFalse(device.hasObject(By.desc("Translate & insert")))
         val read = requireNotNull(device.findObject(By.desc("Read"))).visibleBounds
         val source = requireNotNull(device.findObject(By.descStartsWith("Choose source language"))).visibleBounds
         val target = requireNotNull(device.findObject(By.descStartsWith("Choose target language"))).visibleBounds
-        assertTrue("Source language must follow Read in the same header", source.left >= read.right && source.centerY() == read.centerY())
+        // Chips are shorter than the icon buttons, so centring can differ by a rounding pixel.
+        assertTrue("Source language must follow Read in the same header",
+            source.left >= read.right && kotlin.math.abs(source.centerY() - read.centerY()) <= 2)
         assertEquals(source.centerY(), target.centerY())
-        assertTrue(device.hasObject(By.desc("LingoBoard logo")))
+        assertFalse("Keyboard header carries no logo", device.hasObject(By.desc("LingoBoard logo")))
         assertFalse(device.hasObject(By.text("LingoBoard")))
         desc("Read")
         assertFalse(requireNotNull(device.findObject(By.desc("Read"))).isSelected)

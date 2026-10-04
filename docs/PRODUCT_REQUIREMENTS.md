@@ -1,6 +1,6 @@
-# Product requirements — LingoBoard 1.0.1
+# Product requirements — LingoBoard
 
-Updated 2026-10-04 for `1.0.1`. This expands the earlier Roman Hindi/English-only keyboard. Historical evidence remains dated in `benchmark/` and Git history.
+Updated 2026-10-05 for the canvas-keyboard revision (APK version `1.0.2`). This expands the earlier Roman Hindi/English-only keyboard. Historical evidence remains dated in `benchmark/` and Git history.
 
 ## Language and purpose
 
@@ -27,10 +27,18 @@ Keyboard writing never sends a chat message automatically. It defaults to Auto �
 choices. Indian Roman targets are distinct options. Swap exchanges explicit languages; Auto →
 English swaps to English → Hindi (Roman), since Auto cannot be a target. Source typing stays
 inside its local, cursor-editable draft, not the host chat. Translation errors retain that source.
-The toolbar has a translation icon, reading action and keyboard switcher. Local typing offers
-one-shot Shift, double-tap/hold Caps Lock, two symbol pages, long-press top-row numbers,
-selection-aware/hold-repeat backspace and a scrolling picker with 50 smiley emoji. Key views
-stay mounted during normal typing. No promise of Gboard feature or performance parity.
+The compact toolbar has Translate, Read and keyboard-switch icons. Source/swap/target controls
+appear in the header only while a translation panel is open. The logo remains on the setup
+screen. Paste sits inside the draft field; a round translation arrow sits beside it. Read remains
+highlighted and its arrow translates without inserting.
+
+Local typing offers a number row, one-shot Shift, double-tap/hold Caps Lock, three symbol pages
+with 111 distinct characters, selection-aware/hold-repeat backspace and 50 smiley emoji in a
+fixed grid. Comma sits left of emoji. All key pages retain the same total height. Keys use one
+canvas, immediate press feedback and release-based character entry with sliding and multi-finger
+rollover. Letters have no long-press alternates; hold Space to switch keyboards. The palette is
+neutral graphite with an indigo accent and system light/dark mode. No promise of Gboard feature
+or performance parity.
 
 The selected action itself confirms a selection request. An automatic copy prompt must never
 send the message before confirmation. Reading never changes a host selection or clipboard
@@ -93,11 +101,10 @@ revocation stress testing, TalkBack/font scaling, and public distribution review
 The keyboard has no prediction, autocorrect, swipe or voice input. Physical typing latency,
 font scaling, numeric layouts and target-app behavior still need broader device testing.
 
-### 1.0.2 usability refinement
+### Current usability requirements
 
-Use the LingoBoard keyboard/chat logo in place of header text. Keep language selectors in the
-same row immediately after Read, highlight the active mode, and keep reading translate-only.
-Move comma left of emoji, expose frequent long-press shortcuts and three symbol pages. Keep
-chat typing available during reading translation and preserve the key grid/draft cursor during
-panel updates. Setup uses a dim slate palette and collapsible optional floating tools. Screenshot
-capture remains enabled. Physical phone responsiveness and target-app compatibility need validation.
+Keep the header and draft composer compact, preserve the key grid and draft cursor during
+panel updates, and allow continued chat typing during reading requests. Setup uses a dim slate
+palette with collapsible optional floating tools. Screenshot capture remains enabled. Validate
+touch accuracy, multi-finger typing, accessibility and actual responsiveness on physical phones
+before claiming parity with another keyboard.

@@ -74,26 +74,28 @@ class KeyboardLayoutRenderTest {
             }
         }
     }
+    private fun children(group: android.view.ViewGroup): List<View> = (0 until group.childCount).flatMap {
+        val child = group.getChildAt(it)
+        listOf(child) + if (child is android.view.ViewGroup) children(child) else emptyList()
+    }
+
     @Test fun panelUpdatesKeepCursorAndKeysMountedAndReadingHasNoInsertAction() {
         val instrumentation = InstrumentationRegistry.getInstrumentation()
         instrumentation.runOnMainSync {
             val view = LingoKeyboardView(instrumentation.targetContext, noActions)
             val state = KeyboardPanelState(TranslationPanel.READ, Direction.MULTILINGUAL, "hello", false, null, null, false, false)
             view.renderPanel(state); view.renderKeys(KeyPage.LETTERS, ShiftState.OFF, "↵")
-            fun children(group: android.view.ViewGroup): List<View> = (0 until group.childCount).flatMap {
-                val child = group.getChildAt(it)
-                listOf(child) + if (child is android.view.ViewGroup) children(child) else emptyList()
-            }
             val editor = children(view).filterIsInstance<android.widget.EditText>().single()
-            val key = children(view).filterIsInstance<android.widget.Button>().single { it.text == "q" }
+            val grid = children(view).filterIsInstance<KeyGridView>().single()
             editor.setSelection(2)
             view.renderPanel(state.copy(languages = com.lingoflow.instanttranslate.direction.TranslationLanguagePair("hi-Latn", "en")))
             view.renderKeys(KeyPage.LETTERS, ShiftState.OFF, "Send")
             org.junit.Assert.assertSame(editor, children(view).filterIsInstance<android.widget.EditText>().single())
             org.junit.Assert.assertEquals(2, editor.selectionStart)
-            org.junit.Assert.assertSame(key, children(view).filterIsInstance<android.widget.Button>().single { it.text == "q" })
+            org.junit.Assert.assertSame(grid, children(view).filterIsInstance<KeyGridView>().single())
             assertTrue(children(view).single { it.contentDescription == "Read" }.isSelected)
-            assertTrue(children(view).filterIsInstance<android.widget.Button>().none { it.text == "Translate & insert" || it.text == "Insert here" })
+            assertTrue(children(view).none { it.contentDescription == "Translate & insert" })
+            assertTrue(children(view).filterIsInstance<android.widget.Button>().none { it.text == "Insert here" })
             view.renderPanel(state.copy(languages = com.lingoflow.instanttranslate.direction.TranslationLanguagePair("en", "hi-Latn")))
             val target = children(view).filterIsInstance<android.widget.Button>().single {
                 it.contentDescription?.toString()?.startsWith("Choose target language") == true
@@ -102,35 +104,128 @@ class KeyboardLayoutRenderTest {
             org.junit.Assert.assertEquals("Choose target language: Hindi (Roman)", target.contentDescription)
             view.renderPanel(state.copy(result = "Hello there"))
             view.renderKeys(KeyPage.LETTERS, ShiftState.OFF, "Send")
-            org.junit.Assert.assertSame(key, children(view).filterIsInstance<android.widget.Button>().single { it.text == "q" })
+            org.junit.Assert.assertSame(grid, children(view).filterIsInstance<KeyGridView>().single())
             assertTrue(children(view).filterIsInstance<android.widget.Button>().none { it.text == "Insert here" })
         }
     }
 
-    @Test fun fastReleaseCommitsImmediatelyAndCancelOrLongPressNeverAddsASecondKey() {
+    @Test fun languagePickersAppearOnlyWithATranslationPanel() {
         val instrumentation = InstrumentationRegistry.getInstrumentation()
         instrumentation.runOnMainSync {
-            var clicks = 0
-            var longPresses = 0
-            val key = ImmediateKeyButton(instrumentation.targetContext)
-            key.layout(0, 0, 100, 100)
-            key.setOnClickListener { clicks++ }
-            key.setOnLongClickListener { longPresses++; true }
-            fun touch(action: Int) {
-                val now = android.os.SystemClock.uptimeMillis()
-                val event = android.view.MotionEvent.obtain(now, now, action, 50f, 50f, 0)
-                key.onTouchEvent(event); event.recycle()
-            }
-            touch(android.view.MotionEvent.ACTION_DOWN); touch(android.view.MotionEvent.ACTION_UP)
-            org.junit.Assert.assertEquals("Release must commit without a posted click task", 1, clicks)
-            touch(android.view.MotionEvent.ACTION_DOWN); touch(android.view.MotionEvent.ACTION_CANCEL)
-            org.junit.Assert.assertEquals(1, clicks)
-            touch(android.view.MotionEvent.ACTION_DOWN); key.performLongClick(); touch(android.view.MotionEvent.ACTION_UP)
-            org.junit.Assert.assertEquals(1, longPresses)
-            org.junit.Assert.assertEquals("Long press must not also type the ordinary key", 1, clicks)
-            key.performClick()
-            org.junit.Assert.assertEquals("Accessibility click remains supported", 2, clicks)
+            val view = LingoKeyboardView(instrumentation.targetContext, noActions)
+            fun languageBar() = children(view).filterIsInstance<android.widget.Button>().single {
+                it.contentDescription?.toString()?.startsWith("Choose source language") == true
+            }.parent as View
+            view.renderPanel(KeyboardPanelState(TranslationPanel.NONE, Direction.MULTILINGUAL, "", false, null, null, false, false))
+            org.junit.Assert.assertEquals(View.INVISIBLE, languageBar().visibility)
+            assertTrue("Keyboard header carries no logo", children(view).none { it.contentDescription == "LingoBoard logo" })
+            view.renderPanel(KeyboardPanelState(TranslationPanel.WRITE, Direction.MULTILINGUAL, "", false, null, null, false, false))
+            org.junit.Assert.assertEquals(View.VISIBLE, languageBar().visibility)
+            // Paste and Translate share the draft's row instead of adding a separate button row.
+            val editor = children(view).filterIsInstance<android.widget.EditText>().single()
+            val submit = children(view).single { it.contentDescription == "Translate & insert" }
+            val paste = children(view).single { it.contentDescription == "Paste copied text" }
+            val row = editor.parent.parent
+            assertTrue(submit.parent.parent === row && paste.parent === editor.parent)
         }
+    }
+
+    /** Records what the grid fires so touch rules can be checked without a host editor. */
+    private class RecordingKeys : KeyGridListener {
+        val keys = mutableListOf<String>()
+        val longPresses = mutableListOf<String>()
+        override fun onKey(key: KeySpec) { keys.add(key.label) }
+        override fun onLongPress(key: KeySpec) { longPresses.add(key.label) }
+    }
+
+    private fun laidOutGrid(recorder: RecordingKeys): KeyGridView {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val grid = KeyGridView(context, KeyboardPalette.of(context), false, recorder)
+        val width = (390 * context.resources.displayMetrics.density).toInt()
+        grid.measure(View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY),
+            View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED))
+        grid.layout(0, 0, width, grid.measuredHeight)
+        return grid
+    }
+
+    /** Dispatches a (multi-)pointer event; [points] maps pointer id to the key it touches. */
+    private fun KeyGridView.touch(action: Int, index: Int, vararg points: Pair<Int, String>) {
+        val now = android.os.SystemClock.uptimeMillis()
+        val properties = points.map { (id, _) -> android.view.MotionEvent.PointerProperties().apply { this.id = id } }.toTypedArray()
+        val coords = points.map { (_, label) ->
+            val bounds = requireNotNull(keyBounds(label)) { "No key labelled $label" }
+            android.view.MotionEvent.PointerCoords().apply { x = bounds.centerX(); y = bounds.centerY(); pressure = 1f; size = 1f }
+        }.toTypedArray()
+        val masked = if (points.size > 1 && action != android.view.MotionEvent.ACTION_MOVE && action != android.view.MotionEvent.ACTION_CANCEL)
+            (if (action == android.view.MotionEvent.ACTION_DOWN) android.view.MotionEvent.ACTION_POINTER_DOWN else android.view.MotionEvent.ACTION_POINTER_UP) or
+                (index shl android.view.MotionEvent.ACTION_POINTER_INDEX_SHIFT)
+        else action
+        val event = android.view.MotionEvent.obtain(now, now, masked, points.size, properties, coords, 0, 0, 1f, 1f, 0, 0,
+            android.view.InputDevice.SOURCE_TOUCHSCREEN, 0)
+        onTouchEvent(event); event.recycle()
+    }
+
+    @Test fun keysTypeOnReleaseAndCancelOrSlideNeverDoubleType() {
+        val instrumentation = InstrumentationRegistry.getInstrumentation()
+        instrumentation.runOnMainSync {
+            val recorder = RecordingKeys()
+            val grid = laidOutGrid(recorder)
+            assertTrue("Letter rows keep a Gboard-sized touch target",
+                requireNotNull(grid.keyBounds("q")).height() / grid.resources.displayMetrics.density >= 54)
+            grid.touch(android.view.MotionEvent.ACTION_DOWN, 0, 0 to "q")
+            org.junit.Assert.assertEquals("Characters commit on release, like Gboard", emptyList<String>(), recorder.keys)
+            grid.touch(android.view.MotionEvent.ACTION_UP, 0, 0 to "q")
+            org.junit.Assert.assertEquals(listOf("q"), recorder.keys)
+            grid.touch(android.view.MotionEvent.ACTION_DOWN, 0, 0 to "w")
+            grid.touch(android.view.MotionEvent.ACTION_CANCEL, 0, 0 to "w")
+            org.junit.Assert.assertEquals(listOf("q"), recorder.keys)
+            // Sliding re-targets the key under the finger; only the final key types.
+            grid.touch(android.view.MotionEvent.ACTION_DOWN, 0, 0 to "e")
+            grid.touch(android.view.MotionEvent.ACTION_MOVE, 0, 0 to "r")
+            grid.touch(android.view.MotionEvent.ACTION_UP, 0, 0 to "r")
+            org.junit.Assert.assertEquals(listOf("q", "r"), recorder.keys)
+            // Delete acts on touch-down so a tap never feels delayed.
+            grid.touch(android.view.MotionEvent.ACTION_DOWN, 0, 0 to "⌫")
+            org.junit.Assert.assertEquals(listOf("q", "r", "⌫"), recorder.keys)
+            grid.touch(android.view.MotionEvent.ACTION_UP, 0, 0 to "⌫")
+            org.junit.Assert.assertEquals(listOf("q", "r", "⌫"), recorder.keys)
+        }
+    }
+
+    @Test fun secondFingerCommitsTheFirstKeyInTypingOrder() {
+        val instrumentation = InstrumentationRegistry.getInstrumentation()
+        instrumentation.runOnMainSync {
+            val recorder = RecordingKeys()
+            val grid = laidOutGrid(recorder)
+            grid.touch(android.view.MotionEvent.ACTION_DOWN, 0, 0 to "h")
+            grid.touch(android.view.MotionEvent.ACTION_DOWN, 1, 0 to "h", 1 to "i")
+            org.junit.Assert.assertEquals(listOf("h"), recorder.keys)
+            // The second finger lifts first; the first must not type again when it lifts.
+            grid.touch(android.view.MotionEvent.ACTION_UP, 1, 0 to "h", 1 to "i")
+            grid.touch(android.view.MotionEvent.ACTION_UP, 0, 0 to "h")
+            org.junit.Assert.assertEquals(listOf("h", "i"), recorder.keys)
+        }
+    }
+
+    @Test fun holdingSpaceSwitchesKeyboardsWithoutTypingASpaceAndLettersHaveNoAlternates() {
+        val instrumentation = InstrumentationRegistry.getInstrumentation()
+        val recorder = RecordingKeys()
+        lateinit var grid: KeyGridView
+        instrumentation.runOnMainSync {
+            grid = laidOutGrid(recorder)
+            grid.touch(android.view.MotionEvent.ACTION_DOWN, 0, 0 to "Space")
+        }
+        Thread.sleep(android.view.ViewConfiguration.getLongPressTimeout() + 300L)
+        instrumentation.waitForIdleSync()
+        instrumentation.runOnMainSync { grid.touch(android.view.MotionEvent.ACTION_UP, 0, 0 to "Space") }
+        org.junit.Assert.assertEquals(listOf("Space"), recorder.longPresses)
+        org.junit.Assert.assertEquals("Long-pressed space must not also type", emptyList<String>(), recorder.keys)
+        instrumentation.runOnMainSync { grid.touch(android.view.MotionEvent.ACTION_DOWN, 0, 0 to "a") }
+        Thread.sleep(android.view.ViewConfiguration.getLongPressTimeout() + 300L)
+        instrumentation.waitForIdleSync()
+        instrumentation.runOnMainSync { grid.touch(android.view.MotionEvent.ACTION_UP, 0, 0 to "a") }
+        org.junit.Assert.assertEquals("Holding a letter types it once, with no symbol alternate", listOf("a"), recorder.keys)
+        org.junit.Assert.assertEquals(listOf("Space"), recorder.longPresses)
     }
 
     @Test fun setupUsesDimSlateLogoAndCollapsesFloatingTools() {

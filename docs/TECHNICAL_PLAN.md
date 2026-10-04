@@ -1,6 +1,6 @@
 # Architecture — reading and writing V1
 
-Updated 2026-10-04. Current Kotlin app uses the existing hosted JavaScript/SQLite/Gemini backend.
+Updated 2026-10-05. Current Kotlin app uses the existing hosted JavaScript/SQLite/Gemini backend.
 
 ## Selection entry
 
@@ -54,14 +54,14 @@ an existing request; an already-sent request can still consume server quota.
 ## Translation keyboard
 
 `LingoKeyboardService` is permission-protected by `BIND_INPUT_METHOD`. The user enables/selects
-it through system UI. `LingoKeyboardView` holds a stable toolbar/key grid with rounded ripple
-keys, haptic feedback, one-shot/locked Shift, symbol pages, 50 emoji, hold-repeat backspace and
-local cursor-editable translation draft. Letter presses update labels only when Shift changes;
-they do not rebuild the grid or request translations. `KeyboardLayout` supplies deterministic
-key data. Draft edits use Editable.replace/delete in place, with code-point-aware backspace
-and a 4,000-unit cap; they never recreate the Editable on each key. Key backgrounds are inset
-inside full touch cells, so visual gutters also accept touches. Portrait cells are 56dp high;
-landscape uses 36dp. Light/dark palettes follow system configuration; toolbar actions are icons.
+it through system UI. `LingoKeyboardView` holds a stable toolbar, canvas key grid and local
+cursor-editable translation draft. `KeyboardLayout.rows()` supplies deterministic `KeySpec`
+data; `KeyGridView` draws the keys and exposes virtual accessible buttons. Ordinary typing
+never rebuilds the grid or requests translations. Draft edits use Editable.replace/delete in
+place, with code-point-aware backspace and a 4,000-unit cap; they never recreate the Editable
+on each key. Full touch cells include the visual gutters. The base row height is 56dp in
+portrait and 40dp in landscape, with a weighted number row; every page has the same total
+height. `KeyboardPalette` follows system light/dark mode. Toolbar actions are icons.
 
 - Write: explicit source/target IDs, Auto → English by default, local draft, bounded request on button
   press. `commitText` inserts/replaces the host selection on success, never performs Send. A
@@ -127,25 +127,34 @@ loses its state. Universal clipboard/overlay reliability and public release are 
 - [Overlay windows](https://developer.android.com/reference/android/view/WindowManager.LayoutParams#TYPE_APPLICATION_OVERLAY)
 - [Foreground service types](https://developer.android.com/about/versions/14/changes/fgs-types-required)
 
-### LingoBoard 1.0.2 keyboard refinements
+### Compact translation controls
 
-The logo, Write/Read mode icons, source/swap/target controls and close/switch action occupy one
-44dp header. Read is selected while its panel is active; pressing the translation icon in Read
-translates the reading source and never opens a write/insert flow. Pressing Read again closes it.
-Reading results offer Copy/New only. The setup screen uses a dim slate theme and hides optional
-floating-session controls behind an explicit toggle.
+Write/Read icons, source/swap/target controls and close/switch action occupy one header
+(46dp portrait, 40dp landscape).
+Language controls are invisible until a panel opens; no logo occupies the keyboard header.
+Paste sits inside the draft field, with an icon-only round translation arrow alongside it.
+Read is selected while its panel is active; its translation action never opens a write/insert
+flow. Pressing Read again closes it. Reading results offer Copy/New only. Setup retains the
+logo, a dim slate theme and collapsible optional floating-session tools.
 
-`ImmediateKeyButton` commits a native accessible click in the finger-release event instead of
-posting it. Native down/move/cancel and long-press handling remain, with consumed long presses
-preventing a second ordinary character. Buttons disable click sounds. The key grid is reused
-across panel/language/request updates; only the enter label and changed Shift labels update.
-The local draft editor and cursor persist across language and status updates. Language changes
-replace only the two header chip nodes because IME accessibility can retain the old target label;
-their descriptions include the full selected language. Same-editor IME
-restarts preserve the panel while invalidating write insertion targets. Backspace uses the
-reported selection instead of querying the remote editor on every press.
+The key grid, local draft Editable and cursor persist across language/status updates. Language
+changes replace only the two header chip nodes because IME accessibility can retain the old
+target label; their descriptions include the full selected language. Same-editor IME restarts
+preserve the panel while invalidating write insertion targets. Backspace uses the reported host
+selection instead of querying the remote editor on every press. During a reading request,
+key/delete/enter actions continue targeting the chat; the submitted reading source stays
+unchanged. Write drafts remain disabled during their request.
 
-While a reading request is pending, key/delete/enter actions continue targeting the chat editor;
-the submitted reading source stays unchanged. Write drafts remain disabled during their request.
-There are 81 symbols across three pages, 50 smiley, and 26 visible long-press shortcuts. No
-physical-device frame-time or Gboard-latency claim is made.
+### Drawn key grid
+
+`KeyGridView` draws all keys on one canvas from the `KeyboardLayout.rows()` model, replacing
+roughly 40 Button views and their ripple animation. Touch handling tracks each
+pointer: characters/Space/Enter/page keys fire on release and follow a sliding finger; Delete and
+Shift fire on touch-down; a new finger commits earlier unfired characters (rollover). Delete
+repeats after 400ms at 50ms intervals; Shift and Space use the system long-press timeout (Caps
+Lock, keyboard picker). The key preview is a drawable in the keyboard root's `ViewOverlay`, so it
+can rise over the toolbar without a popup window. `ExploreByTouchHelper` exposes each key as a
+virtual Button with the same text/descriptions as before for TalkBack and UiAutomator.
+Every page has a fixed total height: the bottom row keeps one pitch and other rows share the rest
+by weight (the number row is 0.82×). Colours come from `KeyboardPalette`. Pages hold 111 symbols
+over three four-row pages and 50 smiley in a 10×5 grid; letters have no long-press alternates.

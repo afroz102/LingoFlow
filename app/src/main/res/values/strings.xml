@@ -64,10 +64,10 @@
     <string name="keyboard_draft_hint">Type a message to translate…</string>
     <string name="keyboard_read_hint">Paste a message to translate…</string>
     <string name="keyboard_draft_description">Translation draft</string>
-    <string name="keyboard_paste">Paste copy</string>
+    <string name="keyboard_paste">Paste copied text</string>
     <string name="keyboard_translating">Translating…</string>
     <string name="keyboard_translate_insert">Translate &amp; insert</string>
-    <string name="keyboard_translate_read">Translate</string>
+    <string name="keyboard_translate_read">Translate message</string>
     <string name="keyboard_result_description">Keyboard translation result</string>
     <string name="keyboard_shift">Shift</string>
     <string name="keyboard_shift_once">Shift on for one letter. Double tap for Caps Lock</string>

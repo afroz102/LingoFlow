@@ -1,7 +1,8 @@
 # Benchmark tools and evidence
 
-The current app is LingoBoard 1.0.2: multilingual translation with Auto → English defaults,
-larger keys, light/dark themes, icon controls and screenshots enabled. Earlier UI and
+The current app is the LingoBoard 1.0.2 canvas-keyboard revision: multilingual translation with
+Auto → English defaults, a number row, fixed-height key pages, light/dark themes, compact icon
+controls and screenshots enabled. Earlier UI and
 direction-enum findings are historical. The frozen corpus/timing
 protocol needs adaptation; the old latency instrumentation is explicitly skipped.
 
@@ -10,7 +11,8 @@ and release gates. Passing a connectivity smoke does not pass those gates.
 
 | File | Purpose |
 |---|---|
-| `lingoboard_1.0.2_android_smoke.json` | Current compact-header/read-mode/key-response APK evidence |
+| `keyboard_canvas_smoke.json` | Current canvas revision: build/JVM/lint and 16 non-live API 34 cases; seven live cases skipped |
+| `lingoboard_1.0.2_android_smoke.json` | Earlier Button-based 1.0.2 APK evidence; predates the canvas revision |
 | `lingoboard_1.0.1_android_smoke.json` | Earlier multilingual APK, keyboard, language selector, screenshot and live UI evidence |
 | `lingoboard_multilingual_http_smoke.json` | Ten real multilingual requests; transport/script checks, not human quality scores |
 | `keyboard_smoke.json` | Earlier 0.7 keyboard translation, UI/build checks, denied-overlay and live translation evidence |

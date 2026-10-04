@@ -94,7 +94,7 @@ entry or server configuration is needed on the phone. Internet is required for t
    permission and Start reading session are unnecessary for this keyboard flow.
 4. **Write:** tap the **Translate** icon in the top row. The selectors show **Auto → English**.
    Type `main kal nahi aa sakta` in the separate translation box. It should not appear in the chat yet.
-   Tap **Translate & insert**. On first use, read the disclosure and tap **Continue**.
+   Tap the round **Translate & insert** arrow. On first use, read the disclosure and tap **Continue**.
    English enters the chat input. Review it and send using your chat app when ready.
 5. Tap the target selector and choose **Hindi (Roman)** to test `How are you?`.
    Choose **Hindi** for Devanagari output or any other supported target. The source selector
@@ -103,7 +103,7 @@ entry or server configuration is needed on the phone. Internet is required for t
    Translation failures keep the source; tap Translate & insert again for an explicit retry.
 6. **Read a copied message:** copy a received message, open the chat input and tap the **message icon**.
    Read stays highlighted in the header and offers no insertion action. The copied source appears
-   in the keyboard panel. Tap **Translate**; the English
+   in the keyboard panel. Tap the round **Translate** arrow; the English
    result appears above the keys. Translation leaves your existing chat draft unchanged; you can then type a reply below the result. **Copy**, **New**
    and **×** are available; reading never inserts its result into the chat.
 7. **Read selected editor text:** select text in the active typing field. The translation icon’s accessible label changes
@@ -112,9 +112,9 @@ entry or server configuration is needed on the phone. Internet is required for t
 8. If the host offers **LingoBoard Translate** on received-message selection, choose it, then open
    the chat input within 60 seconds for the keyboard result. Use copy + Read if the action is absent.
 9. **Keyboard controls:** tap Shift for one capital, double-tap or hold for Caps Lock; tap again
-   for lowercase. **?123** opens numbers/signs; the left third-row key switches symbol pages.
-   **☺** opens 50 smiley emoji. Hold Backspace to delete repeatedly; hold top-row letters for
-   digits. Tap the **globe icon** or hold Space to switch keyboards. Translation-panel Enter creates a newline.
+   for lowercase. **?123** opens numbers/signs; the page-number key cycles through three symbol pages.
+   The number row gives direct digit access. **☺** opens 50 smiley emoji. Hold Backspace to delete
+   repeatedly. Tap the **globe icon** or hold Space to switch keyboards. Translation-panel Enter creates a newline.
 10. Try your actual target apps, part-selection, long input, offline failure and landscape.
     Closing/hiding the keyboard clears the translation draft/result and cancels pending work.
     If the chat cursor moves during a writing request, review the held result and use **Insert here** or **Copy**.
@@ -122,9 +122,11 @@ entry or server configuration is needed on the phone. Internet is required for t
 There are 45 translation languages, including all 22 scheduled Indian languages with separate
 native-script and Roman choices, and 67 total language/script options. English is the default
 target; you can choose another target for both writing and reading. The keyboard layout remains
-Latin QWERTY. Language selectors follow the reading icon in the same header. Comma is left of emoji.
-There are three symbol pages; hold a letter to enter its small digit/symbol label. Reading requests
-allow continued chat typing. Tap the highlighted Read icon or × to leave reading mode.
+Latin QWERTY. Language selectors follow the reading icon in the same header only while a
+translation panel is open. Paste is inside the draft field; the round arrow alongside it submits
+the request. Comma is left of emoji. There are three symbol pages with 111 distinct characters
+and a dedicated number row; letters have no long-press alternates. All key pages keep the same
+height. Reading requests allow continued chat typing. Tap the highlighted Read icon or × to leave reading mode.
 Screenshots are enabled in LingoBoard. Context comes only
 from the requested passage. Normal typing stays local; only explicit translation requests go
 to Gemini. No word prediction, autocorrect, swipe or voice typing yet.
@@ -180,7 +182,7 @@ JAVA_HOME=/opt/homebrew/opt/openjdk@17 ./gradlew :app:connectedDebugAndroidTest 
   -Pandroid.testInstrumentationRunnerArguments.liveCloud=true
 ```
 
-The keyboard suite makes five live model calls and tests with overlays denied:
+The keyboard suite makes seven live model calls and tests with overlays denied:
 
 ```sh
 JAVA_HOME=/opt/homebrew/opt/openjdk@17 ./gradlew :app:connectedDebugAndroidTest \
@@ -195,7 +197,7 @@ For local Android transport, use `adb reverse tcp:8787 tcp:8787` and instrumenta
 `testBackendUrl=http://127.0.0.1:8787` in the transport test. TLS checks are never disabled.
 
 Current checks and remaining coverage are in [VALIDATION_PLAN.md](VALIDATION_PLAN.md).
-The deployed V1 Worker version is `933559fa-feea-4a9f-ba0a-1baa81a4444c`.
+This keyboard revision does not change the deployed backend.
 Older backend/Hinglish smoke records remain historical; their Devanagari routes and old UI
 no longer describe the active API or APK.
 

@@ -20,17 +20,37 @@ class KeyboardDraftTest {
     @Test fun richKeyDataIncludes50DistinctSmileyAndThreeSymbolPages() {
         assertEquals(50, KeyboardLayout.emoji.size)
         assertEquals(50, KeyboardLayout.emoji.toSet().size)
-        assertTrue(KeyboardLayout.symbols.flatten().containsAll(listOf(";", ":", "!", "?", "\"", "'")))
-        assertTrue(KeyboardLayout.moreSymbols.flatten().containsAll(listOf("[", "]", "{", "}", "€", "\\", "<", ">", "_")))
+        assertTrue(KeyboardLayout.symbols.flatten().containsAll(listOf(";", ":", "!", "?", "\"", "'", "[", "]", "{", "}", "\\", "<", ">", "_")))
+        assertTrue(KeyboardLayout.moreSymbols.flatten().containsAll(listOf("€", "₹", "√", "©")))
     }
-    @Test fun everydaySymbolsAndSecondaryLetterKeysAreAvailable() {
+    @Test fun everydaySymbolsAreAvailableWithoutDuplicates() {
         val symbols = (KeyboardLayout.symbols + KeyboardLayout.moreSymbols + KeyboardLayout.extraSymbols).flatten()
-        assertEquals(81, symbols.toSet().size)
+        assertEquals(111, symbols.size)
+        assertEquals(symbols.size, symbols.toSet().size)
         assertTrue(symbols.containsAll(listOf("%", "=", "$", "₹", "…", "—", "©", "™", "±", "←", "¿", "¡")))
-        assertEquals(26, KeyboardLayout.longPress.size)
-        assertEquals("1", KeyboardLayout.longPress["q"])
-        assertEquals("@", KeyboardLayout.longPress["a"])
-        assertEquals("?", KeyboardLayout.longPress["m"])
+    }
+    @Test fun lettersHaveANumberRowAndNoLongPressAlternates() {
+        val rows = KeyboardLayout.rows(KeyPage.LETTERS, "↵")
+        assertEquals("Number row + three letter rows + bottom row", 5, rows.size)
+        assertEquals(KeyboardLayout.digits, rows.first().keys.map { it.label })
+        assertTrue(rows.first().height < rows[1].height)
+        assertEquals("qwertyuiop", rows[1].keys.joinToString("") { it.label })
+        assertEquals(listOf(KeyAction.SHIFT, KeyAction.DELETE), listOf(rows[3].keys.first().action, rows[3].keys.last().action))
+    }
+    @Test fun everyPageFillsTheSameTenUnitWidthAndRowCount() {
+        // Equal row counts keep the IME height fixed across page switches (no host re-layout).
+        for (page in KeyPage.values()) {
+            val rows = KeyboardLayout.rows(page, "↵")
+            assertEquals("$page row count", if (page == KeyPage.EMOJI) 6 else 5, rows.size)
+            rows.forEach { assertEquals("$page row $it", KeyboardLayout.ROW_UNITS, it.units, 0.001f) }
+        }
+    }
+    @Test fun bottomRowMatchesGboardOrderAndEmojiPageKeepsDelete() {
+        assertEquals(listOf(KeyAction.SYMBOLS, KeyAction.TEXT, KeyAction.EMOJI, KeyAction.SPACE, KeyAction.TEXT, KeyAction.ENTER),
+            KeyboardLayout.rows(KeyPage.LETTERS, "↵").last().keys.map { it.action })
+        assertEquals(KeyAction.DELETE, KeyboardLayout.rows(KeyPage.EMOJI, "↵").last().keys.last().action)
+        assertEquals(KeyPage.MORE_SYMBOLS, KeyboardLayout.nextSymbolPage(KeyPage.SYMBOLS))
+        assertEquals(KeyPage.SYMBOLS, KeyboardLayout.nextSymbolPage(KeyPage.EXTRA_SYMBOLS))
     }
     @Test fun lateInsertionCannotTargetANewEditorOrMovedSelection() {
         val target = KeyboardInsertionTarget(3, 7)
