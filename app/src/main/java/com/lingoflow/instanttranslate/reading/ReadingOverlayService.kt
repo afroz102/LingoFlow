@@ -82,6 +82,7 @@ class ReadingOverlayService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        ReadingSession.isRunning = true
         windows = getSystemService(WindowManager::class.java)
         clipboard = getSystemService(ClipboardManager::class.java)
         createNotification()
@@ -108,6 +109,7 @@ class ReadingOverlayService : Service() {
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onDestroy() {
+        ReadingSession.isRunning = false
         clipboard.removePrimaryClipChangedListener(listener)
         handler.removeCallbacksAndMessages(null)
         scope.cancel()

@@ -83,45 +83,51 @@ separate from D1. Production builds require HTTPS. Debug builds allow HTTP only 
 
 ## Test on a real Android phone
 
-The `0.6.0-reading-writing` APK includes the public backend URL. No Supabase account,
-Gemini key entry or server configuration is needed on the phone. Internet is required.
+The `0.7.0-keyboard-translate` APK includes the public backend URL. No account, Gemini key
+entry or server configuration is needed on the phone. Internet is required for translation.
 
-1. Transfer `app/build/outputs/apk/debug/app-debug.apk` to the phone and install it, allowing
-   installs from that particular file/browser app if Android asks. Update any older LingoFlow APK.
-2. Open **LingoTranslate** from the launcher and tap **Allow floating translations**. Enable
-   display over other apps in Android settings, then return. This permission is needed for reading.
-3. For automatic copy prompts, tap **1. Enable Lingo keyboard** and enable it in system settings.
-   Return, tap **2. Choose Lingo keyboard**, and select it. Android will show its keyboard warning.
-   The keyboard is a basic local Roman keyboard; it has no suggestions or swipe typing. To keep
-   your current keyboard, skip this step and use the manual bubble route below.
-4. Tap **Start reading session** and acknowledge the cloud-processing disclosure. The Lingo bubble
-   appears. On Android 13+, allow notifications when asked for the notification Stop control;
-   declining still allows the overlay session. The session notification appears when permitted.
-   Return to your game/chat; do not stop the session yet.
-5. **Automatic reading:** with Lingo keyboard selected, copy a received Hinglish message in the
-   host. The prompt asks whether to translate. Tap **Translate**; English floats over the host.
-6. **Manual reading:** with another keyboard, copy the message, then tap **Lingo**. That tap requests
-   translation. The card briefly takes focus to read the clipboard, then floats the English result.
-7. **Selectable reading:** select a read-only Hinglish message and choose **Lingo-Translate** from
-   the selection menu (possibly under More). The result floats without another confirmation tap.
-8. Drag the card by its title. Use **Minimize** to keep a result as a bubble, **Close** to discard
-   it, **Copy** to put English in the clipboard, and **Stop** to end the entire reading session.
-   Stop is also available in the session notification or launcher.
-9. **Writing:** type `main kal nahi aa sakta`, select that draft, and choose **Lingo-Translate**.
-   It should automatically replace the selection with English. Try `How are you?` for Roman Hindi.
-   Writing works with any keyboard and does not require a running reading session or overlays.
-10. Try cancellation/offline input, selection of only part of a draft, rotation, landscape game,
-    repeated copies and session Stop. Errors/cancel must leave the original draft untouched.
+1. Transfer `app/build/outputs/apk/debug/app-debug.apk` to your phone and install/update it.
+   Allow installation from that file/browser app if Android asks.
+2. Open **LingoTranslate**, tap **1. Enable Lingo keyboard**, and enable **Lingo Roman keyboard**
+   in system settings. Return and tap **2. Choose Lingo keyboard** to select it.
+3. Open your game/chat and tap its chat input. Lingo keyboard appears. Display-over-apps
+   permission and Start reading session are unnecessary for this keyboard flow.
+4. **Write:** tap the **Translate** icon in the top row. The header shows **Roman Hindi → English**.
+   Type `main kal nahi aa sakta` in the separate translation box. It should not appear in the chat yet.
+   Tap **Translate & insert**. On first use, read the disclosure and tap **Continue**.
+   English enters the chat input. Review it and send using your chat app when ready.
+5. Tap **⇄** in the translation panel to use **English → Roman Hindi**, and test `How are you?`.
+   Translation failures keep the source; tap Translate & insert again for an explicit retry.
+6. **Read a copied message:** copy a received message, open the chat input and tap **Read**.
+   The copied source appears in the keyboard panel. Tap **Translate to English**; the English
+   result appears above the keys. Translation leaves your existing chat draft unchanged; you can then type a reply below the result. **Copy**, **New**
+   and **×** are available; reading never inserts a result into the chat automatically.
+7. **Read selected editor text:** select text in the active typing field. The top action changes
+   to **Translate selection**. Tap it to read English above the keys. The selection stays unchanged.
+   A keyboard cannot generally detect selections in received-message UI outside that editor.
+8. If the host offers **Lingo-Translate** on received-message selection, choose it, then open
+   the chat input within 60 seconds for the keyboard result. Use copy + Read if the action is absent.
+9. **Keyboard controls:** tap Shift for one capital, double-tap or hold for Caps Lock; tap again
+   for lowercase. **?123** opens numbers/signs; the left third-row key switches symbol pages.
+   **☺** opens 50 smiley emoji. Hold Backspace to delete repeatedly; hold top-row letters for
+   digits. Tap **🌐** or hold Space to switch keyboards. Translation-panel Enter creates a newline.
+10. Try your actual target apps, part-selection, long input, offline failure and landscape.
+    Closing/hiding the keyboard clears the translation draft/result and cancels pending work.
+    If the chat cursor moves during a request, review the held result and use **Insert here** or **Copy**.
 
-Only English and Roman Hindi/Hinglish are supported; Devanagari is rejected. Reading an already
-English message should return it unchanged. Results use context in the copied/selected passage,
-not surrounding chat. Sensitive clips, password contexts and Lingo's own copied output are skipped.
+Only English and Roman Hindi/Hinglish are supported; Devanagari is rejected. Context comes only
+from the requested passage. Normal typing stays local; only explicit translation requests go
+to Gemini. No word prediction, autocorrect, swipe or voice typing yet.
 
-The minimum is provisionally Android 6/API 23, not a guarantee for every phone/version. If a host
-omits the selection action, use its copy behavior. If the host blocks overlays, the floating route
-cannot be promised. Automatic copying requires the selected Lingo keyboard on modern Android;
-overlay permission alone does not provide clipboard access. Actual Game of Khans, Discord,
-WhatsApp, Telegram and Instagram compatibility still needs real-phone testing.
+**Optional floating mode:** if your app permits overlays, allow **floating translations** and tap
+**Start reading session**. With Lingo keyboard selected, copy prompts can appear above the app;
+with another keyboard, tap the Lingo bubble after copying. Confirmed English floats over the app.
+Drag, Copy, Minimize, Close and Stop remain available. An explicitly running floating session
+keeps the older received-selection route. This mode is separate from keyboard translation.
+
+Actual Game of Khans, Discord, WhatsApp, Telegram and Instagram compatibility still needs
+real-phone testing. Apps must expose an Android editor for the keyboard route. The provisional
+minimum is Android 6/API 23; support for every phone/version is not established.
 
 For controlled testing, optionally install
 `testhost/build/outputs/apk/withQueries/debug/testhost-withQueries-debug.apk`.
@@ -152,6 +158,14 @@ restores its default IME/overlay access after each case. Install both APKs first
 ```sh
 JAVA_HOME=/opt/homebrew/opt/openjdk@17 ./gradlew :app:connectedDebugAndroidTest \
   -Pandroid.testInstrumentationRunnerArguments.class=com.lingoflow.instanttranslate.ui.ReadingWritingSmokeTest \
+  -Pandroid.testInstrumentationRunnerArguments.liveCloud=true
+```
+
+The keyboard suite makes five live model calls and tests with overlays denied:
+
+```sh
+JAVA_HOME=/opt/homebrew/opt/openjdk@17 ./gradlew :app:connectedDebugAndroidTest \
+  -Pandroid.testInstrumentationRunnerArguments.class=com.lingoflow.instanttranslate.ui.KeyboardTranslationSmokeTest \
   -Pandroid.testInstrumentationRunnerArguments.liveCloud=true
 ```
 

@@ -7,6 +7,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
 import android.view.WindowManager
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -20,12 +21,14 @@ import com.lingoflow.instanttranslate.direction.DirectionDetector
 import com.lingoflow.instanttranslate.prefs.DisclosurePreferences
 import com.lingoflow.instanttranslate.reading.ReadingSession
 import com.lingoflow.instanttranslate.reading.ReadingNotifications
+import com.lingoflow.instanttranslate.reading.ClipboardAccess
+import com.lingoflow.instanttranslate.keyboard.KeyboardReadingInbox
 import com.lingoflow.instanttranslate.timing.TimingMark
 import com.lingoflow.instanttranslate.timing.TimingOutcome
 import com.lingoflow.instanttranslate.timing.TranslationTimeline
 import kotlinx.coroutines.launch
 
-/** Editable hosts receive one replacement result. Read-only hosts hand off to the overlay session. */
+/** Editable hosts receive one replacement result. Reading can hand off to the selected keyboard. */
 class ResultActivity : AppCompatActivity() {
     private lateinit var binding: ActivityResultBinding
     private val originalText by lazy { intent.getStringExtra(EXTRA_TEXT).orEmpty() }
@@ -68,6 +71,11 @@ class ResultActivity : AppCompatActivity() {
             binding.buttonDisclosureContinue.setOnClickListener {
                 DisclosurePreferences(this).acknowledge(); prepareReading()
             }
+        } else if (ClipboardAccess.hasKeyboardAccess(this) && !ReadingSession.isRunning) {
+            // A read-only message isn't an IME editor. The host's chat composer must open the keyboard.
+            KeyboardReadingInbox.offer(originalText)
+            Toast.makeText(this, R.string.keyboard_open_to_read, Toast.LENGTH_LONG).show()
+            finish()
         } else if (!Settings.canDrawOverlays(this)) {
             readingError(R.string.reading_permission, retry = true)
             binding.buttonRetry.setText(R.string.setup_overlay)

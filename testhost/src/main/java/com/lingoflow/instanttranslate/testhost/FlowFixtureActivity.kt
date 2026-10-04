@@ -57,6 +57,17 @@ class FlowFixtureActivity : AppCompatActivity() {
             draft.requestFocus()
             getSystemService(android.view.inputmethod.InputMethodManager::class.java).showSoftInput(draft, 0)
         }
+        button("Focus draft field") {
+            draft.inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE
+            draft.requestFocus()
+            getSystemService(android.view.inputmethod.InputMethodManager::class.java).showSoftInput(draft, 0)
+        }
+        button("Select draft text") {
+            draft.inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE
+            draft.requestFocus()
+            draft.setSelection(draft.text.indexOf('|') + 2, draft.text.lastIndexOf('|') - 1)
+            getSystemService(android.view.inputmethod.InputMethodManager::class.java).showSoftInput(draft, 0)
+        }
         setContentView(content)
         draft.clearFocus()
     }

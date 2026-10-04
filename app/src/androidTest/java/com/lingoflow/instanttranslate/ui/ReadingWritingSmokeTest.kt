@@ -31,7 +31,16 @@ class ReadingWritingSmokeTest {
         if (device.hasObject(By.text("Space"))) device.pressBack() // Dismiss our keyboard.
     }
     private fun click(text: String) {
-        requireNotNull(device.wait(Until.findObject(By.text(text)), 5000)) { "Missing control $text" }.click()
+        var control = device.wait(Until.findObject(By.text(text)), 1500)
+        if (control == null && text == "Start reading session") {
+            for (attempt in 0..2) {
+                device.swipe(device.displayWidth / 2, device.displayHeight * 3 / 4,
+                    device.displayWidth / 2, device.displayHeight / 4, 20)
+                control = device.wait(Until.findObject(By.text(text)), 500)
+                if (control != null) break
+            }
+        }
+        requireNotNull(control) { "Missing control $text" }.click()
     }
     private fun englishResult() {
         assertTrue("English floating result missing", device.wait(Until.hasObject(
@@ -97,8 +106,8 @@ class ReadingWritingSmokeTest {
         val draft = device.findObject(By.desc("Writing draft"))
         draft.text = ""
         draft.click()
-        click("⇧"); click("H"); click("⇧"); click("i"); click("Space")
-        click("123"); click("7"); click("⌫")
+        click("⇧"); click("H"); click("i"); click("Space")
+        click("?123"); click("7"); click("⌫")
         assertEquals("Keyboard commit/backspace failed", "Hi ", device.findObject(By.desc("Writing draft")).text)
         device.pressBack()
         click("Focus password field")

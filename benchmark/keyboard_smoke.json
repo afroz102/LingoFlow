@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "scope": "Keyboard translation with overlay permission denied; optional floating regression",
+  "appVersion": "0.7.0-keyboard-translate",
+  "versionCode": 4,
+  "apkSha256": "e5cf26fe346680b618605b26a2f8a11652d30117878d64af0fb1d395dea407e3",
+  "backend": "https://lingoflow-backend.lingoflow-backend.workers.dev",
+  "backendDeploymentChanged": false,
+  "jvmTestsPassed": 27,
+  "appLintErrors": 0,
+  "testhostLintErrors": 0,
+  "apkServerKeyCheck": "absent",
+  "sourceOrResultTextSavedInThisRecord": false,
+  "runs": [
+    {
+      "androidApi": 34,
+      "androidVersion": "14",
+      "device": "sdk_gphone64_arm64",
+      "completedAtUtc": "2026-10-04T16:08:59.873656+00:00",
+      "testsPassed": 13,
+      "testsFailed": 0,
+      "liveModelRequestsInThisRun": 5,
+      "coverage": [
+        "KeyboardTranslationSmokeTest: nine cases, five live translations",
+        "KeyboardLayoutRenderTest: portrait/landscape native views",
+        "InputBoundaryTest",
+        "ReadingWritingSmokeTest: automatic confirmation/sensitive suppression/Stop, keyboard/password suppression"
+      ]
+    },
+    {
+      "androidApi": 34,
+      "androidVersion": "14",
+      "device": "sdk_gphone64_arm64",
+      "completedAtUtc": "2026-10-04T16:10:41.068323+00:00",
+      "testsPassed": 2,
+      "testsFailed": 0,
+      "liveModelRequestsInThisRun": 0,
+      "coverage": [
+        "Actual landscape write/read controls",
+        "Rich keyboard including rapid Caps Lock, symbols, emoji and hold deletion"
+      ]
+    },
+    {
+      "androidApi": 30,
+      "androidVersion": "11",
+      "device": "sdk_gphone64_arm64",
+      "completedAtUtc": "2026-10-04T16:11:58.250499+00:00",
+      "testsPassed": 5,
+      "testsFailed": 0,
+      "liveModelRequestsInThisRun": 2,
+      "coverage": [
+        "Rich typing/hold deletion",
+        "Local draft/direction swap/Close",
+        "Landscape controls",
+        "Roman Hindi writing/insertion without Send",
+        "Confirmed clipboard reading/typing under result/own-copy suppression"
+      ]
+    }
+  ],
+  "previewImages": "docs/images/keyboard-*.png: actual native view rendered with synthetic samples, not target-app screenshots",
+  "developmentCorrections": [
+    "API 26 autofill call guarded for minimum API 23",
+    "Compact landscape keys adjusted after render height check",
+    "Read confirmation named Translate to English to distinguish toolbar action",
+    "Automation adjusted for human double-tap timing and Android empty-field accessibility hint/null text"
+  ],
+  "limits": [
+    "Physical Game of Khans/Discord/WhatsApp/Telegram/Instagram not tested",
+    "Minimum API 23 remains provisional; new UI tested on API 30 and 34 emulators",
+    "Keyboard can read selected text only from active editor; received messages generally need copy then composer",
+    "No prediction, autocorrect, swipe or voice typing; no measured Gboard latency/feature parity",
+    "Physical OEM, font scaling/TalkBack and lifecycle/permission stress remain open"
+  ]
+}

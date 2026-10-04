@@ -11,8 +11,8 @@ first-use disclosure and loading/errors.
 - Editable: `ResultViewModel`/`TranslateCoordinator` use AUTO writing. Success returns
   `RESULT_OK` and only `EXTRA_PROCESS_TEXT`; host replaces its selected range. Cancel/error
   returns no text. Activity ViewModel prevents duplicate calls on ordinary rotation.
-- Read-only: acquire overlay permission from visible UI if needed, start `ReadingOverlayService`
-  with the selected text, then finish with cancellation/no replacement. Selecting Lingo-Translate
+- Read-only: hand off to the selected Lingo keyboard, or use an explicitly running floating
+  session/other-keyboard overlay route. Finish with cancellation/no replacement. Selecting Lingo-Translate
   already authorized the translation. No read-only ViewModel network request is started.
 
 No `noHistory` trampoline flag: it must remain alive for the result callback, including a trip
@@ -51,13 +51,34 @@ One coroutine job/generation guard prevents canceled/older requests from overwri
 Minimize retains the current result/request in memory; Close discards it. New copy events cancel
 an existing request; an already-sent request can still consume server quota.
 
-## Optional keyboard
+## Translation keyboard
 
-`LingoKeyboardService` is permission-protected by `BIND_INPUT_METHOD`. The user must enable and
-select it through system UI. It provides local Roman QWERTY, case toggle, digits/punctuation,
-space, selection-aware backspace, Enter/editor action and a keyboard picker. No network provider
-is called by keyboard events; no surrounding message history or keystrokes are collected.
-Password editor variations disable clipboard prompts. No accessibility permission is requested.
+`LingoKeyboardService` is permission-protected by `BIND_INPUT_METHOD`. The user enables/selects
+it through system UI. `LingoKeyboardView` holds a stable toolbar/key grid with rounded ripple
+keys, haptic feedback, one-shot/locked Shift, symbol pages, 50 emoji, hold-repeat backspace and
+local cursor-editable translation draft. Letter presses update labels only when Shift changes;
+they do not rebuild the grid or request translations. `KeyboardLayout` supplies deterministic
+key data and code-point-aware draft editing with a 4,000-unit cap.
+
+- Write: explicit HINGLISH_TO_ENGLISH/ENGLISH_TO_HINGLISH, local draft, bounded request on button
+  press. `commitText` inserts/replaces the host selection on success, never performs Send. A
+  session/selection revision guard prevents automatic insertion after editor/cursor changes;
+  otherwise the result offers Copy/explicit Insert here.
+- Read: load eligible clipboard text only after Read/Paste copy is tapped, then show the source
+  for confirmation. Active editor selection can be translated directly via the toolbar.
+  READ_TO_ENGLISH output remains inside the keyboard; no host replacement. Once the English card
+  appears, typing/backspace/editor actions go to the chat again while the result stays above the keys.
+- Read-only Process Text: when this IME is selected and no floating session is running,
+  `KeyboardReadingInbox` holds one validated source in process memory for at most 60 seconds.
+  The next non-password composer consumes it. The selection action confirmed the request;
+  opening the keyboard starts it. This does not force a keyboard onto non-editable message UI.
+
+The IME never requests surrounding chat history. Password variations disable cloud controls,
+reading handoffs and clipboard actions; no translation on keystrokes. Sensitive/own-output
+clipboard filters are shared with the overlay. Hide/finish/editor changes cancel and clear the
+panel; generation guards reject old responses. No drafts/results in saved state/disk/autofill;
+IME window is FLAG_SECURE. A process kill loses the draft. Landscape uses compact keys/panels,
+without fullscreen extraction. Word predictions/autocorrect/swipe/voice remain outside this build.
 
 ## Translation contract
 

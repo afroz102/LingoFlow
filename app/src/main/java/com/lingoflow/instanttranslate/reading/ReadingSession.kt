@@ -6,6 +6,9 @@ import android.provider.Settings
 import androidx.core.content.ContextCompat
 
 object ReadingSession {
+    /** In-process status; the service is never restarted automatically after process death. */
+    var isRunning = false
+        internal set
     /** Called only from a visible activity after an explicit user action. */
     fun start(context: Context, selectedText: String? = null): Boolean {
         if (!Settings.canDrawOverlays(context)) return false

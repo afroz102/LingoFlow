@@ -43,13 +43,15 @@ class MainActivity : AppCompatActivity() {
         text(R.string.app_name, 28f)
         text(R.string.setup_intro)
         status = text(R.string.clipboard_manual)
+        text(R.string.setup_keyboard_explanation)
+        button(R.string.setup_enable_keyboard) { startActivity(Intent(Settings.ACTION_INPUT_METHOD_SETTINGS)) }
+        button(R.string.setup_choose_keyboard) { getSystemService(InputMethodManager::class.java).showInputMethodPicker() }
+        text(R.string.setup_writing)
+        text(R.string.setup_optional_floating, 20f)
         button(R.string.setup_overlay) {
             try { startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName"))) }
             catch (_: RuntimeException) { Toast.makeText(this, R.string.overlay_unavailable, Toast.LENGTH_LONG).show() }
         }
-        text(R.string.setup_keyboard_explanation)
-        button(R.string.setup_enable_keyboard) { startActivity(Intent(Settings.ACTION_INPUT_METHOD_SETTINGS)) }
-        button(R.string.setup_choose_keyboard) { getSystemService(InputMethodManager::class.java).showInputMethodPicker() }
         button(R.string.setup_start) {
             val disclosure = DisclosurePreferences(this)
             if (!disclosure.isAcknowledged()) {
@@ -59,7 +61,6 @@ class MainActivity : AppCompatActivity() {
             } else startReading()
         }
         button(R.string.setup_stop) { ReadingSession.stop(this); Toast.makeText(this, R.string.session_stopped, Toast.LENGTH_SHORT).show() }
-        text(R.string.setup_writing)
         setContentView(ScrollView(this).apply { addView(content) })
     }
 

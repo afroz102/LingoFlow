@@ -3,15 +3,29 @@
 Android translation for **English ↔ Roman Hindi/Hinglish**, with meaning and conversational
 context preserved by Gemini. Devanagari is outside this V1 scope.
 
-- **Write:** select a draft → **Lingo-Translate** → replace the selected text automatically.
-- **Read selected text:** select a received message → **Lingo-Translate** → floating English result.
-- **Read copied text:** during a reading session, copy a message → confirmation prompt → floating
-  English result. On modern Android, automatic copy prompts require the optional **Lingo keyboard**
-  to be the selected keyboard. With another keyboard, copy → tap the Lingo bubble translates it.
+- **Keyboard writing:** tap the translation icon → choose Roman Hindi → English or reverse →
+  type in the separate draft → **Translate & insert**. The result enters the chat; it is never sent automatically.
+- **Keyboard reading:** copy a received message → open the chat input → **Read** →
+  **Translate to English**. The English card appears above the keys, leaving your chat draft untouched.
+- **Selected editor text:** selecting text in the active typing field changes the toolbar to
+  **Translate selection**. Tap it to read the selection in English above the keyboard.
 
-The movable reading card has Copy, Minimize, Close and Stop controls. Reading sessions are
-explicitly started, show an ongoing notification and never restart on boot. Writing does not
-require an overlay, a session or switching keyboards. Host apps must expose Android Process Text.
+The keyboard has rounded keys, one-shot Shift, double-tap/hold Caps Lock, two symbol pages,
+50 smiley emoji, hold-to-delete and a keyboard switcher. Translation in the keyboard needs
+**no overlay permission or reading session**. Typing is local; there is no word prediction,
+autocorrect, swipe typing or voice input yet.
+
+The existing **Lingo-Translate** selection action still replaces editable selections. For
+read-only selections, with Lingo keyboard selected, it hands off to the next opened chat input
+for 60 seconds. A keyboard cannot inspect arbitrary message selections outside its active editor;
+copying and opening the composer is the reliable fallback.
+
+[Keyboard layout](docs/images/keyboard-typing.png) · [Writing panel](docs/images/keyboard-writing.png) ·
+[Reading card](docs/images/keyboard-reading.png) · [Landscape](docs/images/keyboard-landscape.png).
+These show the actual view rendered on an emulator with synthetic samples.
+
+An optional floating reading session remains for apps that allow overlays, with Copy, Minimize,
+Close and Stop. It is explicitly started and never restarts on boot.
 
 The public testing backend runs on Cloudflare Workers Free with D1/SQLite and server-side Gemini.
 No account or authentication is needed. Every translation uses Gemini; there is no local
@@ -22,14 +36,14 @@ the phone. Gemini's unpaid service is for non-sensitive test samples. Shared all
 ## Test on your phone
 
 Install `app/build/outputs/apk/debug/app-debug.apk`, then open **LingoTranslate**.
-Allow floating translations. For automatic copy prompts, enable and select Lingo keyboard.
-Tap **Start reading session**, acknowledge the disclosure and return to your chat/game.
-The optional keyboard is a basic Roman QWERTY keyboard without suggestions or swipe typing.
-Use **Stop reading session** to end monitoring and remove the overlay.
+Tap **1. Enable Lingo keyboard**, enable it in system settings, then tap **2. Choose Lingo keyboard**.
+Open a chat input in your game/messaging app. Use **Translate** to write or **Read** to load a
+copied message, and acknowledge the disclosure before your first translation.
 
-For writing, select English or Hinglish in an editable field, choose **Lingo-Translate** from
-its selection menu and check that only your selection changes. Cancel/failure leaves the draft.
-The [phone guide](docs/BACKEND_SETUP.md#test-on-a-real-android-phone) includes both reading routes.
+Try `main kal nahi aa sakta` in the translation draft. Tap **Translate & insert** and check
+that English appears in the chat without sending it. Swap the direction to test English → Roman Hindi.
+For reading, copy a Hinglish message, open the composer and tap **Read**, then **Translate to English**.
+The [phone guide](docs/BACKEND_SETUP.md#test-on-a-real-android-phone) includes all routes.
 
 ## Build and validate
 
@@ -43,21 +57,21 @@ npm --prefix backend test
 ```
 
 The backend is deployed at `https://lingoflow-backend.lingoflow-backend.workers.dev`.
-The APK version is **0.6.0-reading-writing**, version code 3. No phone-side server/key setup.
+The APK version is **0.7.0-keyboard-translate**, version code 4. No phone-side server/key setup.
 
 ## Support and evidence
 
 Game of Khans, Discord, WhatsApp, Telegram and Instagram messages are target apps. Their actual
 selection, copy, overlay and keyboard behavior still needs physical-phone testing. Support for
 every Android phone/version is not established. Apps can omit selection actions or block overlays;
-Android/OEM restrictions also apply. Current checks passed: 19 backend and 22 Android JVM tests, app/host lint, APK builds,
-and controlled Android 11/14 reading/writing tests. See the [validation plan](docs/VALIDATION_PLAN.md).
+Android/OEM restrictions also apply. Controlled keyboard tests run against a different-UID host with overlay permission denied.
+See the [validation plan](docs/VALIDATION_PLAN.md) for current keyboard results and earlier floating-flow evidence.
 
 ## Repository
 
 | Directory | Purpose |
 |---|---|
-| `app/` | Kotlin selection flows, setup, floating reading session, optional keyboard and HTTP provider |
+| `app/` | Kotlin selection flows, setup, translation keyboard, optional floating reading session and HTTP provider |
 | `backend/` | Worker/Node API, SQLite aggregate quotas, tests and live smoke tool |
 | `testhost/` | Development-only host and cross-UID reading/writing fixtures |
 | `benchmark/` | Dated evidence and historical corpus/timing tools |

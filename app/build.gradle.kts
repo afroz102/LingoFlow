@@ -38,8 +38,8 @@ android {
         // Provisional minimum; physical-device compatibility review remains open.
         minSdk = 23
         targetSdk = 34
-        versionCode = 3
-        versionName = "0.6.0-reading-writing"
+        versionCode = 4
+        versionName = "0.7.0-keyboard-translate"
         buildConfigField("String", "BACKEND_URL", "\"$backendUrl\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"

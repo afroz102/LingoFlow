@@ -23,20 +23,17 @@
     <string name="error_timeout">That took too long. Try again.</string>
     <string name="error_provider">Couldn\'t reach the translation service. Try again.</string>
     <string name="error_invalid_response">Got an unexpected response. Try again.</string>
-    <string name="setup_intro">Write: select your draft and choose Lingo-Translate to replace it automatically.
-
-Read: select a message and choose Lingo-Translate for a floating English result. English and Roman Hindi/Hinglish only.</string>
+    <string name="setup_intro">Translate inside your keyboard, without display-over-apps permission. Write English ↔ Roman Hindi/Hinglish, or read a message in English above the keys.</string>
     <string name="setup_overlay">Allow floating translations</string>
-    <string name="setup_keyboard_explanation">Automatic copy prompts on modern Android require Lingo keyboard to be enabled and selected as your keyboard. This is a basic Roman keyboard without predictions. Typing stays on your phone.
-
-With another keyboard, copy a message and tap the Lingo bubble to translate it.</string>
+    <string name="setup_optional_floating">Optional: floating reading session</string>
+    <string name="setup_keyboard_explanation">Enable and choose Lingo keyboard, then open a chat input. Tap Translate to open a private draft, choose the direction and tap Translate &amp; insert. Read loads copied text for confirmation and shows the English result above the keys. Normal typing stays on your phone. Symbols, Shift/Caps Lock and 50 emoji are included; predictions and swipe typing are not yet included.</string>
     <string name="setup_enable_keyboard">1. Enable Lingo keyboard</string>
     <string name="setup_choose_keyboard">2. Choose Lingo keyboard</string>
     <string name="setup_start">Start reading session</string>
     <string name="setup_stop">Stop reading session</string>
-    <string name="setup_writing">Writing works independently of reading sessions and keyboard choice, in apps that expose Android text-selection actions. A successful translation replaces only the selected draft. Cancel or failure leaves the draft unchanged.</string>
-    <string name="clipboard_automatic">Lingo keyboard selected: copy prompts are available during a reading session.</string>
-    <string name="clipboard_manual">Other keyboard selected: copy a message, then tap the Lingo bubble. Automatic clipboard detection is restricted by Android.</string>
+    <string name="setup_writing">Keyboard translation needs no reading session. Selected text from the active editor is available through Translate selection. For received messages outside an editor, use copy + Read. Lingo-Translate also remains available in compatible selection menus.</string>
+    <string name="clipboard_automatic">Lingo keyboard selected: open a chat input to translate above the keys. No overlay permission required.</string>
+    <string name="clipboard_manual">Choose Lingo keyboard for translation above the keys. The optional floating mode can still work with another keyboard.</string>
     <string name="overlay_unavailable">Floating translations could not start. Allow display over other apps and try again. This phone or app may restrict overlays.</string>
     <string name="reading_permission">Allow LingoTranslate to display over other apps so the English result can float over your current app.</string>
     <string name="session_started">Reading session started. Return to your chat or game.</string>
@@ -58,4 +55,35 @@ With another keyboard, copy a message and tap the Lingo bubble to translate it.<
     <string name="keyboard_name">Lingo Roman keyboard</string>
     <string name="keyboard_switch">Keyboard</string>
     <string name="keyboard_space">Space</string>
+    <string name="keyboard_translate_selection">Translate selection</string>
+    <string name="keyboard_translate_description">Open translation, or translate selected editor text into English</string>
+    <string name="keyboard_read">Read</string>
+    <string name="keyboard_read_description">Read selected or copied text in English above the keyboard</string>
+    <string name="keyboard_read_title">Read · English</string>
+    <string name="keyboard_hindi_to_en">Roman Hindi → English</string>
+    <string name="keyboard_en_to_hindi">English → Roman Hindi</string>
+    <string name="keyboard_swap">Swap translation languages</string>
+    <string name="keyboard_insert">Insert here</string>
+    <string name="keyboard_new">New</string>
+    <string name="keyboard_draft_hint">Type a message to translate…</string>
+    <string name="keyboard_read_hint">Paste a received message to read in English…</string>
+    <string name="keyboard_draft_description">Translation draft</string>
+    <string name="keyboard_paste">Paste copy</string>
+    <string name="keyboard_translating">Translating…</string>
+    <string name="keyboard_translate_insert">Translate &amp; insert</string>
+    <string name="keyboard_translate_read">Translate to English</string>
+    <string name="keyboard_result_description">Keyboard translation result</string>
+    <string name="keyboard_shift">Shift</string>
+    <string name="keyboard_shift_once">Shift on for one letter. Double tap for Caps Lock</string>
+    <string name="keyboard_caps_lock">Caps Lock on</string>
+    <string name="keyboard_more_symbols">Switch symbol page</string>
+    <string name="keyboard_emoji">Open 50 emoji</string>
+    <string name="keyboard_enter">Enter or editor action</string>
+    <string name="keyboard_delete">Backspace. Hold to delete repeatedly</string>
+    <string name="keyboard_selection_unavailable">This app did not share selected editor text. Copy the message and use Read instead.</string>
+    <string name="keyboard_inserted">Translation inserted. Review it before sending.</string>
+    <string name="keyboard_target_changed">The chat cursor changed or insertion was unavailable. Review the result and tap Insert here, or copy it.</string>
+    <string name="keyboard_open_to_read">Open the chat input with Lingo keyboard to see this message in English. Available for 60 seconds.</string>
+    <string name="keyboard_go">Go</string>
+    <string name="keyboard_send">Send</string>
 </resources>

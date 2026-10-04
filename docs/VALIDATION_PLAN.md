@@ -1,7 +1,7 @@
-# Validation plan — reading/writing V1
+# Validation plan — keyboard translation V1
 
 Updated 2026-10-04. The current scope is English ↔ Roman Hindi/Hinglish; read results always
-English. Earlier preview/Replace, Devanagari conversion and no-overlay gates are superseded.
+English. Keyboard translation no longer needs overlays. Earlier preview/Replace and Devanagari conversion are superseded.
 Historical records remain dated, not evidence for features that have changed.
 
 ## Automated checks
@@ -16,6 +16,18 @@ input/script/direction rejection before quota/model calls, literal prompt data, 
 resolution, reading instructions, Roman-only output and content-free failure categories.
 Android JVM tests exercise coordinator gating, script/input bounds, reading direction, output
 validation, resolved AUTO direction, malformed response, cancellation and explicit retry limits.
+
+`KeyboardTranslationSmokeTest` uses a different-UID host with overlay permission explicitly denied.
+Non-live cases verify one-shot Shift/Caps Lock, both symbol pages, emoji/code-point backspace,
+hold deletion, isolated translation draft, direction swap, Close, password controls, unsupported
+input, cloud-disclosure gating and landscape controls. Opt-in live cases check both writing
+directions and insertion without sending, copied reading with confirmation, reading while typing
+a reply, own-result suppression, active editor selection and read-only selection-action handoff.
+`KeyboardLayoutRenderTest` measures portrait/landscape heights and renders the actual view using
+synthetic samples for visual review; it does not capture private screen content.
+
+The five keyboard JVM tests cover selection replacement/reversed ranges, whole emoji deletion,
+input limits, 50 distinct emoji/symbol coverage and changed-editor/selection insertion guards.
 
 `ReadingWritingSmokeTest` uses a different-UID dev host. Its non-live case verifies background
 copy → confirmation (no loading/request), Close, duplicate/sensitive suppression, landscape overlay controls and Stop.
@@ -38,12 +50,16 @@ For each app, record app version, phone/OEM, Android version and all of these se
 
 | Surface | Verify |
 |---|---|
+| Keyboard writing | Separate draft stays out of chat; direction swap; one insertion on success; no automatic Send |
+| Keyboard reading | Copy → composer → Read → confirm; English inside IME; keep typing while result stays; no overlays |
+| Active editor selection | Translate selection appears; English card; original range unchanged |
+| Read-only keyboard handoff | Selection action → composer within 60 seconds; no replacement or overlay |
 | Editable text | Action discovery; successful replacement of only selected range; host cursor/format behavior |
 | Selectable read-only text | Action discovery; English floats; no host/clipboard modification |
 | Copy-only messages | Actual copy produces prompt with selected Lingo keyboard; confirmation only then sends |
 | Other keyboard | No automatic claim; bubble focus reads copy after tap and returns game/chat focus |
 | Overlay | App permits it; card drag, Copy, Minimize, Close, Stop; portrait/landscape and system bars |
-| Keyboard | Typing, numeric/password fields, emoji backspace, editor actions, switch-back, selection retention |
+| Keyboard | Touch/hold typing, Shift/lock, two symbol pages, 50 emoji, numeric/password fields, draft cursor editing, editor actions, switch-back, selection retention |
 | Lifecycle | Loading cancel, new copy during request, permission revoke, screen lock, process kill, app switch |
 
 Game of Khans may render custom text and can pause when focus is acquired. Do not infer its
@@ -67,7 +83,7 @@ explicit direction/mode and protected-token assertions. Do not collect private c
 
 ## Performance, privacy and release
 
-Measure selection action→replacement and selection/copy confirmation→floating result separately.
+Measure keyboard draft→insertion, reading confirmation→inline result, and optional floating flows separately.
 Measure cold/warm, Wi-Fi/mobile/offline, long text, multiple copies, rotation and throttling.
 Report P50/P95 and failures. Measure idle-session battery/memory and keyboard typing reliability
 on physical phones. The old `TranslationLatencyBenchmark` is skipped until it waits for an actual
@@ -84,8 +100,16 @@ per-user authentication or guaranteed free quota availability in this testing ba
 
 ## Evidence
 
-Current [hosted smoke](../benchmark/reading_writing_http_smoke.json) records the new contract.
-[Android V1 results](../benchmark/reading_writing_android_smoke.json) record actual passing
+Current [keyboard evidence](../benchmark/keyboard_smoke.json): 27 Android JVM tests, app/host
+lint and APK builds passed. Android 14/API 34 passed the 13-case main suite plus two focused
+landscape/hold-deletion checks (15 test instances, including a repeated typing case). Android
+11/API 30 passed five keyboard cases. The passing runs include seven live Gemini requests,
+with writing insertion, reading cards and continued chat typing while overlays are denied.
+Native-view previews in `docs/images/` were visually reviewed using synthetic samples.
+These are emulator/fixture checks; physical target-app testing remains open.
+
+Earlier [hosted smoke](../benchmark/reading_writing_http_smoke.json) records the new contract.
+[Earlier floating-flow Android results](../benchmark/reading_writing_android_smoke.json) record actual passing
 instrumentation status, build/device/version and scope: 7 test instances on Android 14/API 34
 (including live UI and transport) and 5 on Android 11/API 30 (including clipboard prompts,
 native selection replacement, focused-overlay reading and keyboard/password checks). Backend
