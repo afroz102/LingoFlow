@@ -17,11 +17,20 @@ class KeyboardDraftTest {
         assertEquals(DraftEdit(text, 3999), KeyboardDraft.insert(text, 3999, 3999, "😀"))
         assertEquals(4000, KeyboardDraft.insert(text, 3999, 3999, "?").text.length)
     }
-    @Test fun richKeyDataIncludes50DistinctSmileyAndBothSymbolPages() {
+    @Test fun richKeyDataIncludes50DistinctSmileyAndThreeSymbolPages() {
         assertEquals(50, KeyboardLayout.emoji.size)
         assertEquals(50, KeyboardLayout.emoji.toSet().size)
         assertTrue(KeyboardLayout.symbols.flatten().containsAll(listOf(";", ":", "!", "?", "\"", "'")))
-        assertTrue(KeyboardLayout.moreSymbols.flatten().containsAll(listOf("[", "]", "{", "}", "€", "\\", "%")))
+        assertTrue(KeyboardLayout.moreSymbols.flatten().containsAll(listOf("[", "]", "{", "}", "€", "\\", "<", ">", "_")))
+    }
+    @Test fun everydaySymbolsAndSecondaryLetterKeysAreAvailable() {
+        val symbols = (KeyboardLayout.symbols + KeyboardLayout.moreSymbols + KeyboardLayout.extraSymbols).flatten()
+        assertEquals(81, symbols.toSet().size)
+        assertTrue(symbols.containsAll(listOf("%", "=", "$", "₹", "…", "—", "©", "™", "±", "←", "¿", "¡")))
+        assertEquals(26, KeyboardLayout.longPress.size)
+        assertEquals("1", KeyboardLayout.longPress["q"])
+        assertEquals("@", KeyboardLayout.longPress["a"])
+        assertEquals("?", KeyboardLayout.longPress["m"])
     }
     @Test fun lateInsertionCannotTargetANewEditorOrMovedSelection() {
         val target = KeyboardInsertionTarget(3, 7)

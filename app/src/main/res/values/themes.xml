@@ -7,6 +7,18 @@
         <item name="android:fontFamily">sans</item>
     </style>
 
+    <style name="Theme.InstantTranslate.Setup" parent="Theme.Material3.Dark.NoActionBar">
+        <item name="colorPrimary">#91AFBB</item>
+        <item name="colorOnPrimary">#162A33</item>
+        <item name="colorSurface">#22343D</item>
+        <item name="colorOnSurface">#E5EEEE</item>
+        <item name="android:windowBackground">#18252B</item>
+        <item name="android:statusBarColor">#18252B</item>
+        <item name="android:navigationBarColor">#18252B</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:fontFamily">sans</item>
+    </style>
+
     <!--
         ProcessTextActivity never draws its own UI — it validates, delegates to ResultActivity,
         and relays ResultActivity's eventual result back to the host. Deliberately NOT

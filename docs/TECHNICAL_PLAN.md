@@ -69,8 +69,9 @@ landscape uses 36dp. Light/dark palettes follow system configuration; toolbar ac
   otherwise the result offers Copy/explicit Insert here.
 - Read: load eligible clipboard text only after Read/Paste copy is tapped, then show the source
   for confirmation. Active editor selection can be translated directly via the toolbar.
-  MULTILINGUAL output remains inside the keyboard; no host replacement. Once the result card
-  appears, typing/backspace/editor actions go to the chat again while the result stays above the keys.
+  MULTILINGUAL output remains inside the keyboard; no host replacement. While the request is
+  pending and once its result appears, typing/backspace/editor actions target the chat while the
+  result stays above the keys.
 - Read-only Process Text: when this IME is selected and no floating session is running,
   `KeyboardReadingInbox` holds one validated source in process memory for at most 60 seconds.
   The next non-password composer consumes it. The selection action confirmed the request;
@@ -125,3 +126,26 @@ loses its state. Universal clipboard/overlay reliability and public release are 
 - [Input method implementation](https://developer.android.com/develop/ui/views/touch-and-input/creating-input-method)
 - [Overlay windows](https://developer.android.com/reference/android/view/WindowManager.LayoutParams#TYPE_APPLICATION_OVERLAY)
 - [Foreground service types](https://developer.android.com/about/versions/14/changes/fgs-types-required)
+
+### LingoBoard 1.0.2 keyboard refinements
+
+The logo, Write/Read mode icons, source/swap/target controls and close/switch action occupy one
+44dp header. Read is selected while its panel is active; pressing the translation icon in Read
+translates the reading source and never opens a write/insert flow. Pressing Read again closes it.
+Reading results offer Copy/New only. The setup screen uses a dim slate theme and hides optional
+floating-session controls behind an explicit toggle.
+
+`ImmediateKeyButton` commits a native accessible click in the finger-release event instead of
+posting it. Native down/move/cancel and long-press handling remain, with consumed long presses
+preventing a second ordinary character. Buttons disable click sounds. The key grid is reused
+across panel/language/request updates; only the enter label and changed Shift labels update.
+The local draft editor and cursor persist across language and status updates. Language changes
+replace only the two header chip nodes because IME accessibility can retain the old target label;
+their descriptions include the full selected language. Same-editor IME
+restarts preserve the panel while invalidating write insertion targets. Backspace uses the
+reported selection instead of querying the remote editor on every press.
+
+While a reading request is pending, key/delete/enter actions continue targeting the chat editor;
+the submitted reading source stays unchanged. Write drafts remain disabled during their request.
+There are 81 symbols across three pages, 50 smiley, and 26 visible long-press shortcuts. No
+physical-device frame-time or Gboard-latency claim is made.

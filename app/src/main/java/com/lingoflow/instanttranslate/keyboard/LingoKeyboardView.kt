@@ -3,7 +3,6 @@ package com.lingoflow.instanttranslate.keyboard
 import android.content.Context
 import android.content.res.Configuration
 import android.graphics.Color
-import android.graphics.Typeface
 import android.graphics.drawable.InsetDrawable
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.RippleDrawable
@@ -21,6 +20,7 @@ import android.view.View
 import android.annotation.SuppressLint
 import android.widget.Button
 import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.PopupWindow
@@ -84,8 +84,24 @@ internal class LingoKeyboardView(context: Context, private val actions: Keyboard
     private val keys = LinearLayout(context)
     private val letterButtons = mutableListOf<Pair<Button, String>>()
     private var shiftButton: Button? = null
-    private var translateButton: View? = null
+    private var translateButton: ImageButton? = null
+    private var readButton: ImageButton? = null
+    private var sourceButton: Button? = null
+    private var targetButton: Button? = null
+    private var swapButton: Button? = null
+    private var trailingButton: ImageButton? = null
+    private var toolbarPanel = TranslationPanel.NONE
+    private var toolbarLanguages = TranslationLanguagePair()
+    private var toolbarBusy = false
+    private var toolbarPassword = false
+    private var renderedKeyPage: KeyPage? = null
+    private var renderedShift: ShiftState? = null
+    private var renderedPanel: KeyboardPanelState? = null
+    private var pasteButton: Button? = null
+    private var confirmationButton: Button? = null
+    private var statusContainer: LinearLayout? = null
     private var draftField: EditText? = null
+    private var enterKeyButton: Button? = null
     private var enterLabel = "↵"
     private var repeating = false
     private val repeatDelete = object : Runnable {
@@ -104,33 +120,102 @@ internal class LingoKeyboardView(context: Context, private val actions: Keyboard
         isSaveEnabled = false
         toolbar.gravity = Gravity.CENTER_VERTICAL
         toolbar.setPadding(dp(6), 0, dp(6), 0)
-        addView(toolbar, LayoutParams(LayoutParams.MATCH_PARENT, dp(40)))
+        addView(toolbar, LayoutParams(LayoutParams.MATCH_PARENT, dp(44)))
         panel.orientation = VERTICAL
         panel.setPadding(dp(8), dp(4), dp(8), dp(6))
         addView(panel)
         keys.orientation = VERTICAL
         addView(keys)
+        createToolbar()
         renderToolbar(false, false)
     }
 
-    fun renderToolbar(selected: Boolean, password: Boolean) {
-        toolbar.removeAllViews()
+    private fun createToolbar() {
+        toolbar.isBaselineAligned = false
+        toolbar.addView(ImageView(context).apply {
+            setImageResource(R.drawable.ic_lingoboard_logo)
+            contentDescription = context.getString(R.string.keyboard_logo)
+            setPadding(dp(4), dp(8), dp(4), dp(8))
+        }, LayoutParams(dp(30), dp(44)))
         translateButton = iconButton(R.drawable.ic_keyboard_translate,
-            context.getString(if (selected) R.string.keyboard_translate_selection else R.string.action_translate), true) {
-            actions.translateIcon()
-        }.apply { isEnabled = !password }
-        toolbar.addView(translateButton, LayoutParams(dp(48), dp(40)))
-        toolbar.addView(iconButton(R.drawable.ic_keyboard_read, context.getString(R.string.keyboard_read), false) {
-            actions.readIcon()
-        }.apply { isEnabled = !password }, LayoutParams(dp(48), dp(40)))
-        toolbar.addView(View(context), LayoutParams(0, 1, 1f))
-        toolbar.addView(TextView(context).apply {
-            text = context.getString(R.string.app_name); textSize = 12f; letterSpacing = 0.03f; setTextColor(muted)
-            gravity = Gravity.CENTER; importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_NO
-        }, LayoutParams(LayoutParams.WRAP_CONTENT, dp(40)))
-        toolbar.addView(iconButton(R.drawable.ic_keyboard_globe, context.getString(R.string.keyboard_switch), false) {
-            actions.switchKeyboard()
-        }, LayoutParams(dp(48), dp(40)))
+            context.getString(R.string.action_translate), false) { actions.translateIcon() }
+        toolbar.addView(translateButton, LayoutParams(dp(40), dp(44)))
+        readButton = iconButton(R.drawable.ic_keyboard_read,
+            context.getString(R.string.keyboard_read), false) { actions.readIcon() }
+        toolbar.addView(readButton, LayoutParams(dp(40), dp(44)))
+        sourceButton = languageChip(true)
+        targetButton = languageChip(false)
+        toolbar.addView(sourceButton, LayoutParams(0, dp(44), 1f))
+        swapButton = button("⇄", false) { actions.swapDirection() }.apply {
+            contentDescription = context.getString(R.string.keyboard_swap); textSize = 20f
+        }
+        toolbar.addView(swapButton, LayoutParams(dp(28), dp(44)))
+        toolbar.addView(targetButton, LayoutParams(0, dp(44), 1f))
+        trailingButton = iconButton(R.drawable.ic_keyboard_globe,
+            context.getString(R.string.keyboard_switch), false) {
+            if (toolbarPanel == TranslationPanel.NONE) actions.switchKeyboard() else actions.closePanel()
+        }
+        toolbar.addView(trailingButton, LayoutParams(dp(36), dp(44)))
+    }
+
+    private fun languageChip(source: Boolean): Button = button("", false) {}.apply {
+        textSize = 11f; maxLines = 1; ellipsize = android.text.TextUtils.TruncateAt.END
+        contentDescription = if (source) "Choose source language" else "Choose target language"
+        background = InsetDrawable(ripple(keySurface), dp(2), dp(4), dp(2), dp(4))
+        setOnClickListener {
+            showLanguages(this, source, if (source) toolbarLanguages.source else toolbarLanguages.target)
+        }
+    }
+
+    fun renderToolbar(selected: Boolean, password: Boolean, mode: TranslationPanel = toolbarPanel,
+        languages: TranslationLanguagePair = toolbarLanguages, busy: Boolean = toolbarBusy) {
+        if (toolbarLanguages != languages) {
+            // IME accessibility can retain a stale target label after simultaneous text changes.
+            // New chip nodes refresh the spoken pair; keys and the draft editor remain mounted.
+            toolbar.removeView(sourceButton); toolbar.removeView(targetButton)
+            sourceButton = languageChip(true); targetButton = languageChip(false)
+            toolbar.addView(sourceButton, 3, LayoutParams(0, dp(44), 1f))
+            toolbar.addView(targetButton, 5, LayoutParams(0, dp(44), 1f))
+        }
+        toolbarPanel = mode; toolbarLanguages = languages; toolbarBusy = busy; toolbarPassword = password
+        translateButton?.apply {
+            contentDescription = context.getString(if (selected) R.string.keyboard_translate_selection else R.string.action_translate)
+            isEnabled = !password && !busy
+            styleModeIcon(this, mode == TranslationPanel.WRITE)
+        }
+        readButton?.apply {
+            isEnabled = !password
+            styleModeIcon(this, mode == TranslationPanel.READ)
+        }
+        sourceButton?.apply {
+            val label = TranslationLanguages.find(languages.source)?.label ?: languages.source
+            val value = (if (languages.source == "auto") "Auto" else label) + " ▾"
+            if (text.toString() != value) text = value
+            contentDescription = "Choose source language: $label"
+            isEnabled = !password && !busy
+        }
+        targetButton?.apply {
+            val label = TranslationLanguages.find(languages.target)?.label ?: languages.target
+            val value = "$label ▾"
+            if (text.toString() != value) text = value
+            contentDescription = "Choose target language: $label"
+            isEnabled = !password && !busy
+        }
+        swapButton?.isEnabled = !password && !busy
+        trailingButton?.apply {
+            val close = mode != TranslationPanel.NONE
+            setImageResource(if (close) R.drawable.ic_keyboard_close else R.drawable.ic_keyboard_globe)
+            imageTintList = android.content.res.ColorStateList.valueOf(muted)
+            contentDescription = context.getString(if (close) R.string.action_close else R.string.keyboard_switch)
+        }
+    }
+
+    private fun styleModeIcon(button: ImageButton, active: Boolean) {
+        if (button.isSelected == active && button.tag == active) return
+        button.isSelected = active; button.isActivated = active; button.tag = active
+        button.imageTintList = android.content.res.ColorStateList.valueOf(if (active) accent else muted)
+        button.background = InsetDrawable(ripple(if (active) softAccent else base), dp(1), dp(3), dp(1), dp(3))
+        button.setPadding(dp(9), dp(11), dp(9), dp(11))
     }
 
     private fun iconButton(iconRes: Int, label: String, primary: Boolean, action: () -> Unit): ImageButton =
@@ -141,8 +226,8 @@ internal class LingoKeyboardView(context: Context, private val actions: Keyboard
             setImageDrawable(icon)
             scaleType = android.widget.ImageView.ScaleType.FIT_CENTER
             background = InsetDrawable(ripple(if (primary) softAccent else base), dp(3), dp(2), dp(3), dp(2))
-            setPadding(dp(13), dp(9), dp(13), dp(9))
-            stateListAnimator = null; isSaveEnabled = false
+            setPadding(dp(9), dp(11), dp(9), dp(11))
+            stateListAnimator = null; isSaveEnabled = false; isSoundEffectsEnabled = false
             setOnClickListener { action() }
         }
 
@@ -173,32 +258,33 @@ internal class LingoKeyboardView(context: Context, private val actions: Keyboard
         popup.showAtLocation(this, Gravity.TOP or Gravity.START, dp(12), maxOf(0, location[1] - popup.height))
     }
 
-    fun renderPanel(next: KeyboardPanelState) {
+    fun renderPanel(next: KeyboardPanelState, password: Boolean = toolbarPassword) {
+        renderToolbar(next.selected, password,
+            next.panel, next.languages, next.busy)
+        val previous = renderedPanel
+        renderedPanel = next
+        // Keep the draft editor, cursor and key grid alive across language/status/request updates.
+        if (previous?.panel == next.panel && next.panel != TranslationPanel.NONE &&
+            previous.result == null && next.result == null && !previous.disclosure && !next.disclosure && draftField != null) {
+            val field = draftField!!
+            if (field.text.toString() != next.draft) {
+                field.text.replace(0, field.text.length, next.draft)
+                field.setSelection(field.text.length)
+            }
+            field.isEnabled = !next.busy
+            pasteButton?.isEnabled = !next.busy
+            confirmationButton?.apply {
+                isEnabled = !next.busy
+                setText(if (next.busy) R.string.keyboard_translating else if (next.panel == TranslationPanel.WRITE)
+                    R.string.keyboard_translate_insert else R.string.keyboard_translate_read)
+            }
+            updateStatus(next.message)
+            return
+        }
         panel.removeAllViews()
-        draftField = null
+        draftField = null; pasteButton = null; confirmationButton = null; statusContainer = null
         panel.visibility = if (next.panel == TranslationPanel.NONE) GONE else VISIBLE
         if (next.panel == TranslationPanel.NONE) return
-        val header = LinearLayout(context).apply { gravity = Gravity.CENTER_VERTICAL; isBaselineAligned = false }
-        fun languageChip(source: Boolean): Button {
-            val id = if (source) next.languages.source else next.languages.target
-            val label = TranslationLanguages.find(id)?.label ?: id
-            return button("$label ▾", false) {}.apply {
-                textSize = 12f; maxLines = 1; ellipsize = android.text.TextUtils.TruncateAt.END
-                contentDescription = if (source) "Choose source language" else "Choose target language"
-                isEnabled = !next.busy
-                setOnClickListener { showLanguages(this, source, id) }
-                background = InsetDrawable(ripple(softAccent), dp(2), dp(2), dp(2), dp(2))
-            }
-        }
-        header.addView(languageChip(true), LayoutParams(0, dp(40), 1f))
-        header.addView(button("⇄", false) { actions.swapDirection() }.apply {
-            contentDescription = context.getString(R.string.keyboard_swap); textSize = 20f; isEnabled = !next.busy
-        }, LayoutParams(dp(36), dp(40)))
-        header.addView(languageChip(false), LayoutParams(0, dp(40), 1f))
-        header.addView(button("×", false) { actions.closePanel() }.apply {
-            contentDescription = context.getString(R.string.action_close); textSize = 26f
-        }, LayoutParams(dp(40), dp(40)))
-        panel.addView(header)
         if (next.disclosure) {
             addScrollableText(context.getString(R.string.disclosure_message), if (compact) 70 else 110, false)
             panel.addView(button(context.getString(R.string.action_continue), true) { actions.continueDisclosure() },
@@ -244,15 +330,27 @@ internal class LingoKeyboardView(context: Context, private val actions: Keyboard
         }
         panel.addView(draftField, LayoutParams(LayoutParams.MATCH_PARENT, dp(if (compact) 48 else 64)))
         val row = LinearLayout(context).apply { gravity = Gravity.CENTER_VERTICAL }
-        row.addView(button(context.getString(R.string.keyboard_paste), false) { actions.readCopy() }.apply {
+        pasteButton = button(context.getString(R.string.keyboard_paste), false) { actions.readCopy() }.apply {
             isEnabled = !next.busy
-        }, LayoutParams(0, dp(40), 1f))
-        row.addView(button(context.getString(if (next.busy) R.string.keyboard_translating
+        }
+        row.addView(pasteButton, LayoutParams(0, dp(40), 1f))
+        confirmationButton = button(context.getString(if (next.busy) R.string.keyboard_translating
             else if (next.panel == TranslationPanel.WRITE) R.string.keyboard_translate_insert else R.string.keyboard_translate_read), true) {
             actions.translate()
-        }.apply { isEnabled = !next.busy }, LayoutParams(0, dp(40), 2f))
+        }.apply { isEnabled = !next.busy }
+        row.addView(confirmationButton, LayoutParams(0, dp(40), 2f))
         panel.addView(row)
-        next.message?.let { addStatus(it) }
+        statusContainer = LinearLayout(context).apply { orientation = VERTICAL }
+        panel.addView(statusContainer)
+        updateStatus(next.message)
+    }
+
+    private fun updateStatus(message: String?) {
+        val container = statusContainer ?: return
+        val current = (container.getChildAt(0) as? TextView)?.text?.toString()
+        if (current == message) return
+        container.removeAllViews()
+        if (message != null) container.addView(statusText(message))
     }
 
     fun editDraft(value: String? = null, delete: Boolean = false): Boolean {
@@ -276,7 +374,16 @@ internal class LingoKeyboardView(context: Context, private val actions: Keyboard
     }
 
     fun renderKeys(page: KeyPage, shift: ShiftState, actionLabel: String) {
+        if (renderedKeyPage == page) {
+            if (enterLabel != actionLabel) enterKeyButton?.apply {
+                text = actionLabel; textSize = if (actionLabel.length == 1) 22f else 13f
+            }
+            enterLabel = actionLabel
+            updateShift(shift)
+            return
+        }
         stopRepeat()
+        renderedKeyPage = page; renderedShift = null
         enterLabel = actionLabel
         keys.removeAllViews()
         letterButtons.clear()
@@ -296,16 +403,21 @@ internal class LingoKeyboardView(context: Context, private val actions: Keyboard
             val rows = when (page) {
                 KeyPage.LETTERS -> KeyboardLayout.letters.map { it.map(Char::toString) }
                 KeyPage.SYMBOLS -> KeyboardLayout.symbols
-                else -> KeyboardLayout.moreSymbols
+                KeyPage.MORE_SYMBOLS -> KeyboardLayout.moreSymbols
+                else -> KeyboardLayout.extraSymbols
             }
             rows.forEachIndexed { index, labels ->
                 val row = LinearLayout(context).apply { gravity = Gravity.CENTER; isBaselineAligned = false }
                 if (index == 1 && page == KeyPage.LETTERS) row.setPadding(dp(19), 0, dp(19), 0)
                 if (index == 2) {
-                    val label = if (page == KeyPage.LETTERS) "⇧" else if (page == KeyPage.SYMBOLS) "=\\<" else "?123"
+                    val label = if (page == KeyPage.LETTERS) "⇧" else if (page == KeyPage.SYMBOLS) "2/3" else if (page == KeyPage.MORE_SYMBOLS) "3/3" else "1/3"
                     shiftButton = button(label, false) {
                         if (page == KeyPage.LETTERS) actions.shift()
-                        else actions.page(if (page == KeyPage.SYMBOLS) KeyPage.MORE_SYMBOLS else KeyPage.SYMBOLS)
+                        else actions.page(when (page) {
+                            KeyPage.SYMBOLS -> KeyPage.MORE_SYMBOLS
+                            KeyPage.MORE_SYMBOLS -> KeyPage.EXTRA_SYMBOLS
+                            else -> KeyPage.SYMBOLS
+                        })
                     }.apply {
                         contentDescription = context.getString(if (page == KeyPage.LETTERS) R.string.keyboard_shift else R.string.keyboard_more_symbols)
                         textSize = if (page == KeyPage.LETTERS) 22f else 13f
@@ -326,23 +438,26 @@ internal class LingoKeyboardView(context: Context, private val actions: Keyboard
         bottom.addView(button(if (page == KeyPage.LETTERS) "?123" else "ABC", false) {
             actions.page(if (page == KeyPage.LETTERS) KeyPage.SYMBOLS else KeyPage.LETTERS)
         }, keyParams(1.5f))
+        bottom.addView(keyButton(","), keyParams(0.8f))
         bottom.addView(button(if (page == KeyPage.EMOJI) "ABC" else "☺", false) {
             actions.page(if (page == KeyPage.EMOJI) KeyPage.LETTERS else KeyPage.EMOJI)
         }.apply { contentDescription = context.getString(R.string.keyboard_emoji) }, keyParams(1f))
-        bottom.addView(keyButton(","), keyParams(0.8f))
         bottom.addView(button(context.getString(R.string.keyboard_space), false) { actions.key(" ") }.apply {
             setOnLongClickListener { actions.switchKeyboard(); true }
         }, keyParams(3.5f))
         bottom.addView(keyButton("."), keyParams(0.8f))
-        bottom.addView(if (page == KeyPage.EMOJI) deleteButton() else button(enterLabel, true) { actions.enter() }.apply {
+        enterKeyButton = if (page == KeyPage.EMOJI) null else button(enterLabel, true) { actions.enter() }.apply {
             textSize = if (enterLabel.length == 1) 22f else 13f
             contentDescription = context.getString(R.string.keyboard_enter)
-        }, keyParams(1.4f))
+        }
+        bottom.addView(enterKeyButton ?: deleteButton(), keyParams(1.4f))
         keys.addView(bottom)
         updateShift(shift)
     }
 
     fun updateShift(shift: ShiftState) {
+        if (renderedShift == shift) return
+        renderedShift = shift
         letterButtons.forEach { (button, label) -> button.text = if (shift == ShiftState.OFF) label else label.uppercase() }
         if (letterButtons.isNotEmpty()) shiftButton?.apply {
             text = if (shift == ShiftState.LOCKED) "⇪" else "⇧"
@@ -374,13 +489,15 @@ internal class LingoKeyboardView(context: Context, private val actions: Keyboard
             if (event.actionMasked == MotionEvent.ACTION_DOWN) performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
             false
         }
-        if (text.length == 1 && text[0].isLetter()) setOnLongClickListener {
-            val digit = KeyboardLayout.letters[0].indexOf(text)
-            if (digit >= 0) { actions.key(((digit + 1) % 10).toString()); true } else false
+        if (text.length == 1 && text[0].isLetter()) {
+            (this as ImmediateKeyButton).hintLabel = KeyboardLayout.longPress[text]
+            setOnLongClickListener {
+                KeyboardLayout.longPress[text]?.let { actions.key(it); true } ?: false
+            }
         }
     }
 
-    private fun button(label: String, primary: Boolean, action: () -> Unit): Button = Button(context).apply {
+    private fun button(label: String, primary: Boolean, action: () -> Unit): Button = ImmediateKeyButton(context).apply {
         text = label; textSize = 13f; setTextColor(if (primary) (if (dark) base else Color.WHITE) else ink); isAllCaps = false
         minWidth = 0; minimumWidth = 0; minHeight = 0; minimumHeight = 0
         setPadding(dp(5), 0, dp(5), 0)
@@ -388,6 +505,8 @@ internal class LingoKeyboardView(context: Context, private val actions: Keyboard
         background = keyBackground(if (primary) accent else base)
         stateListAnimator = null
         isSaveEnabled = false
+        isSoundEffectsEnabled = false
+        includeFontPadding = false
         setOnClickListener { action() }
     }
 
@@ -403,13 +522,13 @@ internal class LingoKeyboardView(context: Context, private val actions: Keyboard
         }, LayoutParams(LayoutParams.MATCH_PARENT, dp(height)))
     }
 
-    private fun addStatus(text: String) {
-        panel.addView(TextView(context).apply {
-            this.text = text; setTextColor(muted); textSize = 12f; maxLines = 2
-            setPadding(dp(4), dp(3), dp(4), dp(2))
-            accessibilityLiveRegion = View.ACCESSIBILITY_LIVE_REGION_POLITE
-        })
+    private fun statusText(value: String) = TextView(context).apply {
+        text = value; setTextColor(muted); textSize = 12f; maxLines = 2
+        setPadding(dp(4), dp(3), dp(4), dp(2))
+        accessibilityLiveRegion = View.ACCESSIBILITY_LIVE_REGION_POLITE
     }
+    private fun addStatus(text: String) { panel.addView(statusText(text)) }
+
     private fun keyParams(weight: Float) = LayoutParams(0, dp(keyHeight), weight).apply {
         setMargins(0, 0, 0, 0)
     }
@@ -422,4 +541,40 @@ internal class LingoKeyboardView(context: Context, private val actions: Keyboard
     private fun dp(value: Float) = (value * resources.displayMetrics.density).toInt()
     private fun stopRepeat() { repeating = false; handler.removeCallbacks(repeatDelete) }
     override fun onDetachedFromWindow() { languagePopup?.dismiss(); stopRepeat(); super.onDetachedFromWindow() }
+}
+
+/** Commit on finger release in this event, avoiding View's deferred click runnable during fast typing.
+ * Native down/move/cancel and long-press handling still provide drag cancellation and accessibility. */
+@SuppressLint("AppCompatCustomView")
+internal class ImmediateKeyButton(context: Context) : Button(context) {
+    var hintLabel: String? = null
+    private val hintPaint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+        textAlign = android.graphics.Paint.Align.RIGHT
+        textSize = 10 * resources.displayMetrics.scaledDensity
+    }
+    override fun onDraw(canvas: android.graphics.Canvas) {
+        super.onDraw(canvas)
+        hintLabel?.let {
+            hintPaint.color = currentTextColor; hintPaint.alpha = 140
+            canvas.drawText(it, width - 5 * resources.displayMetrics.density, 13 * resources.displayMetrics.density, hintPaint)
+        }
+    }
+    private var longPressHandled = false
+    override fun performLongClick(): Boolean = super.performLongClick().also { longPressHandled = it }
+    override fun onTouchEvent(event: MotionEvent): Boolean {
+        if (event.actionMasked == MotionEvent.ACTION_DOWN) {
+            longPressHandled = false
+            val handled = super.onTouchEvent(event)
+            if (isEnabled) isPressed = true
+            return handled
+        }
+        if (event.actionMasked == MotionEvent.ACTION_UP && isEnabled) {
+            val click = isPressed && !longPressHandled
+            cancelLongPress(); isPressed = false
+            if (click) performClick()
+            return true
+        }
+        return super.onTouchEvent(event)
+    }
+    override fun performClick(): Boolean = super.performClick()
 }

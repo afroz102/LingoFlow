@@ -8,7 +8,10 @@ import android.provider.Settings
 import android.view.inputmethod.InputMethodManager
 import android.graphics.Color
 import android.graphics.Typeface
-import android.content.res.Configuration
+import android.content.res.ColorStateList
+import android.widget.ImageView
+import android.view.Gravity
+import android.view.View
 import com.google.android.material.button.MaterialButton
 import android.widget.LinearLayout
 import android.widget.ScrollView
@@ -30,10 +33,9 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val dark = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
-        val ink = Color.parseColor(if (dark) "#F0F1F8" else "#222738")
-        val muted = Color.parseColor(if (dark) "#A7ADBF" else "#687086")
-        val backgroundColor = Color.parseColor(if (dark) "#1D2029" else "#F4F6FB")
+        val ink = Color.parseColor("#E5EEEE")
+        val muted = Color.parseColor("#A2B4BC")
+        val backgroundColor = Color.parseColor("#18252B")
         fun dp(value: Int) = (value * resources.displayMetrics.density).toInt()
         val content = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
@@ -48,21 +50,32 @@ class MainActivity : AppCompatActivity() {
             content.addView(this)
         }
         fun button(res: Int, action: () -> Unit) { content.addView(MaterialButton(this).apply {
+            backgroundTintList = ColorStateList.valueOf(Color.parseColor("#344F5B"))
+            setTextColor(ink)
             setText(res); isAllCaps = false; cornerRadius = dp(16); insetTop = dp(4); insetBottom = dp(4)
             textSize = 15f; setOnClickListener { action() }
         }, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(60))) }
-        text(R.string.app_name, 34f)
-        content.addView(TextView(this).apply {
+        val header = LinearLayout(this).apply { gravity = Gravity.CENTER_VERTICAL; setPadding(0, 0, 0, dp(12)) }
+        header.addView(ImageView(this).apply {
+            setImageResource(R.drawable.ic_lingoboard_logo); contentDescription = getString(R.string.keyboard_logo)
+        }, LinearLayout.LayoutParams(dp(56), dp(56)))
+        header.addView(TextView(this).apply {
             text = getString(R.string.setup_version, com.lingoflow.instanttranslate.BuildConfig.VERSION_NAME)
-            textSize = 11f; letterSpacing = 0.08f; setTextColor(muted); setPadding(0, 0, 0, dp(16))
-        })
+            textSize = 11f; letterSpacing = 0.06f; setTextColor(muted); setPadding(dp(16), 0, 0, 0)
+        }, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
+        content.addView(header)
         text(R.string.setup_intro)
         status = text(R.string.clipboard_manual)
         text(R.string.setup_keyboard_explanation)
         button(R.string.setup_enable_keyboard) { startActivity(Intent(Settings.ACTION_INPUT_METHOD_SETTINGS)) }
         button(R.string.setup_choose_keyboard) { getSystemService(InputMethodManager::class.java).showInputMethodPicker() }
         text(R.string.setup_writing)
-        text(R.string.setup_optional_floating, 20f)
+        val optionalStart = content.childCount
+        button(R.string.setup_optional_floating) {
+            val first = content.getChildAt(optionalStart + 1)
+            val visibility = if (first.visibility == View.VISIBLE) View.GONE else View.VISIBLE
+            for (index in optionalStart + 1 until content.childCount) content.getChildAt(index).visibility = visibility
+        }
         button(R.string.setup_overlay) {
             try { startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName"))) }
             catch (_: RuntimeException) { Toast.makeText(this, R.string.overlay_unavailable, Toast.LENGTH_LONG).show() }
@@ -76,6 +89,7 @@ class MainActivity : AppCompatActivity() {
             } else startReading()
         }
         button(R.string.setup_stop) { ReadingSession.stop(this); Toast.makeText(this, R.string.session_stopped, Toast.LENGTH_SHORT).show() }
+        for (index in optionalStart + 1 until content.childCount) content.getChildAt(index).visibility = View.GONE
         setContentView(ScrollView(this).apply { setBackgroundColor(backgroundColor); addView(content) })
     }
 

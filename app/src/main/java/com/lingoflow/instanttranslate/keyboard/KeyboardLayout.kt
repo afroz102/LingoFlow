@@ -5,14 +5,25 @@ object KeyboardLayout {
     val letters = listOf("qwertyuiop", "asdfghjkl", "zxcvbnm")
     val symbols = listOf(
         listOf("1", "2", "3", "4", "5", "6", "7", "8", "9", "0"),
-        listOf("@", "#", "₹", "_", "&", "-", "+", "(", ")", "/"),
+        listOf("@", "#", "$", "%", "&", "-", "+", "(", ")", "/"),
         listOf("*", "\"", "'", ":", ";", "!", "?"),
     )
     val moreSymbols = listOf(
-        listOf("~", "`", "|", "•", "√", "π", "÷", "×", "¶", "∆"),
-        listOf("£", "€", "$", "¢", "^", "°", "=", "{", "}", "\\"),
-        listOf("%", "©", "®", "™", "✓", "[", "]"),
+        listOf("=", "<", ">", "_", "[", "]", "{", "}", "\\", "|"),
+        listOf("₹", "€", "£", "¥", "₩", "₽", "¢", "°", "•", "…"),
+        listOf("~", "`", "^", "√", "÷", "×", "✓"),
     )
+    val extraSymbols = listOf(
+        listOf("©", "®", "™", "§", "¶", "π", "∆", "±", "≠", "≈"),
+        listOf("←", "→", "↑", "↓", "«", "»", "“", "”", "‘", "’"),
+        listOf("–", "—", "¿", "¡", "∞", "≤", "≥"),
+    )
+    // Secondary labels expose frequent symbols without a page switch.
+    val longPress = letters.flattenCharacters().zip(
+        listOf("1", "2", "3", "4", "5", "6", "7", "8", "9", "0",
+            "@", "#", "$", "%", "&", "-", "+", "(", ")", "*", "\"", "'", ":", ";", "!", "?")
+    ).toMap()
+    private fun List<String>.flattenCharacters() = flatMap { row -> row.map(Char::toString) }
     val emoji = listOf(
         "😀", "😃", "😄", "😁", "😆", "😅", "😂", "🤣", "😊", "🙂",
         "🙃", "😉", "😍", "🥰", "😘", "😋", "😛", "😜", "🤪", "😎",
@@ -23,7 +34,7 @@ object KeyboardLayout {
 }
 
 enum class ShiftState { OFF, ONCE, LOCKED }
-enum class KeyPage { LETTERS, SYMBOLS, MORE_SYMBOLS, EMOJI }
+enum class KeyPage { LETTERS, SYMBOLS, MORE_SYMBOLS, EXTRA_SYMBOLS, EMOJI }
 enum class TranslationPanel { NONE, WRITE, READ }
 
 data class DraftEdit(val text: String, val cursor: Int)

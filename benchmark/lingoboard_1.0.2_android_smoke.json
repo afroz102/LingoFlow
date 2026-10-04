@@ -1,0 +1,64 @@
+{
+  "recorded_at": "2026-10-04T17:57:49.703022+00:00",
+  "app": "LingoBoard",
+  "version": "1.0.2",
+  "version_code": 6,
+  "apk_path": "app/build/outputs/apk/lingoboard/LingoBoard-1.0.2.apk",
+  "apk_bytes": 7033975,
+  "apk_sha256": "fd9f272d0bbbebef9998624e4643a2f5a472cc1aac2b8b1f61bd73a4b09657eb",
+  "backend_changed": false,
+  "android_jvm_tests": 32,
+  "android_lint_errors": 0,
+  "server_key_in_apk": false,
+  "features": {
+    "header_dp": 44,
+    "portrait_key_target_dp": 56,
+    "symbols": 81,
+    "symbol_pages": 3,
+    "smiley": 50,
+    "letter_long_press_shortcuts": 26,
+    "screenshots_allowed": true,
+    "reading_insertion_actions": false,
+    "reading_keeps_chat_typing_while_pending": true,
+    "draft_cursor_and_key_grid_preserved_during_language_updates": true,
+    "setup_theme": "dim slate",
+    "logo_headers": true
+  },
+  "emulator_runs": [
+    {
+      "android_api": 34,
+      "tests": 21,
+      "passed": true,
+      "live_gemini_calls": 7,
+      "apk_sha256": "f816149ab0e876b9a28aba02fdded4fcebffb6a1ac8e11e2d93ff23f833b15ab",
+      "scope": "Full suite before final header chip accessibility refresh and declarative setup launch theme; that APK is retained locally"
+    },
+    {
+      "android_api": 34,
+      "tests": 8,
+      "passed": true,
+      "live_gemini_calls": 1,
+      "scope": "Final APK: five rendering/editing/fast-release/settings tests, language swap and picker persistence, live reading while typing"
+    },
+    {
+      "android_api": 30,
+      "tests": 20,
+      "passed": true,
+      "live_gemini_calls": 7,
+      "scope": "Final APK: full five-case rendering/settings suite and fifteen-case keyboard suite, including live read/write/selection/handoff/native Hindi/Roman output"
+    }
+  ],
+  "resolved_development_findings": [
+    "A pending-read test incorrectly required append; corrected to verify typing at the existing cursor without changing other chat text",
+    "Header accessibility retained an old target label despite correct rendered output; language changes now replace only the chip nodes and expose the full chosen language in their descriptions",
+    "One initial live translation returned a provider error; subsequent live suites passed that path",
+    "Panel discovery now waits for the asynchronous accessibility tree instead of reading it immediately"
+  ],
+  "preview_scope": "Actual native keyboard renders using synthetic samples, plus a setup screen captured on the emulator",
+  "limits": [
+    "No physical-phone or actual Game of Khans/Discord/WhatsApp/Telegram/Instagram validation",
+    "No physical typing frame-time, P50/P95 latency or battery measurement; no Gboard parity claim",
+    "Prediction/autocorrect/swipe/voice typing remain unimplemented",
+    "Typing layout is Latin QWERTY; language choices are for translation, not native-script keyboard layouts"
+  ]
+}

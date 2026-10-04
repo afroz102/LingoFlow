@@ -74,6 +74,91 @@ class KeyboardLayoutRenderTest {
             }
         }
     }
+    @Test fun panelUpdatesKeepCursorAndKeysMountedAndReadingHasNoInsertAction() {
+        val instrumentation = InstrumentationRegistry.getInstrumentation()
+        instrumentation.runOnMainSync {
+            val view = LingoKeyboardView(instrumentation.targetContext, noActions)
+            val state = KeyboardPanelState(TranslationPanel.READ, Direction.MULTILINGUAL, "hello", false, null, null, false, false)
+            view.renderPanel(state); view.renderKeys(KeyPage.LETTERS, ShiftState.OFF, "↵")
+            fun children(group: android.view.ViewGroup): List<View> = (0 until group.childCount).flatMap {
+                val child = group.getChildAt(it)
+                listOf(child) + if (child is android.view.ViewGroup) children(child) else emptyList()
+            }
+            val editor = children(view).filterIsInstance<android.widget.EditText>().single()
+            val key = children(view).filterIsInstance<android.widget.Button>().single { it.text == "q" }
+            editor.setSelection(2)
+            view.renderPanel(state.copy(languages = com.lingoflow.instanttranslate.direction.TranslationLanguagePair("hi-Latn", "en")))
+            view.renderKeys(KeyPage.LETTERS, ShiftState.OFF, "Send")
+            org.junit.Assert.assertSame(editor, children(view).filterIsInstance<android.widget.EditText>().single())
+            org.junit.Assert.assertEquals(2, editor.selectionStart)
+            org.junit.Assert.assertSame(key, children(view).filterIsInstance<android.widget.Button>().single { it.text == "q" })
+            assertTrue(children(view).single { it.contentDescription == "Read" }.isSelected)
+            assertTrue(children(view).filterIsInstance<android.widget.Button>().none { it.text == "Translate & insert" || it.text == "Insert here" })
+            view.renderPanel(state.copy(languages = com.lingoflow.instanttranslate.direction.TranslationLanguagePair("en", "hi-Latn")))
+            val target = children(view).filterIsInstance<android.widget.Button>().single {
+                it.contentDescription?.toString()?.startsWith("Choose target language") == true
+            }
+            org.junit.Assert.assertEquals("Hindi (Roman) ▾", target.text.toString())
+            org.junit.Assert.assertEquals("Choose target language: Hindi (Roman)", target.contentDescription)
+            view.renderPanel(state.copy(result = "Hello there"))
+            view.renderKeys(KeyPage.LETTERS, ShiftState.OFF, "Send")
+            org.junit.Assert.assertSame(key, children(view).filterIsInstance<android.widget.Button>().single { it.text == "q" })
+            assertTrue(children(view).filterIsInstance<android.widget.Button>().none { it.text == "Insert here" })
+        }
+    }
+
+    @Test fun fastReleaseCommitsImmediatelyAndCancelOrLongPressNeverAddsASecondKey() {
+        val instrumentation = InstrumentationRegistry.getInstrumentation()
+        instrumentation.runOnMainSync {
+            var clicks = 0
+            var longPresses = 0
+            val key = ImmediateKeyButton(instrumentation.targetContext)
+            key.layout(0, 0, 100, 100)
+            key.setOnClickListener { clicks++ }
+            key.setOnLongClickListener { longPresses++; true }
+            fun touch(action: Int) {
+                val now = android.os.SystemClock.uptimeMillis()
+                val event = android.view.MotionEvent.obtain(now, now, action, 50f, 50f, 0)
+                key.onTouchEvent(event); event.recycle()
+            }
+            touch(android.view.MotionEvent.ACTION_DOWN); touch(android.view.MotionEvent.ACTION_UP)
+            org.junit.Assert.assertEquals("Release must commit without a posted click task", 1, clicks)
+            touch(android.view.MotionEvent.ACTION_DOWN); touch(android.view.MotionEvent.ACTION_CANCEL)
+            org.junit.Assert.assertEquals(1, clicks)
+            touch(android.view.MotionEvent.ACTION_DOWN); key.performLongClick(); touch(android.view.MotionEvent.ACTION_UP)
+            org.junit.Assert.assertEquals(1, longPresses)
+            org.junit.Assert.assertEquals("Long press must not also type the ordinary key", 1, clicks)
+            key.performClick()
+            org.junit.Assert.assertEquals("Accessibility click remains supported", 2, clicks)
+        }
+    }
+
+    @Test fun setupUsesDimSlateLogoAndCollapsesFloatingTools() {
+        val instrumentation = InstrumentationRegistry.getInstrumentation()
+        val activity = instrumentation.startActivitySync(android.content.Intent(instrumentation.targetContext,
+            com.lingoflow.instanttranslate.ui.MainActivity::class.java).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK))
+        try {
+            instrumentation.runOnMainSync {
+                val root = activity.findViewById<android.view.ViewGroup>(android.R.id.content).getChildAt(0) as android.widget.ScrollView
+                org.junit.Assert.assertEquals(android.graphics.Color.parseColor("#18252B"),
+                    (root.background as android.graphics.drawable.ColorDrawable).color)
+                val content = root.getChildAt(0) as android.view.ViewGroup
+                val start = (0 until content.childCount).map { content.getChildAt(it) }.filterIsInstance<android.widget.Button>()
+                    .single { it.text == "Start reading session" }
+                org.junit.Assert.assertEquals(View.GONE, start.visibility)
+                val toggle = (0 until content.childCount).map { content.getChildAt(it) }.filterIsInstance<android.widget.Button>()
+                    .single { it.text == "Optional: floating reading session" }
+                toggle.performClick(); org.junit.Assert.assertEquals(View.VISIBLE, start.visibility)
+                toggle.performClick(); org.junit.Assert.assertEquals(View.GONE, start.visibility)
+                val header = content.getChildAt(0) as android.view.ViewGroup
+                assertTrue((0 until header.childCount).any { header.getChildAt(it).contentDescription == "LingoBoard logo" })
+            }
+            val device = androidx.test.uiautomator.UiDevice.getInstance(instrumentation)
+            device.waitForIdle()
+            assertTrue(device.takeScreenshot(File(instrumentation.targetContext.getExternalFilesDir(null), "lingoboard-setup.png")))
+        } finally { instrumentation.runOnMainSync { activity.finish() } }
+    }
+
     @Test fun draftEditingKeepsEditableAndCursorAndDeletesWholeEmoji() {
         val instrumentation = InstrumentationRegistry.getInstrumentation()
         instrumentation.runOnMainSync {

@@ -52,6 +52,7 @@
     <string name="action_minimize">Minimize</string>
     <string name="action_close">Close</string>
     <string name="action_stop">Stop</string>
+    <string name="keyboard_logo">LingoBoard logo</string>
     <string name="keyboard_name">LingoBoard</string>
     <string name="keyboard_switch">Switch keyboard</string>
     <string name="keyboard_space">Space</string>

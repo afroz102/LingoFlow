@@ -92,3 +92,12 @@ Full target-app/OEM compatibility, physical performance/battery, process-death a
 revocation stress testing, TalkBack/font scaling, and public distribution review remain open.
 The keyboard has no prediction, autocorrect, swipe or voice input. Physical typing latency,
 font scaling, numeric layouts and target-app behavior still need broader device testing.
+
+### 1.0.2 usability refinement
+
+Use the LingoBoard keyboard/chat logo in place of header text. Keep language selectors in the
+same row immediately after Read, highlight the active mode, and keep reading translate-only.
+Move comma left of emoji, expose frequent long-press shortcuts and three symbol pages. Keep
+chat typing available during reading translation and preserve the key grid/draft cursor during
+panel updates. Setup uses a dim slate palette and collapsible optional floating tools. Screenshot
+capture remains enabled. Physical phone responsiveness and target-app compatibility need validation.

@@ -33,6 +33,8 @@ class ReadingWritingSmokeTest {
     private fun click(text: String) {
         var control = device.wait(Until.findObject(By.text(text)), 1500)
         if (control == null && text == "Start reading session") {
+            device.findObject(By.text("Optional: floating reading session"))?.click()
+            control = device.wait(Until.findObject(By.text(text)), 500)
             for (attempt in 0..2) {
                 device.swipe(device.displayWidth / 2, device.displayHeight * 3 / 4,
                     device.displayWidth / 2, device.displayHeight / 4, 20)

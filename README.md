@@ -12,10 +12,14 @@ target defaults to **English**. Gemini translates the meaning and context of the
   accessible label to **Translate selection**. Tap it to read the selection above the keyboard.
 
 The keyboard follows system light/dark mode, with a compact icon toolbar, larger 56dp portrait
-key targets, and in-place draft editing. Screenshots are allowed. The keyboard has rounded keys, one-shot Shift, double-tap/hold Caps Lock, two symbol pages,
+key targets, and in-place draft editing. The logo, mode icons and language selectors share one header;
+Read stays highlighted and offers translation without insertion. Comma sits left of emoji.
+Letter keys show long-press digit/symbol shortcuts. Screenshots are allowed. The keyboard has rounded keys, one-shot Shift, double-tap/hold Caps Lock, three symbol pages (81 symbols),
 50 smiley emoji, hold-to-delete and a keyboard switcher. Translation in the keyboard needs
 **no overlay permission or reading session**. Typing is local; there is no word prediction,
-autocorrect, swipe typing or voice input yet.
+autocorrect, swipe typing or voice input yet. Key releases commit immediately, the key grid stays
+mounted across panel updates, and reading requests leave chat typing available. Physical-device
+smoothness still needs testing. Setup uses a dim slate theme and collapses optional floating tools.
 
 The existing **LingoBoard Translate** selection action still replaces editable selections. For
 read-only selections, with LingoBoard selected, it hands off to the next opened chat input
@@ -26,6 +30,7 @@ copying and opening the composer is the reliable fallback.
 [Reading card](docs/images/keyboard-reading.png) · [Landscape](docs/images/keyboard-landscape.png) ·
 [Dark keyboard](docs/images/keyboard-typing-dark.png) · [Dark reading](docs/images/keyboard-reading-dark.png).
 These show the actual view rendered on an emulator with synthetic samples.
+[Dim setup screen](docs/images/lingoboard-setup.png) · [LingoBoard logo](docs/images/lingoboard-logo.svg).
 
 An optional floating reading session remains for apps that allow overlays, with Copy, Minimize,
 Close and Stop. It is explicitly started and never restarts on boot.
@@ -38,7 +43,7 @@ the phone. Gemini's unpaid service is for non-sensitive test samples. Shared all
 
 ## Test on your phone
 
-Install `app/build/outputs/apk/lingoboard/LingoBoard-1.0.1.apk`, then open **LingoBoard**.
+Install `app/build/outputs/apk/lingoboard/LingoBoard-1.0.2.apk`, then open **LingoBoard**.
 Tap **1. Enable LingoBoard**, enable it in system settings, then tap **2. Choose LingoBoard**.
 Open a chat input in your game/messaging app. Use the **translation icon** to write or the **message icon** to load a
 copied message, and acknowledge the disclosure before your first translation.
@@ -79,7 +84,7 @@ npm --prefix backend test
 ```
 
 The backend is deployed at `https://lingoflow-backend.lingoflow-backend.workers.dev`.
-The APK version is **1.0.1**, version code 5. No phone-side server/key setup.
+The APK version is **1.0.2**, version code 6. No phone-side server/key setup.
 
 ## Support and evidence
 

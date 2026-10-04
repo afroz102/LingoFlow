@@ -83,16 +83,16 @@ separate from D1. Production builds require HTTPS. Debug builds allow HTTP only 
 
 ## Test on a real Android phone
 
-The `1.0.1` APK includes the public backend URL. No account, Gemini key
+The `1.0.2` APK includes the public backend URL. No account, Gemini key
 entry or server configuration is needed on the phone. Internet is required for translation.
 
-1. Transfer `app/build/outputs/apk/lingoboard/LingoBoard-1.0.1.apk` to your phone and install/update it.
+1. Transfer `app/build/outputs/apk/lingoboard/LingoBoard-1.0.2.apk` to your phone and install/update it.
    Allow installation from that file/browser app if Android asks.
 2. Open **LingoBoard**, tap **1. Enable LingoBoard**, and enable **LingoBoard**
    in system settings. Return and tap **2. Choose LingoBoard** to select it.
 3. Open your game/chat and tap its chat input. LingoBoard appears. Display-over-apps
    permission and Start reading session are unnecessary for this keyboard flow.
-4. **Write:** tap the **Translate** icon in the top row. The selectors show **Detect language → English**.
+4. **Write:** tap the **Translate** icon in the top row. The selectors show **Auto → English**.
    Type `main kal nahi aa sakta` in the separate translation box. It should not appear in the chat yet.
    Tap **Translate & insert**. On first use, read the disclosure and tap **Continue**.
    English enters the chat input. Review it and send using your chat app when ready.
@@ -102,9 +102,10 @@ entry or server configuration is needed on the phone. Internet is required for t
    explicit languages; from Auto → English it offers English → Hindi (Roman).
    Translation failures keep the source; tap Translate & insert again for an explicit retry.
 6. **Read a copied message:** copy a received message, open the chat input and tap the **message icon**.
-   The copied source appears in the keyboard panel. Tap **Translate**; the English
+   Read stays highlighted in the header and offers no insertion action. The copied source appears
+   in the keyboard panel. Tap **Translate**; the English
    result appears above the keys. Translation leaves your existing chat draft unchanged; you can then type a reply below the result. **Copy**, **New**
-   and **×** are available; reading never inserts a result into the chat automatically.
+   and **×** are available; reading never inserts its result into the chat.
 7. **Read selected editor text:** select text in the active typing field. The translation icon’s accessible label changes
    to **Translate selection**. Tap it to read English above the keys. The selection stays unchanged.
    A keyboard cannot generally detect selections in received-message UI outside that editor.
@@ -116,17 +117,20 @@ entry or server configuration is needed on the phone. Internet is required for t
    digits. Tap the **globe icon** or hold Space to switch keyboards. Translation-panel Enter creates a newline.
 10. Try your actual target apps, part-selection, long input, offline failure and landscape.
     Closing/hiding the keyboard clears the translation draft/result and cancels pending work.
-    If the chat cursor moves during a request, review the held result and use **Insert here** or **Copy**.
+    If the chat cursor moves during a writing request, review the held result and use **Insert here** or **Copy**.
 
 There are 45 translation languages, including all 22 scheduled Indian languages with separate
 native-script and Roman choices, and 67 total language/script options. English is the default
 target; you can choose another target for both writing and reading. The keyboard layout remains
-Latin QWERTY. Screenshots are enabled in LingoBoard. Context comes only
+Latin QWERTY. Language selectors follow the reading icon in the same header. Comma is left of emoji.
+There are three symbol pages; hold a letter to enter its small digit/symbol label. Reading requests
+allow continued chat typing. Tap the highlighted Read icon or × to leave reading mode.
+Screenshots are enabled in LingoBoard. Context comes only
 from the requested passage. Normal typing stays local; only explicit translation requests go
 to Gemini. No word prediction, autocorrect, swipe or voice typing yet.
 
-**Optional floating mode:** if your app permits overlays, allow **floating translations** and tap
-**Start reading session**. With LingoBoard selected, copy prompts can appear above the app;
+**Optional floating mode:** if your app permits overlays, tap **Optional: floating reading session**
+to expand its tools, allow **floating translations**, then tap **Start reading session**. With LingoBoard selected, copy prompts can appear above the app;
 with another keyboard, tap the Lingo bubble after copying. Confirmed English floats over the app.
 Drag, Copy, Minimize, Close and Stop remain available. An explicitly running floating session
 keeps the older received-selection route. This mode is separate from keyboard translation.

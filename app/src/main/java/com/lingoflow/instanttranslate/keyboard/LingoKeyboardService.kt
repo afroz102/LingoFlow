@@ -57,6 +57,7 @@ class LingoKeyboardService : InputMethodService(), KeyboardActions {
     private var request: Job? = null
     private var selectionStart = -1
     private var selectionEnd = -1
+    private var editorIdentity: Triple<String?, Int, Int>? = null
 
     override fun onEvaluateFullscreenMode() = false
 
@@ -68,8 +69,21 @@ class LingoKeyboardService : InputMethodService(), KeyboardActions {
 
     override fun onStartInput(attribute: EditorInfo?, restarting: Boolean) {
         super.onStartInput(attribute, restarting)
-        languages = TranslationLanguagePair(languagePreferences.getString("source", "auto") ?: "auto",
+        val identity = Triple(attribute?.packageName, attribute?.fieldId ?: 0, attribute?.inputType ?: 0)
+        val savedLanguages = TranslationLanguagePair(languagePreferences.getString("source", "auto") ?: "auto",
             languagePreferences.getString("target", "en") ?: "en").takeIf { it.isValid() } ?: TranslationLanguagePair()
+        // Chat apps can restart the same editor while updating its state. Keep the local panel,
+        // but invalidate any write-insertion target so a restarted cursor never gets stale text.
+        if (restarting && identity == editorIdentity && languages == savedLanguages) {
+            selectionRevision++
+            selectionStart = attribute?.initialSelStart ?: -1
+            selectionEnd = attribute?.initialSelEnd ?: -1
+            selected = selectionStart >= 0 && selectionEnd >= 0 && selectionStart != selectionEnd
+            render()
+            return
+        }
+        editorIdentity = identity
+        languages = savedLanguages
         clearPanel()
         session++
         selectionRevision = 0
@@ -120,6 +134,7 @@ class LingoKeyboardService : InputMethodService(), KeyboardActions {
     override fun onFinishInput() {
         clearPanel()
         session++
+        editorIdentity = null
         KeyboardPrivacy.passwordInputActive = false
         super.onFinishInput()
     }
@@ -143,11 +158,13 @@ class LingoKeyboardService : InputMethodService(), KeyboardActions {
             if (text == null) { toast(R.string.keyboard_selection_unavailable); return }
             openPanel(TranslationPanel.READ, text)
             translate()
-        } else openPanel(TranslationPanel.WRITE, "")
+        } else if (panel == TranslationPanel.READ) translate()
+        else openPanel(TranslationPanel.WRITE, "")
     }
 
     override fun readIcon() {
         if (KeyboardPrivacy.passwordInputActive) return
+        if (panel == TranslationPanel.READ) { closePanel(); return }
         val text = if (selected) selectedText() else null
         openPanel(TranslationPanel.READ, text.orEmpty())
         if (text != null) translate()
@@ -216,7 +233,7 @@ class LingoKeyboardService : InputMethodService(), KeyboardActions {
         val connection = currentInputConnection
         val generation = ++requestGeneration
         busy = true; result = null; message = null
-        render()
+        render(); renderKeys()
         request = scope.launch {
             val outcome = coordinator.translate(text, languages = requestedLanguages)
             if (generation != requestGeneration) return@launch
@@ -265,12 +282,16 @@ class LingoKeyboardService : InputMethodService(), KeyboardActions {
     }
 
     override fun key(text: String) {
-        if (busy || needsDisclosure) return
+        if (needsDisclosure || (busy && panel != TranslationPanel.READ)) return
         val value = if (keyPage == KeyPage.LETTERS && shiftState != ShiftState.OFF && text.length == 1 && text[0].isLetter()) text.uppercase() else text
         if (!isEditingDraft()) {
             // Invalidate an insertion target immediately; the editor's selection callback is asynchronous.
             selectionRevision++
-            currentInputConnection?.commitText(value, 1)
+            if (currentInputConnection?.commitText(value, 1) == true && selected) {
+                // A fast Delete can arrive before the editor reports that the replaced selection collapsed.
+                selected = false
+                surface?.renderToolbar(false, KeyboardPrivacy.passwordInputActive)
+            }
         } else if (result == null) surface?.editDraft(value)
         if (shiftState == ShiftState.ONCE && text.length == 1 && text[0].isLetter()) {
             shiftState = ShiftState.OFF
@@ -279,11 +300,17 @@ class LingoKeyboardService : InputMethodService(), KeyboardActions {
     }
 
     override fun backspace() {
-        if (busy || needsDisclosure) return
+        if (needsDisclosure || (busy && panel != TranslationPanel.READ)) return
         if (isEditingDraft()) { if (result == null) surface?.editDraft(delete = true); return }
         val connection = currentInputConnection ?: return
         selectionRevision++
-        if (!connection.getSelectedText(0).isNullOrEmpty()) connection.commitText("", 1)
+        // Selection callbacks already carry this information; avoid a blocking editor query per delete.
+        if (selected) {
+            if (connection.commitText("", 1)) {
+                selected = false
+                surface?.renderToolbar(false, KeyboardPrivacy.passwordInputActive)
+            }
+        }
         else if (Build.VERSION.SDK_INT >= 24) connection.deleteSurroundingTextInCodePoints(1, 0)
         else {
             val before = connection.getTextBeforeCursor(2, 0)?.toString().orEmpty()
@@ -332,8 +359,8 @@ class LingoKeyboardService : InputMethodService(), KeyboardActions {
     }
 
     private fun render() {
-        surface?.renderToolbar(selected, KeyboardPrivacy.passwordInputActive)
-        surface?.renderPanel(KeyboardPanelState(panel, direction, draft, busy, result, message, needsDisclosure, selected, languages))
+        surface?.renderPanel(KeyboardPanelState(panel, direction, draft, busy, result, message, needsDisclosure, selected, languages),
+            KeyboardPrivacy.passwordInputActive)
     }
 
     private fun renderKeys() {
@@ -349,5 +376,5 @@ class LingoKeyboardService : InputMethodService(), KeyboardActions {
     }
 
     private fun toast(res: Int) { Toast.makeText(this, res, Toast.LENGTH_SHORT).show() }
-    private fun isEditingDraft() = panel != TranslationPanel.NONE && !(panel == TranslationPanel.READ && result != null)
+    private fun isEditingDraft() = panel != TranslationPanel.NONE && !(panel == TranslationPanel.READ && (busy || result != null))
 }
