@@ -1,19 +1,33 @@
 package com.lingoflow.instanttranslate.coordinator
 
+import com.lingoflow.instanttranslate.cloud.ConnectivityChecker
+import com.lingoflow.instanttranslate.cloud.DisclosureGate
 import com.lingoflow.instanttranslate.direction.DirectionDetector
 import com.lingoflow.instanttranslate.provider.TranslationProvider
 import com.lingoflow.instanttranslate.provider.TranslationResult
+import com.lingoflow.instanttranslate.timing.TimingMark
+import com.lingoflow.instanttranslate.timing.TranslationTimeline
 
 /**
- * Translate-selection coordinator (docs/TECHNICAL_PLAN.md §3). Takes already-validated,
- * already-flattened text from the text-action adapter, resolves direction, invokes the
- * provider, and returns a typed outcome. Stage 1 adds disclosure/connectivity gating here;
- * Stage 0A has neither, since the stub provider needs no network or user consent.
+ * Translate-selection coordinator (docs/TECHNICAL_PLAN.md §3, §5 runtime state model). Takes
+ * already-validated, already-flattened text from the text-action adapter and, in order: checks
+ * disclosure acknowledgement, checks connectivity, resolves direction, invokes the provider, and
+ * returns a typed outcome. Both gate checks run before the provider is touched — no request is
+ * ever sent without acknowledged disclosure or without connectivity, and neither gate spends a
+ * network call to find that out.
  */
-class TranslateCoordinator(private val provider: TranslationProvider) {
+class TranslateCoordinator(
+    private val provider: TranslationProvider,
+    private val disclosureGate: DisclosureGate,
+    private val connectivityChecker: ConnectivityChecker,
+) {
 
     suspend fun translate(text: String): TranslationOutcome {
+        if (!disclosureGate.isAcknowledged()) return TranslationOutcome.DisclosureRequired
+        if (!connectivityChecker.isConnected()) return TranslationOutcome.Offline
+
         val direction = DirectionDetector.detect(text)
+        TranslationTimeline.mark(TimingMark.T_DIRECTION)
         return when (val result = provider.translate(text, direction)) {
             is TranslationResult.Success -> TranslationOutcome.Translated(
                 original = text,

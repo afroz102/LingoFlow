@@ -1,0 +1,4 @@
+# Copy to supabase.properties. Both values are public client configuration.
+# Never add GEMINI_API_KEY or a Supabase service-role/secret key here.
+SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co
+SUPABASE_PUBLISHABLE_KEY=YOUR_PUBLISHABLE_KEY

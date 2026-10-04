@@ -1,0 +1,2 @@
+# Public backend URL only. This value enters the APK. Never add API keys here.
+BACKEND_URL=https://lingoflow-backend.YOUR_SUBDOMAIN.workers.dev

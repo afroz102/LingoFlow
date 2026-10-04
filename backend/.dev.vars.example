@@ -1,0 +1,3 @@
+# Local server / Wrangler development only. Never commit the actual key.
+GEMINI_API_KEY=YOUR_EXISTING_S78_GEMINI_KEY
+GEMINI_MODEL=gemini-3.5-flash-lite

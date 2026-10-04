@@ -3,6 +3,8 @@ package com.lingoflow.instanttranslate.textaction
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
+import com.lingoflow.instanttranslate.timing.TimingMark
+import com.lingoflow.instanttranslate.timing.TranslationTimeline
 import com.lingoflow.instanttranslate.ui.ResultActivity
 
 /**
@@ -34,6 +36,9 @@ class ProcessTextActivity : ComponentActivity() {
             finish()
             return
         }
+
+        TranslationTimeline.startRun()
+        TranslationTimeline.mark(TimingMark.T_RECEIVE)
 
         resultLauncher.launch(ResultActivity.createIntent(this, validated.text, validated.isReadOnly))
     }

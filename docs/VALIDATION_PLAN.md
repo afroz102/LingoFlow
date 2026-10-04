@@ -1,5 +1,10 @@
 # Validation, Benchmark, and Launch Plan
 
+> **Backend update — 2026-10-04:** The user requested our own backend without authentication.
+> [BACKEND_SETUP.md](BACKEND_SETUP.md) describes the current Workers/SQLite test implementation.
+> Firebase, Supabase, App Check, and “no app-owned backend/database” statements below are historical;
+> the selection workflow, language requirements, and unpassed quality/release gates remain applicable.
+
 | Field | Value |
 |---|---|
 | Status | Protocol draft; results not yet collected |

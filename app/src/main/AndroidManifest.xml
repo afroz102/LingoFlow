@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Stage 0A: platform-only manifest. No permissions are declared — no network, no
-    Accessibility, no overlay, no IME, no background service (Validation Plan §2.5 Gate 0
-    pass criteria). INTERNET is added only in Stage 1 when the cloud provider lands.
+    The backend provider uses two normal network permissions —
+    INTERNET to call the translation endpoint, ACCESS_NETWORK_STATE for the pre-flight offline check in cloud/
+    AndroidConnectivityChecker. Everything else from the Gate 0 pass criteria still holds: no
+    Accessibility, no overlay, no IME, no background service, no dangerous permission.
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <!--
         android:forceQueryable is deliberately NOT set here. docs/IMPLEMENTATION_PLAN.md §2 item 9 /
@@ -13,6 +17,7 @@
         this app broadly visible to every other installed app — not adopting it as a default.
     -->
     <application
+        android:usesCleartextTraffic="false"
         android:allowBackup="false"
         android:fullBackupContent="false"
         android:icon="@mipmap/ic_launcher"

@@ -1,0 +1,43 @@
+{
+  "checkedAt": "2026-10-03T20:48:45.139Z",
+  "backend": "https://lingoflow-backend.lingoflow-backend.workers.dev",
+  "checks": [
+    {
+      "name": "health_configuration_and_database",
+      "status": 200,
+      "ms": 169,
+      "passed": true
+    },
+    {
+      "name": "no_auth_route",
+      "status": 404,
+      "ms": 68,
+      "passed": true
+    },
+    {
+      "name": "wrong_method",
+      "status": 405,
+      "ms": 17,
+      "passed": true
+    },
+    {
+      "name": "invalid_direction",
+      "status": 400,
+      "ms": 21,
+      "passed": true
+    },
+    {
+      "name": "english_to_hindi_without_credentials",
+      "status": 200,
+      "ms": 1099,
+      "passed": true
+    },
+    {
+      "name": "hindi_to_english_without_credentials",
+      "status": 200,
+      "ms": 1023,
+      "passed": true
+    }
+  ],
+  "passed": true
+}

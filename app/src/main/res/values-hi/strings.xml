@@ -12,4 +12,14 @@
     <string name="action_replace">बदलें</string>
     <string name="copied_confirmation">कॉपी हो गया</string>
     <string name="error_generic">अनुवाद नहीं हो सका।</string>
+
+    <string name="disclosure_message">चुना गया टेक्स्ट हमारे अनुवाद सर्वर के माध्यम से Google के Gemini API को भेजा जाता है। Google के मुफ़्त टियर में सामग्री की समीक्षा लोग कर सकते हैं और इसका उपयोग उत्पादों को बेहतर बनाने के लिए हो सकता है। कृपया संवेदनशील या गोपनीय टेक्स्ट का अनुवाद न करें। हम अनुवाद का टेक्स्ट या परिणाम नहीं सहेजते। उपयोग सीमित रखने के लिए हमारा सर्वर कुल अनुरोधों की गिनती सहेजता है। खाते या साइन-इन की ज़रूरत नहीं है।</string>
+    <string name="action_continue">जारी रखें</string>
+    <string name="action_retry">फिर कोशिश करें</string>
+
+    <string name="error_offline">इंटरनेट कनेक्शन नहीं है। कनेक्ट करके फिर कोशिश करें।</string>
+    <string name="error_rate_limited">अनुवाद सेवा अभी व्यस्त है। थोड़ी देर में फिर कोशिश करें।</string>
+    <string name="error_timeout">इसमें बहुत समय लग गया। फिर कोशिश करें।</string>
+    <string name="error_provider">अनुवाद सेवा तक नहीं पहुंच सके। फिर कोशिश करें।</string>
+    <string name="error_invalid_response">अनपेक्षित जवाब मिला। फिर कोशिश करें।</string>
 </resources>

@@ -32,3 +32,16 @@ google-services.json
 
 ### Gradle wrapper jar is intentionally NOT ignored — it is checked in ###
 !gradle/wrapper/gradle-wrapper.jar
+
+# Supabase machine-local configuration and tooling
+supabase.properties
+supabase/.temp/
+supabase/.branches/
+supabase/.env
+
+# Custom backend machine-local config, credentials and SQLite/tooling state
+backend.properties
+backend/.dev.vars
+backend/data/
+backend/.wrangler/
+backend/node_modules/

@@ -1,15 +1,24 @@
 package com.lingoflow.instanttranslate.provider
 
-/**
- * Result of a [TranslationProvider] call. Stage 1's Gemini adapter will map connectivity,
- * quota, timeout, and invalid-response failures onto [Failure] — kept to one case now
- * because the Stage 0A stub cannot actually produce the others yet.
- */
+/** Content-free provider result. Backend/Gemini errors never expose upstream bodies to UI. */
 sealed interface TranslationResult {
     data class Success(val translatedText: String) : TranslationResult
     data class Failure(val reason: FailureReason) : TranslationResult
 }
 
 enum class FailureReason {
+    /** Reserved for a provider that can distinguish this from a generic failure; used by the backend input boundary. */
     UNSUPPORTED_INPUT,
+
+    /** The provider itself reported a quota/rate limit (docs/TECHNICAL_PLAN.md §7: "treat RESOURCE_EXHAUSTED ... as a normal recoverable product state"). Never auto-retried (docs/TECHNICAL_PLAN.md §6). */
+    RATE_LIMITED,
+
+    /** The request did not complete within its bounded deadline (docs/TECHNICAL_PLAN.md §6 "use explicit deadlines"). */
+    TIMEOUT,
+
+    /** Any other provider-side failure: server error, safety block, misconfiguration, or an unrecognized exception type. */
+    PROVIDER_ERROR,
+
+    /** The provider returned a response that was empty, malformed, or didn't match the expected schema. */
+    INVALID_RESPONSE,
 }

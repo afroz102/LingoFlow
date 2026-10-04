@@ -4,9 +4,8 @@ import com.lingoflow.instanttranslate.direction.Direction
 
 /**
  * Translation provider boundary (docs/TECHNICAL_PLAN.md §3): `translate(text, direction) →
- * translated text | typed failure`. No Firebase/Gemini types, prompts, or provider-specific
- * response objects may leak past this interface — the Gemini adapter (Stage 1) lives entirely
- * behind provider/gemini/ and implements this same contract.
+ * translated text | typed failure`. No cloud SDK types, prompts, or provider-specific response objects leak past
+ * this interface. The active HTTP adapter lives behind provider/backend/.
  */
 interface TranslationProvider {
     suspend fun translate(text: String, direction: Direction): TranslationResult

@@ -1,0 +1,13 @@
+{
+  "checkedAt": "2026-10-03T20:50:33.305844+00:00",
+  "backend": "https://lingoflow-backend.lingoflow-backend.workers.dev",
+  "device": "API 34 Android emulator, lingoflow_smoke",
+  "test": "BackendTranslationSmokeTest.englishAndHindiTranslateThroughOurBackend",
+  "directions": [
+    "ENGLISH_TO_HINDI",
+    "HINDI_TO_ENGLISH"
+  ],
+  "authenticationRequired": false,
+  "passed": true,
+  "scope": "Real Android HTTP transport and provider; physical phone and full cross-app UI path remain unverified on this backend."
+}

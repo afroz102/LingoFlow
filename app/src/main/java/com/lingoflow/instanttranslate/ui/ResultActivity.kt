@@ -9,12 +9,16 @@ import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.OneShotPreDrawListener
 import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.lingoflow.instanttranslate.R
 import com.lingoflow.instanttranslate.databinding.ActivityResultBinding
+import com.lingoflow.instanttranslate.timing.TimingMark
+import com.lingoflow.instanttranslate.timing.TimingOutcome
+import com.lingoflow.instanttranslate.timing.TranslationTimeline
 import kotlinx.coroutines.launch
 
 /**
@@ -31,7 +35,7 @@ class ResultActivity : AppCompatActivity() {
     private val isReadOnly: Boolean by lazy { intent.getBooleanExtra(EXTRA_READ_ONLY, true) }
 
     private val viewModel: ResultViewModel by viewModels {
-        ResultViewModel.Factory(originalText, isReadOnly)
+        ResultViewModel.Factory(application, originalText, isReadOnly)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -55,6 +59,8 @@ class ResultActivity : AppCompatActivity() {
 
         binding.buttonCopy.setOnClickListener { copyTranslationToClipboard() }
         binding.buttonReplace.setOnClickListener { replaceAndFinish() }
+        binding.buttonDisclosureContinue.setOnClickListener { viewModel.acknowledgeDisclosureAndRetry() }
+        binding.buttonRetry.setOnClickListener { viewModel.retry() }
 
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -65,7 +71,8 @@ class ResultActivity : AppCompatActivity() {
 
     private fun render(state: ResultUiState) {
         binding.progress.isVisible = state is ResultUiState.Loading
-        binding.textError.isVisible = state is ResultUiState.Error
+        binding.disclosure.isVisible = state is ResultUiState.DisclosureRequired
+        binding.errorGroup.isVisible = state is ResultUiState.Error
         binding.content.isVisible = state is ResultUiState.Success
 
         if (state is ResultUiState.Success) {
@@ -74,6 +81,49 @@ class ResultActivity : AppCompatActivity() {
             binding.textDirection.setText(state.direction.displayNameRes)
             binding.buttonReplace.isVisible = !state.isReadOnly
         }
+
+        if (state is ResultUiState.Error) {
+            binding.textError.setText(state.kind.messageRes())
+        }
+
+        state.timingOutcome()?.let(::recordRenderTiming)
+    }
+
+    /**
+     * Closes out the Gate 1 timing chain (docs/VALIDATION_PLAN.md §3.4) once a terminal state is
+     * actually on screen. Loading is not terminal, so it produces no mark.
+     *
+     * T_render is defined as "usable result visible". The closest observable approximation is the
+     * first message to run after the frame carrying this state has been produced: the pre-draw
+     * listener fires while that frame is being built, and posting from it lands just after. This
+     * over-reports slightly against a true photometric measurement, which is why
+     * docs/VALIDATION_PLAN.md §3.4 also asks for a visual/high-speed sanity check against these
+     * numbers rather than trusting them alone.
+     */
+    private fun recordRenderTiming(outcome: TimingOutcome) {
+        OneShotPreDrawListener.add(binding.root) {
+            binding.root.post {
+                TranslationTimeline.mark(TimingMark.T_RENDER)
+                TranslationTimeline.complete(outcome)
+            }
+        }
+    }
+
+    private fun ResultUiState.timingOutcome(): TimingOutcome? = when (this) {
+        is ResultUiState.Loading -> null
+        is ResultUiState.Success -> TimingOutcome.SUCCESS
+        is ResultUiState.DisclosureRequired -> TimingOutcome.DISCLOSURE_REQUIRED
+        is ResultUiState.Error ->
+            if (kind == ErrorKind.OFFLINE) TimingOutcome.OFFLINE else TimingOutcome.FAILED
+    }
+
+    private fun ErrorKind.messageRes(): Int = when (this) {
+        ErrorKind.OFFLINE -> R.string.error_offline
+        ErrorKind.RATE_LIMITED -> R.string.error_rate_limited
+        ErrorKind.TIMEOUT -> R.string.error_timeout
+        ErrorKind.PROVIDER_ERROR -> R.string.error_provider
+        ErrorKind.INVALID_RESPONSE -> R.string.error_invalid_response
+        ErrorKind.UNSUPPORTED_INPUT -> R.string.error_generic
     }
 
     private fun copyTranslationToClipboard() {

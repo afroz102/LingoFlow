@@ -14,4 +14,17 @@
     <string name="action_replace">Replace</string>
     <string name="copied_confirmation">Copied</string>
     <string name="error_generic">Couldn\'t translate that.</string>
+
+    <!-- docs/CLOUD_AND_HINGLISH_DECISION.md "Privacy conflict": shown once before the first
+         request that sends selected text to Gemini. Placeholder pending provider/legal review
+         (docs/IMPLEMENTATION_PLAN.md §7) — the exact wording is not final. -->
+    <string name="disclosure_message">Selected text is sent through our translation server to Google\'s Gemini API. Under Google\'s free tier, content may be reviewed by people and used to improve its products. Please don\'t translate sensitive or confidential text. We don\'t save translation text or results. Our server stores total request counts to limit usage. No account or sign-in is needed.</string>
+    <string name="action_continue">Continue</string>
+    <string name="action_retry">Retry</string>
+
+    <string name="error_offline">No internet connection. Connect and try again.</string>
+    <string name="error_rate_limited">Translation is busy right now. Try again in a moment.</string>
+    <string name="error_timeout">That took too long. Try again.</string>
+    <string name="error_provider">Couldn\'t reach the translation service. Try again.</string>
+    <string name="error_invalid_response">Got an unexpected response. Try again.</string>
 </resources>

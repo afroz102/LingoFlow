@@ -1,17 +1,22 @@
 # Implementation Plan — InstantTranslate / LingoFlow V1
 
+> **Backend update — 2026-10-04:** The user requested our own backend without authentication.
+> [BACKEND_SETUP.md](BACKEND_SETUP.md) describes the current Workers/SQLite test implementation.
+> Firebase, Supabase, App Check, and “no app-owned backend/database” statements below are historical;
+> the selection workflow, language requirements, and unpassed quality/release gates remain applicable.
+
 | Field | Value |
 |---|---|
-| Status | Actionable build plan derived from the existing document set |
-| Date | 2026-08-16 |
+| Status | Actionable build plan derived from the existing document set. Living document — update the stage sections below as work completes, don't let them drift from reality. |
+| Date | 2026-08-16 (last reviewed 2026-08-17) |
 | Scope | Turns [Technical plan](TECHNICAL_PLAN.md)'s staged plan and [Validation plan](VALIDATION_PLAN.md)'s gates into concrete engineering steps |
-| Precondition | No code, no Gradle project, no git repository currently exist |
+| Current state (2026-08-17) | Stage 0A engineering-complete (physical-device matrix still open). Stage 0B **not done** — see the callout in §3. Stage 1 items 1–6 implemented ahead of Stage 0B, a deviation from this plan's own ordering (also flagged in §3). Items 7–11 are blocked on Stage 0B. See [README](../README.md) for the authoritative up-to-date status. |
 
 This document does not redefine scope, requirements, or gates — those remain owned by [Product requirements](PRODUCT_REQUIREMENTS.md), [Technical plan](TECHNICAL_PLAN.md), and [Validation plan](VALIDATION_PLAN.md). It answers a narrower question: **in what order do I actually create files, projects, and infrastructure to get from zero to a released V1?**
 
 ---
 
-## 0. Pre-flight (before any code)
+## 0. Pre-flight (before any code) — done
 
 | Task | Why | Blocks |
 |---|---|---|
@@ -50,7 +55,7 @@ This mirrors [Technical plan §3](TECHNICAL_PLAN.md#3-v1-logical-boundaries)'s p
 
 ---
 
-## 2. Stage 0A — Process Text platform spike (→ Gate 0)
+## 2. Stage 0A — Process Text platform spike (→ Gate 0) — engineering done, Gate 0 not formally closed
 
 Goal: prove the Android integration with **zero ML/cloud code**, using a deterministic stub, per [Technical plan §10](TECHNICAL_PLAN.md#10-staged-implementation-plan) and [Validation plan §2](VALIDATION_PLAN.md#2-gate-0--android-workflow-viability).
 
@@ -73,30 +78,46 @@ Goal: prove the Android integration with **zero ML/cloud code**, using a determi
 
 ---
 
-## 3. Stage 0B — Freeze the benchmark protocol
+## 3. Stage 0B — Freeze the benchmark protocol — **partially backfilled (2026-09-09); blocked on the project owner**
 
 Do this **before** writing any cloud code, per [Technical plan §10 Stage 0B](TECHNICAL_PLAN.md#10-staged-implementation-plan).
 
-1. Acquire/reserve the physical reference devices for the low/mid/high tiers ([Validation Plan §3.2](VALIDATION_PLAN.md#32-reference-devices)).
-2. Lock the app/editor/keyboard matrix used in Stage 0A as the frozen set for cloud benchmarking too.
-3. Build the versioned 450–700 item English/Devanagari-Hindi/Hinglish corpus ([Validation Plan §4.1](VALIDATION_PLAN.md#41-corpus)) as a structured file (JSON/CSV) in `benchmark/corpus/`, including the adversarial meaning-reversal subset.
-4. Recruit two independent bilingual reviewers for blinded scoring (§4.2).
-5. Adopt the provisional budgets in [Validation Plan §3.6](VALIDATION_PLAN.md#36-provisional-v1-budgets) as-is, or explicitly revise them with sign-off — never silently.
-6. Build the automated timing harness (UI Automator/Espresso + trace markers) implementing the `T_action` … `T_render` timestamps from §3.4, with a hard rule that no selected text or hash ever enters a trace label.
+> **Sequencing deviation (recorded 2026-08-17):** Stage 1 items 1–6 (Firebase wiring, the
+> `provider/gemini/` adapter, `cloud/` disclosure + connectivity gates, coordinator wiring, and
+> failure-state mapping) were implemented before any item below was done. This violated this
+> section's own ordering. It didn't corrupt the provider code (which doesn't read the corpus or
+> harness), but it left Stage 1 items 7–9 blocked on this section. **Decision: backfill Stage 0B
+> in full before continuing to Stage 1 items 7–11.**
+>
+> **Backfill status (2026-09-09):** items 2, 3 and 6 are done — the corpus, the frozen
+> host/keyboard matrix and the timing harness all exist and are checked in. Items 1 and 4
+> (reference devices, blinded reviewers) need the project owner and cannot be done from
+> engineering; item 5 needs a product signature. The exit artifact recording all of this is
+> [`benchmark/stage_0b_frozen_protocol.md`](../benchmark/stage_0b_frozen_protocol.md). Stage 1
+> items 7–11 stay blocked until items 1, 4 and the corpus source-text review are closed.
 
-**Exit artifact:** frozen corpus file, frozen device/host/keyboard list, frozen budgets, working timing harness — checked in before Stage 1 starts.
+1. Acquire/reserve the physical reference devices for the low/mid/high tiers ([Validation Plan §3.2](VALIDATION_PLAN.md#32-reference-devices)). — **Not done; needs the project owner.** Empty table to fill in at `benchmark/stage_0b_frozen_protocol.md` §1.
+2. Lock the app/editor/keyboard matrix used in Stage 0A as the frozen set for cloud benchmarking too. — **Done.** Frozen verbatim at `benchmark/stage_0b_frozen_protocol.md` §2; coverage actually achieved is still 2/5 OS bands, 1/5 device families, 2/10 hosts, 0/4 keyboards.
+3. Build the versioned 450–700 item English/Devanagari-Hindi/Hinglish corpus ([Validation Plan §4.1](VALIDATION_PLAN.md#41-corpus)) as a structured file (JSON/CSV) in `benchmark/corpus/`, including the adversarial meaning-reversal subset. — **Drafted, not frozen.** `benchmark/corpus/corpus_v1.jsonl`: 458 items, 244 in the protected critical subset, structurally gated by `benchmark/validate_corpus.py`. The Hindi/Hinglish *source* text has not been checked by a native speaker; that pass depends on item 4 and must happen before the corpus is frozen (see `benchmark/corpus/README.md` "Status").
+4. Recruit two independent bilingual reviewers for blinded scoring (§4.2). — **Not done; needs the project owner.** This is on the critical path twice over: the reviewers must validate the corpus source text before they score any model output.
+5. Adopt the provisional budgets in [Validation Plan §3.6](VALIDATION_PLAN.md#36-provisional-v1-budgets) as-is, or explicitly revise them with sign-off — never silently. — **Proposed as-is, unsigned.** Recommendation and signature block at `benchmark/stage_0b_frozen_protocol.md` §5.
+6. Build the automated timing harness (UI Automator/Espresso + trace markers) implementing the `T_action` … `T_render` timestamps from §3.4, with a hard rule that no selected text or hash ever enters a trace label. — **Built, compile-verified, never run on a device.** `timing/TranslationTimeline.kt`, the `TranslationLatencyBenchmark` UI Automator test, and `benchmark/collect_timings.py`; documented at [`benchmark/TIMING_HARNESS.md`](../benchmark/TIMING_HARNESS.md). The privacy rule is enforced by type signature — the mark API accepts only enums, so no caller can pass text. **Finding: `T_attested` and `T_first_output` cannot be produced** with the current SDK usage, which merges three of §3.4's derived intervals; see that document's "What cannot be measured yet".
+
+**Exit artifact:** [`benchmark/stage_0b_frozen_protocol.md`](../benchmark/stage_0b_frozen_protocol.md) — records which of the above are frozen, which are drafted, and which are blocked on the project owner. Not yet complete: see its closing table.
 
 ---
 
 ## 4. Stage 1 — Gemini cloud spike and model bake-off (→ Gate 1)
 
-1. Create the Firebase project; enable AI Logic; configure App Check (Play Integrity for release config, the documented debug provider for local dev only).
-2. Add the Firebase AI Logic SDK to `app`. No raw Gemini API key anywhere in the APK (FR-06).
-3. Implement the `provider/` boundary exactly as the typed contract in [Technical plan §3](TECHNICAL_PLAN.md#3-v1-logical-boundaries): `translate(text, sourceHint, target) → translated text | typed failure`, with **no** Firebase/Gemini types leaking outside `provider/gemini/`.
-4. Implement `cloud/`: disclosure gate (blocks the first content-bearing request until acknowledgement), connectivity/quota/timeout state machine, bounded retry with jitter only where safe.
-5. Wire the coordinator to call the provider only after disclosure + validation, per the [runtime state model](TECHNICAL_PLAN.md#5-runtime-state-model).
-6. Map provider failures (offline, `RESOURCE_EXHAUSTED`, timeout, invalid response) to content-free typed errors surfaced by the result Activity.
-7. Instrument the full timing chain from Stage 0B's harness against real network calls.
+**Status: items 1–3, 5, 6 done. Item 4 partially done (see note). Items 7–11 blocked on §3.**
+
+1. Create the Firebase project; enable AI Logic; configure App Check (Play Integrity for release config, the documented debug provider for local dev only). — Code-side wiring (`InstantTranslateApplication`) is done; the actual Firebase project/`google-services.json` still has to be created by whoever owns the Google account (see README "Setting up Firebase for Stage 1") — this can't be scripted.
+2. Add the Firebase AI Logic SDK to `app`. No raw Gemini API key anywhere in the APK (FR-06). — Done.
+3. Implement the `provider/` boundary exactly as the typed contract in [Technical plan §3](TECHNICAL_PLAN.md#3-v1-logical-boundaries): `translate(text, sourceHint, target) → translated text | typed failure`, with **no** Firebase/Gemini types leaking outside `provider/gemini/`. — Done as `translate(text, direction: Direction)`; `Direction` is the sourceHint+target pair collapsed into one enum since Stage 0A only supports the two unambiguous directions (see `direction/Direction.kt`).
+4. Implement `cloud/`: disclosure gate (blocks the first content-bearing request until acknowledgement), connectivity/quota/timeout state machine, bounded retry with jitter only where safe. — Disclosure gate and connectivity pre-check are done. **The automatic bounded-retry-with-jitter is not implemented** — only a manual, user-tapped Retry button exists in the result UI. [Technical plan §6](TECHNICAL_PLAN.md#6-provider-lifecycle-and-latency) says to avoid *automatic* retry specifically for validation/quota/safety failures, which doesn't excuse skipping it for the safe case this line is written for (e.g. a single dropped connection on an otherwise-fine request). Add automatic bounded retry with jitter for that narrow case before calling this item done.
+5. Wire the coordinator to call the provider only after disclosure + validation, per the [runtime state model](TECHNICAL_PLAN.md#5-runtime-state-model). — Done.
+6. Map provider failures (offline, `RESOURCE_EXHAUSTED`, timeout, invalid response) to content-free typed errors surfaced by the result Activity. — Done (`GeminiExceptionMapper`, `FailureReason`, `ErrorKind`).
+7. Instrument the full timing chain from Stage 0B's harness against real network calls. — **Blocked: Stage 0B's harness doesn't exist yet.** Do not attempt this until §3 is backfilled.
 8. Run the model bake-off: the lowest-latency stable Gemini Flash-Lite model eligible for the free tier, plus one stronger Flash comparator, plus the Stage 0A stub as a platform-overhead baseline — across the text lengths, network profiles, and provider states in [Validation Plan §3.3](VALIDATION_PLAN.md#33-workloads-networks-and-states).
 9. Run the frozen corpus through both blinded reviewers; score per [§4.2](VALIDATION_PLAN.md#42-review-method); tag critical meaning reversals, hallucinations, omissions, script issues separately.
 10. Fill the [weighted decision scorecard](VALIDATION_PLAN.md#37-weighted-decision-scorecard); pin the winning model ID, SDK version, and prompt/schema version in a decision record.
@@ -148,10 +169,45 @@ Recommendation: raise the privacy-posture decision with stakeholders in parallel
 
 ---
 
-## 8. Immediate next actions
+## 8. Immediate next actions (updated 2026-09-09)
 
-1. `git init` + Android `.gitignore`.
-2. Pick the working package ID and create the `app` + `testhost` Gradle projects (Kotlin, single module each, min SDK 23 provisional).
-3. Implement the Stage 0A stub adapter end-to-end (steps in §2.1–2.7 above) — this is the fastest path to a real, demoable artifact.
-4. In parallel, start building the `testhost` fixtures and the compatibility matrix template.
-5. Raise the privacy-posture decision (§7) with whoever owns product/legal sign-off, so it isn't discovered late.
+§0, §1, §2 are done; §3 items 2, 3 and 6 are backfilled; §4 items 1–6 are done. **Everything that
+can be done from engineering alone on the Gate 1 path is now done.** The remaining critical-path
+work needs the project owner, and no amount of further coding substitutes for it.
+
+Owner-blocked, and blocking Gate 1:
+
+1. **Reserve the three reference devices** (§3 item 1). Table to fill in at
+   `benchmark/stage_0b_frozen_protocol.md` §1. Without frozen hardware, latency numbers are not
+   comparable between runs and the timing harness has nothing to run on.
+2. **Recruit the two blinded bilingual reviewers** (§3 item 4). They are needed twice: first to
+   confirm the corpus's Hindi/Hinglish source text reads naturally — until that pass happens the
+   corpus is a draft, not a frozen artifact — and then to score model output.
+3. **Create the Firebase project** and drop `google-services.json` into `app/` per README "Setting
+   up Firebase for Stage 1". Nothing in Stage 1 has ever been exercised against a live model.
+4. **Sign off the §3.6 budgets** (§3 item 5), as-is or explicitly revised. Recommendation and
+   signature block at `benchmark/stage_0b_frozen_protocol.md` §5. Sign before seeing comparative
+   results, not after.
+
+Engineering work that does not depend on the above:
+
+5. Add the automatic bounded-retry-with-jitter gap noted in §4 item 4 — still the one acknowledged
+   code gap in Stage 1.
+6. Decide whether the model bake-off needs time-to-first-token. If it does, the provider must move
+   to `generateContentStream` before benchmarking, because `T_first_output` cannot otherwise be
+   measured at all (`benchmark/TIMING_HARNESS.md`, "What cannot be measured yet"). Decide this
+   deliberately now rather than discovering it mid-bake-off.
+7. Dry-run the timing harness against the offline path on any device or emulator. It compiles but
+   has never been run; the UI Automator selection sequence should be expected to need adjustment on
+   first contact with real hardware. The offline path exercises the whole chain without needing
+   Firebase, which separates harness bugs from provider bugs.
+
+Then, and only then:
+
+8. Resume Stage 1 items 7–11 (timing instrumentation against real calls, the model bake-off,
+   blinded review, the decision scorecard, Gate 1 check).
+9. Raise the privacy-posture decision (§7) with whoever owns product/legal sign-off — it doesn't
+   block engineering but does block Stage 3.
+10. Close Gate 0 formally: run the physical-device compatibility matrix (§2 items 10–11) still open
+    per `benchmark/gate_0_result.md`. It needs the same hardware as item 1, so reserve once and use
+    it for both.
