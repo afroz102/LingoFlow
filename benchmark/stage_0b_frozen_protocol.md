@@ -1,7 +1,7 @@
 # Stage 0B — frozen benchmark protocol
 
 The exit artifact for
-[IMPLEMENTATION_PLAN.md §3](../docs/IMPLEMENTATION_PLAN.md#3-stage-0b--freeze-the-benchmark-protocol):
+[benchmark protocol](../docs/VALIDATION_PLAN.md):
 the corpus, the device/host/keyboard matrix, the budgets, and the timing harness, frozen
 **before** the Gate 1 model bake-off runs so that no measurement decision can be made after
 seeing which model is winning.
@@ -29,7 +29,7 @@ prevent — it makes latency numbers incomparable between runs.
 | High | Recent Pixel or Snapdragon flagship | _not yet reserved_ | | | |
 
 Per-run state to record alongside every result, per §3.2: thermal state, battery level, power
-mode, available storage, carrier/network, signal, VPN/private DNS, Firebase/App Check state, and
+mode, available storage, carrier/network, signal, VPN/private DNS, backend/model configuration, and
 whether the process already has a live connection.
 
 ---
@@ -64,7 +64,7 @@ matrix so the next pass re-checks them rather than assuming them:
 - a bare embedded `WebView` did not surface the action, while full Chrome did.
 
 Coverage actually achieved so far is 2 of 5 OS bands, 1 of 5 device families, 2 of 10 hosts and
-0 of 4 keyboards — see [`gate_0_scorecard.md`](gate_0_scorecard.md). Freezing the matrix does not
+0 of 4 keyboards — see [historical platform scorecard](gate_0_result.md#historical-gate-0-scorecard). Freezing the matrix does not
 close that gap; it fixes what the gap is measured against.
 
 ---
@@ -102,8 +102,7 @@ produce a quality verdict without them, no matter how much engineering is finish
 
 ## 5. Budgets (§3 item 5) — PROPOSED as-is, awaiting sign-off
 
-[IMPLEMENTATION_PLAN.md §3](../docs/IMPLEMENTATION_PLAN.md#3-stage-0b--freeze-the-benchmark-protocol)
-item 5 allows exactly two options: adopt
+Before comparative measurement, adopt
 [VALIDATION_PLAN.md §3.6](../docs/VALIDATION_PLAN.md#36-provisional-v1-budgets)'s provisional
 budgets as-is, or revise them with explicit sign-off. Never silently.
 
@@ -114,7 +113,7 @@ weaken measurements after choosing a favorite model" failure §3.6 warns against
 
 One budget deserves attention at sign-off rather than revision now: **full response ≤200 chars on
 stable reference Wi-Fi, P50 ≤1,000 ms / P95 ≤2,000 ms**. That is an end-to-end budget covering a
-cold-ish client, App Check attestation, a network round trip to a cloud model, and render. If any
+cold-ish client, a network round trip to a cloud model, and render. If any
 candidate misses it, the honest options are to revise the budget with sign-off *before* seeing
 the per-model comparison, or to change the product trade-off — not to re-slice the measurement
 afterwards.

@@ -1,7 +1,10 @@
+> Historical platform-spike evidence using the former stub provider. That provider has been
+> removed; these findings are not current backend/network or physical-device release results.
+
 # Gate 0 result — in progress, not a pass/fail verdict yet
 
 Status as of this entry: **partial evidence gathered on two emulator OS bands, one device
-profile**. This is not a Gate 0 pass — see `gate_0_scorecard.md` for the formal criterion-by-
+profile**. This is not a Gate 0 pass — see the historical scorecard below for the formal criterion-by-
 criterion walkthrough. [VALIDATION_PLAN.md §2.3](../docs/VALIDATION_PLAN.md#23-compatibility-matrix)
 requires physical devices across five OEM/device families and five OS bands, real IMEs, and ten
 representative host apps. Nothing here substitutes for that. What follows is what has actually
@@ -29,7 +32,7 @@ been exercised, so it doesn't have to be re-derived from scratch.
    it does not, and only system actions (`Read aloud` on API 34; nothing beyond
    Copy/Share/Select all on API 30) show. Re-run on Android 11 / API 30 — the exact version that
    introduced this behavior — with the same result as API 34, so this isn't an API-34-specific
-   artifact. This is exactly the variable IMPLEMENTATION_PLAN.md §2 item 9 and VALIDATION_PLAN.md
+   artifact. This is exactly the variable docs/TECHNICAL_PLAN.md and VALIDATION_PLAN.md
    §2.2 call out. minSdk=23 install and launch were also confirmed working on the API 30 image.
 3. **Read-only vs. editable is handled correctly.** Read-only selection → Copy only, no Replace
    button rendered. Editable selection → both Copy and Replace, and Replace closes the whole
@@ -125,7 +128,7 @@ exists to surface, and neither would have been caught by compiling alone.
 
 Run with a unique canary string (`ZQCANARY7f3a9c1e` and others) embedded in the selected text
 across editable, read-only, Replace-clicked, and malformed/whitespace-boundary variants, per the
-verification procedure in [PRIVACY_AND_SECURITY.md §8](../docs/PRIVACY_AND_SECURITY.md#8-verification-procedure).
+verification procedure in [privacy audit](../docs/TECHNICAL_PLAN.md#9-audit-and-release-review).
 
 - **Network**: `dumpsys netstats` shows zero recorded traffic for the app's UID before and after
   running multiple full flows — consistent with no `INTERNET` permission being declared and the
@@ -197,5 +200,45 @@ All exercised via `adb`/`uiautomator` (no crash in any case, confirmed via `logc
   assumed universal from one AOSP-like emulator.
 - The network audit is necessarily thin right now (there's no network code yet to audit
   meaningfully) — it needs to be re-run in full once Stage 1 adds the Gemini provider, per
-  PRIVACY_AND_SECURITY.md §8's network section (airplane mode, App Check init, error/cancel
+  TECHNICAL_PLAN.md's network section (airplane mode, App Check init, error/cancel
   paths, 30-minute idle).
+
+
+# Historical Gate 0 scorecard
+
+Formal walkthrough of [VALIDATION_PLAN.md §2.5](../docs/VALIDATION_PLAN.md#25-gate-0-pass-criteria)
+against the evidence gathered so far (`compatibility_matrix.csv`, `gate_0_result.md`). This is
+**docs/TECHNICAL_PLAN.md** — checking results against pass criteria — done honestly:
+every criterion below is either met on every row actually tested, or explicitly marked as not yet
+verifiable. None of this is a claim that Gate 0 has fully passed; see the verdict at the bottom.
+
+| # | Criterion | Status | Evidence |
+|---|---|---|---|
+| 1 | Exact input is received in every matrix row that declares Process Text support | **Met, on tested rows** | Every successful discovery row (testhost read-only TextView, real Chrome) delivered the selected text byte-for-byte, including Devanagari and Hinglish samples. |
+| 2 | Read-only input never exposes Replace | **Met** | Confirmed on every read-only test, both via direct intent and real host discovery — Replace is never rendered when `EXTRA_PROCESS_TEXT_READONLY` is true. |
+| 3 | Explicit Replace works in every matrix row declared replacement-compatible | **Met, on tested rows** | Verified via testhost and direct-intent editable cases: `RESULT_OK` with `EXTRA_PROCESS_TEXT` set, clean task teardown, no crash. |
+| 4 | Copy works from the result surface | **Met** | System clipboard preview toast + in-app "Copied" confirmation, verified repeatedly. |
+| 5 | Cancel, Back, and errors leave the host unchanged | **Met** | Back propagates `RESULT_CANCELED` with no extras through the full relay chain; every malformed-input case (wrong action, missing/wrong-type extra, whitespace-only, oversized, malformed parcel) resolves to a silent no-op before `ResultActivity` is ever shown. |
+| 6 | No Accessibility, overlay, IME, clipboard-read, background-service, or dangerous permission is used | **Met** | Manifest audit (`aapt2 dump xmltree`): one exported activity (`ProcessTextActivity`, intended), one exported receiver (AndroidX `ProfileInstallReceiver`, gated behind the system-only `DUMP` signature permission), one self-signed AndroidX boilerplate permission. No `INTERNET`, no dangerous permission, no services. |
+| 7 | Unsupported hosts and overflow placement are documented | **Met** | `compatibility_matrix.csv` documents the Compose and embedded-WebView non-discovery cases as findings, not omissions. Overflow (not top-level toolbar) placement is documented for every successful discovery row. |
+| 8 | The product support statement is revised to match evidence | **Met, this pass** | `PRODUCT_REQUIREMENTS.md` §6 now cites the specific Stage 0A findings (Compose/WebView absence, Chrome presence, the `<queries>` host-side dependency) directly, with a pointer to the full evidence trail. |
+| 9 | No selected text appears in network traffic, logs, persistent storage, notifications, or Recents snapshots during the stub flow | **Met, after a fix** | Network/logs/storage audited clean with a canary string (Privacy and Security §8 procedure). Recents snapshot leakage was found (a real bug — the calling host's own task snapshot captured our dialog's content despite `excludeFromRecents`) and fixed with `FLAG_SECURE`, then re-verified three ways. Notifications were not runtime-tested; the app has no notification-posting code path at all, so this is satisfied by absence of the capability rather than by a runtime negative test. |
+
+## Overall verdict: not a Gate 0 pass — conditionally clean on everything actually tested
+
+Every criterion holds on every row this environment could exercise. That is a meaningfully
+different claim from "Gate 0 passes." The gate is scoped to
+[VALIDATION_PLAN.md §2.3](../docs/VALIDATION_PLAN.md#23-compatibility-matrix)'s full matrix — five
+OEM/device families (Pixel/AOSP, Samsung, OnePlus, Xiaomi, a low-memory device), five OS bands,
+real IMEs, and ten representative hosts. This pass has covered one AOSP-like emulator profile
+across two of the five OS bands (API 30 and API 34 — Android 11 and Android 14), no real IME, and
+two of the ten representative hosts (a controlled test host and Chrome). The remaining coverage
+needs physical hardware this environment does not have — that is the actual blocker to a scored
+pass, not any known failing criterion.
+
+**Recommendation**: do not read this scorecard as clearance to start Stage 1. The physical-device
+matrix should still happen before treating Gate 0 as passed, per
+[benchmark protocol](../docs/VALIDATION_PLAN.md)'s
+own instruction: stop and revisit product scope if the target host segment fails, rather than
+compensating with a prohibited mechanism. Nothing found so far suggests that outcome — but nothing
+found so far rules it out on hardware not yet tested, either.

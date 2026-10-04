@@ -4,8 +4,8 @@ import com.lingoflow.instanttranslate.direction.Direction
 import com.lingoflow.instanttranslate.provider.FailureReason
 
 /**
- * Typed UI-facing outcome of a translate-selection request (docs/TECHNICAL_PLAN.md §3
- * coordinator, §5 runtime state model). [DisclosureRequired] and [Offline] are pre-flight gates
+ * Typed UI-facing outcome of a translate-selection request (docs/TECHNICAL_PLAN.md
+ * coordinator). [DisclosureRequired] and [Offline] are pre-flight gates
  * the coordinator checks before ever calling the provider; [Failed] covers everything the
  * provider itself can fail with.
  */

@@ -131,7 +131,7 @@ Verified on 2026-10-04 (India time):
 | Check | Result |
 |---|---|
 | Backend tests | 15 passed, including real SQLite persistence, four concurrent connections and stalled-database timeout |
-| Android JVM tests | 20 passed |
+| Android JVM tests | 20 passed at deployment; 16 remain and pass after removing the unused stub provider and its four tests |
 | Debug app and Android test APKs | Built successfully with the deployed HTTPS origin |
 | Hosted HTTP smoke | All 6 checks passed; health 200, invalid input 400, wrong method 405, no Auth route 404, both translation directions 200 |
 | Real Android transport, API 34 emulator | Both English→Hindi and Hindi→English passed against the public Worker without credentials |

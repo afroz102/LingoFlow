@@ -35,7 +35,7 @@ android {
 
     defaultConfig {
         applicationId = "com.lingoflow.instanttranslate"
-        // Provisional per docs/IMPLEMENTATION_PLAN.md §0 — not a final PRD §15 decision.
+        // Provisional minimum; physical-device compatibility review remains open.
         minSdk = 23
         targetSdk = 34
         versionCode = 1

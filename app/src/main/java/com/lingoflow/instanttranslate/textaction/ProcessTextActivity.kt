@@ -8,7 +8,7 @@ import com.lingoflow.instanttranslate.timing.TranslationTimeline
 import com.lingoflow.instanttranslate.ui.ResultActivity
 
 /**
- * Text-action adapter (docs/TECHNICAL_PLAN.md §3): the sole exported entry point for
+ * Text-action adapter (docs/TECHNICAL_PLAN.md): the sole exported entry point for
  * `ACTION_PROCESS_TEXT`. It draws no UI of its own (see `Theme.InstantTranslate.NoDisplay`) —
  * it validates the incoming intent, delegates presentation to [ResultActivity], and relays
  * whatever result that activity produces straight back to the host app that invoked Process

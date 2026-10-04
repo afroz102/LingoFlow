@@ -22,7 +22,7 @@ google-services.json
 ### macOS ###
 .DS_Store
 
-### Environment / secrets — never commit actual values, see .env.example ###
+### Environment / secrets — never commit actual values, see backend/.dev.vars.example ###
 .env
 .env.local
 .env.*.local
@@ -32,12 +32,6 @@ google-services.json
 
 ### Gradle wrapper jar is intentionally NOT ignored — it is checked in ###
 !gradle/wrapper/gradle-wrapper.jar
-
-# Supabase machine-local configuration and tooling
-supabase.properties
-supabase/.temp/
-supabase/.branches/
-supabase/.env
 
 # Custom backend machine-local config, credentials and SQLite/tooling state
 backend.properties

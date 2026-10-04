@@ -18,7 +18,7 @@ android {
 
     // Dev-only controlled host app (docs/VALIDATION_PLAN.md §2.2), never published. Two build
     // variants isolate one Android 11+ package-visibility variable at a time (§2.2 /
-    // docs/IMPLEMENTATION_PLAN.md §2 item 9): whether *this host* declares the official
+    // docs/TECHNICAL_PLAN.md): whether *this host* declares the official
     // <queries> element for discovering PROCESS_TEXT-capable packages.
     flavorDimensions += "queries"
     productFlavors {

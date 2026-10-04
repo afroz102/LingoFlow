@@ -16,7 +16,7 @@ import org.junit.runner.RunWith
 import java.io.File
 
 /**
- * The Gate 1 automated timing harness (docs/IMPLEMENTATION_PLAN.md §3 item 6, timing definitions
+ * The Gate 1 automated timing harness (docs/TECHNICAL_PLAN.md, timing definitions
  * in docs/VALIDATION_PLAN.md §3.4).
  *
  * It drives the **real** cross-app path — a genuine text selection in the dev-only test host,
@@ -274,9 +274,8 @@ class TranslationLatencyBenchmark {
         const val TOOLBAR_TIMEOUT_MILLIS = 2_000L
         const val UI_TIMEOUT_MILLIS = 5_000L
 
-        // Longer than GeminiTranslationProvider's own 20s request deadline, so a run that the
-        // provider itself times out still produces a recorded TIMEOUT outcome rather than being
-        // cut short here and misattributed to the harness.
+        // Wait for the result Activity to appear. Full selection-to-render collection still
+        // needs separate harness validation; this is not the HTTP provider deadline.
         const val RESULT_TIMEOUT_MILLIS = 25_000L
     }
 }

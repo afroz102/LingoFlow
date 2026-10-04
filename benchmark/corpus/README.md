@@ -1,9 +1,8 @@
 # corpus/
 
-The frozen translation-quality corpus for the Gate 1 model bake-off
-([VALIDATION_PLAN.md §4.1](../../docs/VALIDATION_PLAN.md#41-corpus)), built as
-[IMPLEMENTATION_PLAN.md §3](../../docs/IMPLEMENTATION_PLAN.md#3-stage-0b--freeze-the-benchmark-protocol)
-item 3.
+The draft translation-quality corpus for the Gate 1 model bake-off, defined by
+[VALIDATION_PLAN.md §4.1](../../docs/VALIDATION_PLAN.md#41-corpus). Source review is required
+before freezing it.
 
 | File | What it is |
 |---|---|
@@ -78,16 +77,15 @@ than naturally written. Every other item is authored.
 
 This corpus is complete and structurally validated, but it is **not** frozen, for one honest
 reason: the Hindi and Hinglish source text in it has not been checked by a native bilingual
-speaker. It was authored as part of the Stage 0B backfill, and
-[IMPLEMENTATION_PLAN.md §3](../../docs/IMPLEMENTATION_PLAN.md#3-stage-0b--freeze-the-benchmark-protocol)
-item 4 — recruiting two independent bilingual reviewers — has not happened yet.
+speaker. The two independent bilingual reviewers required by
+[the review protocol](../../docs/VALIDATION_PLAN.md#42-review-method) have not been recruited.
 
 That matters concretely: if a Hindi source sentence is subtly unnatural, every model in the
 bake-off is scored on text no real user would have selected, and the resulting quality numbers
 are measuring the wrong thing. Naturalness of the *source* is a precondition for the review
 protocol, not an output of it.
 
-**Before this corpus is frozen and used for Gate 1**, the reviewers recruited under §3 item 4
+**Before this corpus is frozen and used for Gate 1**, the reviewers recruited under the review protocol
 must pass over every `hi_to_en`, `hinglish_to_en` and `en_to_hinglish` item and confirm the
 source reads as something a real speaker would write. Corrections at that stage are expected and
 are not a defect in the corpus. Freeze it — tag the version, record the reviewers — only after

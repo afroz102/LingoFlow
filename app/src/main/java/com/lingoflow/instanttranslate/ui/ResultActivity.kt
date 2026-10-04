@@ -22,7 +22,7 @@ import com.lingoflow.instanttranslate.timing.TranslationTimeline
 import kotlinx.coroutines.launch
 
 /**
- * Result presenter (docs/TECHNICAL_PLAN.md §3). Reached only from [com.lingoflow.instanttranslate.textaction.ProcessTextActivity]
+ * Result presenter (docs/TECHNICAL_PLAN.md). Reached only from [com.lingoflow.instanttranslate.textaction.ProcessTextActivity]
  * via an explicit intent — never launched directly by a host app. Renders the translation,
  * writes to the clipboard only on explicit Copy, and returns translated text only on explicit
  * Replace (and only when the source selection was editable).

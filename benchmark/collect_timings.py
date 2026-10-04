@@ -36,11 +36,11 @@ DERIVED_INTERVALS = [
 # omitted, so a reader is never left assuming the whole 3.4 chain was measured.
 UNAVAILABLE_INTERVALS = {
     "attestation (T_attested - T_client_ready)":
-        "The Firebase AI Logic SDK does not expose the App Check token used by a specific "
-        "generateContent call, so there is no attestation-ready instant to mark.",
+        "Not applicable: the current backend requires no authentication or attestation. "
+        "No attestation-ready instant exists.",
     "provider_first_output (T_first_output - T_request_sent)":
-        "Needs a streaming response. GeminiTranslationProvider uses non-streaming "
-        "generateContent, so no first-token event exists. 3.4 itself scopes this to "
+        "Needs a streaming response. BackendTranslationProvider waits for a complete "
+        "JSON response, so no first-token event exists. 3.4 scopes this to "
         "'when exposed by the SDK'.",
     "completion (T_response_end - T_first_output)":
         "Depends on T_first_output above.",

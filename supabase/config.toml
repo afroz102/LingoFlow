@@ -1,6 +1,0 @@
-project_id = "lingoflow"
-
-[functions.translate]
-# New Supabase signing keys are verified by /auth/v1/user in the handler.
-# Every content-bearing request still requires a real user access token.
-verify_jwt = false

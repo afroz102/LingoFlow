@@ -5,15 +5,8 @@ import androidx.core.content.edit
 import com.lingoflow.instanttranslate.cloud.DisclosureGate
 
 /**
- * Local, non-content preference (docs/TECHNICAL_PLAN.md §3 "Local preferences": "cloud-processing
- * disclosure acknowledgement version"). Plain SharedPreferences, per docs/TECHNICAL_PLAN.md §3's
- * "use the simplest platform storage ... do not add a repository abstraction or database solely
- * for a few settings."
- *
- * Stored as a version number, not a boolean, so a future change to the disclosure wording or the
- * underlying terms (docs/CLOUD_AND_HINGLISH_DECISION.md "Privacy conflict") can bump
- * [CURRENT_DISCLOSURE_VERSION] and re-prompt users who already acknowledged an older version,
- * instead of silently carrying forward consent to different terms.
+ * Stores only the acknowledged disclosure version. Bump [CURRENT_DISCLOSURE_VERSION] when
+ * processing or terms change so an older acknowledgement cannot silently approve a new notice.
  */
 class DisclosurePreferences(context: Context) : DisclosureGate {
 

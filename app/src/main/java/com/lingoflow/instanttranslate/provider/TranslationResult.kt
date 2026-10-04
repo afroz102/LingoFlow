@@ -10,10 +10,10 @@ enum class FailureReason {
     /** Reserved for a provider that can distinguish this from a generic failure; used by the backend input boundary. */
     UNSUPPORTED_INPUT,
 
-    /** The provider itself reported a quota/rate limit (docs/TECHNICAL_PLAN.md §7: "treat RESOURCE_EXHAUSTED ... as a normal recoverable product state"). Never auto-retried (docs/TECHNICAL_PLAN.md §6). */
+    /** Quota/rate limit from our backend or Gemini. Retry only on explicit user action. */
     RATE_LIMITED,
 
-    /** The request did not complete within its bounded deadline (docs/TECHNICAL_PLAN.md §6 "use explicit deadlines"). */
+    /** The request did not complete within its bounded deadline. */
     TIMEOUT,
 
     /** Any other provider-side failure: server error, safety block, misconfiguration, or an unrecognized exception type. */

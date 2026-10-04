@@ -19,7 +19,7 @@ import kotlinx.coroutines.launch
 /**
  * Retained across rotation/config change so the translation isn't redone on every rotation —
  * there is no persistence beyond the ViewModel's own lifetime (no saved instance state, no
- * disk), matching docs/TECHNICAL_PLAN.md §3's "avoid saving source/result" rule for the presenter.
+ * disk), matching docs/TECHNICAL_PLAN.md's "avoid saving source/result" rule for the presenter.
  *
  * [AndroidViewModel] rather than a plain [androidx.lifecycle.ViewModel] only because the Stage 1
  * gates it wires up ([DisclosurePreferences], [AndroidConnectivityChecker]) need a

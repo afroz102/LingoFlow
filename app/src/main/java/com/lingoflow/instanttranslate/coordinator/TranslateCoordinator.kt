@@ -9,7 +9,7 @@ import com.lingoflow.instanttranslate.timing.TimingMark
 import com.lingoflow.instanttranslate.timing.TranslationTimeline
 
 /**
- * Translate-selection coordinator (docs/TECHNICAL_PLAN.md §3, §5 runtime state model). Takes
+ * Translate-selection coordinator (docs/TECHNICAL_PLAN.md). Takes
  * already-validated, already-flattened text from the text-action adapter and, in order: checks
  * disclosure acknowledgement, checks connectivity, resolves direction, invokes the provider, and
  * returns a typed outcome. Both gate checks run before the provider is touched — no request is

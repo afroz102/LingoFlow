@@ -1,14 +1,9 @@
 package com.lingoflow.instanttranslate.direction
 
 /**
- * Stage 0A direction signal: the "cheap script signal for clear Devanagari" described in
- * docs/TECHNICAL_PLAN.md §3's direction policy boundary. It only distinguishes text that
- * contains Devanagari codepoints from text that doesn't.
- *
- * This is deliberately not the full policy. Ambiguity classification for short, mixed, and
- * Romanized (Hinglish) text, plus a user-correctable override, is Stage 2 scope
- * (docs/IMPLEMENTATION_PLAN.md §5.1) — introducing it now would let this component silently
- * misrepresent a low-confidence guess as certainty, which docs/TECHNICAL_PLAN.md §3 forbids.
+ * Cheap script signal: any Devanagari routes to English; other text routes to Hindi.
+ * This does not resolve Latin Hinglish or mixed/short-text ambiguity. User-correctable
+ * direction and output-script controls remain requirements in docs/PRODUCT_REQUIREMENTS.md.
  */
 object DirectionDetector {
 

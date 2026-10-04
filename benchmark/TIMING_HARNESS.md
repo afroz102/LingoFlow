@@ -4,8 +4,7 @@
 > The hosted path and Android transport smoke pass; the full cross-app latency harness
 > still requires a separate run. See [current setup](../docs/BACKEND_SETUP.md).
 
-[IMPLEMENTATION_PLAN.md §3](../docs/IMPLEMENTATION_PLAN.md#3-stage-0b--freeze-the-benchmark-protocol)
-item 6: the automated harness that produces the
+The automated harness produces the
 [VALIDATION_PLAN.md §3.4](../docs/VALIDATION_PLAN.md#34-timing-definitions) timestamps.
 
 ## Pieces
@@ -112,7 +111,7 @@ calibrates this mark — do not treat the render number as exact without it.
 Verified so far, on this machine:
 
 - both modules and the androidTest APK compile (`:app:assembleDebugAndroidTest`);
-- the 20 current unit tests pass with the custom backend adapter;
+- the 16 current unit tests pass with the custom backend adapter;
 - the frozen corpus is present in the built test APK as `assets/corpus_v1.jsonl`; and
 - `collect_timings.py` produces correct sliced percentiles from synthetic runs, and fails loudly
   on malformed input and on out-of-order marks.

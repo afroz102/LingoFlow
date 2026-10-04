@@ -22,7 +22,7 @@ class DirectionDetectorTest {
 
     @Test
     fun `Romanized Hindi with no Devanagari codepoints detects as English to Hindi`() {
-        // Hinglish ambiguity classification is Stage 2 scope (docs/IMPLEMENTATION_PLAN.md §5.1) —
+        // Hinglish ambiguity classification is Stage 2 scope (docs/TECHNICAL_PLAN.md) —
         // Stage 0A's cheap script signal cannot and must not claim certainty here.
         assertEquals(Direction.ENGLISH_TO_HINDI, DirectionDetector.detect("aap kaise ho"))
     }

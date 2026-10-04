@@ -1,15 +1,8 @@
 # Validation, Benchmark, and Launch Plan
 
-> **Backend update — 2026-10-04:** The user requested our own backend without authentication.
-> [BACKEND_SETUP.md](BACKEND_SETUP.md) describes the current Workers/SQLite test implementation.
-> Firebase, Supabase, App Check, and “no app-owned backend/database” statements below are historical;
-> the selection workflow, language requirements, and unpassed quality/release gates remain applicable.
-
-| Field | Value |
-|---|---|
-| Status | Protocol draft; results not yet collected |
-| Date | 2026-07-30 |
-| Rule | Freeze protocol before comparing provider/model candidates |
+Updated 2026-10-04 for the custom backend. The hosted and emulator smoke checks pass;
+physical-device compatibility and blinded model scoring remain open. Freeze protocol before
+comparing models. See [current deployment evidence](BACKEND_SETUP.md#live-verification).
 
 ## 1. Purpose
 
@@ -27,7 +20,7 @@ All performance tests use release builds and physical devices unless a row is ex
 
 ### 2.1 Spike implementation scope
 
-The first build contains no translation SDK. It uses a deterministic local test mapping or equally trivial transformation so that model initialization, quality, and networking cannot hide platform behavior.
+The historical platform spike used a deterministic local mapping to isolate Android behavior. That unused product stub has been removed; its findings remain in benchmark/gate_0_result.md. Revalidate the platform cases below against the current build and distinguish network/provider time from platform overhead.
 
 It must demonstrate:
 
@@ -139,17 +132,17 @@ If this gate fails for the target host segment, stop before cloud-provider work 
 
 Required:
 
-- Firebase AI Logic with Firebase App Check and Gemini Developer API unpaid quota;
+- our HTTPS backend with SQLite aggregate quotas and Gemini Developer API unpaid quota;
 - the lowest-latency stable Gemini Flash-Lite model eligible for the chosen tier;
 - at least one stronger stable Gemini Flash candidate as a quality comparator if eligible; and
-- the deterministic local stub for platform-overhead comparison.
+- the existing historical platform baseline, clearly labeled by build/version; do not present it as a current provider candidate.
 
 Rules:
 
-- pin every model ID and client SDK version;
+- pin every model ID, Android version, backend revision and prompt/schema version;
 - do not compare preview models as the default release candidate unless no stable model meets scope;
 - do not enable model tools, browsing, grounding, files, chat history, or URL retrieval;
-- enforce App Check in the production-like test build; and
+- verify the public no-auth test API, atomic shared quota and server-only credential storage; and
 - use the same typed prompt/output contract for model comparisons.
 
 ### 3.2 Reference devices
@@ -162,7 +155,7 @@ Select and freeze exact devices before results:
 | Mid | 6–8 GB RAM, mainstream current Samsung/OnePlus class | Primary release gate |
 | High | Recent Pixel or Snapdragon flagship | Upper-bound comparison |
 
-Record thermal state, battery level, power mode, available storage, carrier/network, signal, VPN/private DNS, Firebase/App Check state, and whether the process has an existing connection.
+Record thermal state, battery level, power mode, available storage, carrier/network, signal, VPN/private DNS, backend/model configuration, and whether the process has an existing connection.
 
 ### 3.3 Workloads, networks, and states
 
@@ -176,13 +169,13 @@ Text lengths:
 
 Provider/client states:
 
-1. process dead, Firebase client uninitialized, App Check token cold, connection cold;
+1. process dead, HTTP client and connection cold;
 2. process alive, client uninitialized;
-3. client initialized, App Check token warm, connection cold;
+3. client initialized, connection cold;
 4. process/client/connection warm;
 5. airplane mode;
 6. high-latency or lossy network;
-7. App Check rejected or unavailable;
+7. quota database unavailable or timed out;
 8. free-tier quota/rate limit exhausted;
 9. provider/model unavailable or invalid response;
 10. repeated alternating English/Hindi/Hinglish requests; and
@@ -203,10 +196,10 @@ Measure:
 - `T_action`: automated tap on the selection action;
 - `T_receive`: Process Text Activity receives and validates input;
 - `T_direction`: direction available;
-- `T_client_ready`: Firebase client ready;
-- `T_attested`: App Check token ready;
+- `T_client_ready`: backend client configured;
+- `T_attested`: not applicable to this unauthenticated test build;
 - `T_request_sent`: request body sent;
-- `T_first_output`: first provider output observed when exposed by the SDK;
+- `T_first_output`: first provider output if streaming is implemented; unavailable currently;
 - `T_response_end`: complete validated response returned;
 - `T_render`: usable result visible.
 
@@ -215,8 +208,8 @@ Derived:
 - platform entry = `T_receive - T_action`;
 - direction = `T_direction - T_receive`;
 - client readiness = `T_client_ready - T_direction`;
-- attestation = `T_attested - T_client_ready`;
-- request setup/upload = `T_request_sent - T_attested`;
+- attestation is not applicable; do not report a zero-duration token measurement;
+- request setup = `T_request_sent - T_client_ready`;
 - provider/network first output = `T_first_output - T_request_sent`;
 - completion = `T_response_end - T_first_output`;
 - render = `T_render - T_response_end`;
@@ -246,11 +239,11 @@ For each candidate record:
 - time and memory recovery after the result closes;
 - request and response bytes per operation/text length;
 - radio/network energy for fixed Wi-Fi and mobile workloads;
-- Firebase/App Check initialization traffic;
+- backend health/configuration traffic, separately from content requests;
 - network activity during successful, failed, cancelled, and idle states; and
 - app-owned scheduled work/CPU/network while idle.
 
-Measure on clean installs and upgrades. Separate app code, Firebase AI Logic, App Check/Play Integrity, and other transitive footprint.
+Measure on clean installs and upgrades. Separate Android code, HTTP transport/dependencies, backend/SQLite work and model/network time.
 
 ### 3.6 Provisional V1 budgets
 
@@ -262,7 +255,7 @@ These are planning gates, not measured claims. Freeze or deliberately revise the
 | Full response, ≤200 chars, stable reference Wi-Fi | P50 ≤1,000 ms | P95 ≤2,000 ms; revise only by explicit sign-off |
 | Full response, stable mobile | Report P50/P95/P99 | Product sign-off required |
 | Direction/script policy, clear English/Devanagari corpus | P95 ≤50 ms | ≥98% correct clear-script routing |
-| Cold client/App Check/connection | Report separately | No persistent service workaround |
+| Cold client/connection | Report separately | No persistent service workaround |
 | Per-device app download excluding models | ≤25 MB | ≤35 MB |
 | Incremental peak PSS on mid device | ≤100 MB | ≤175 MB and no low-device OOM |
 | Intended request data | Selected text + bounded controls only | No surrounding/clipboard/host/history content |
@@ -353,26 +346,26 @@ Automatic BLEU/ChrF/COMET-style metrics may support regression testing but canno
 
 - Clean install before cloud disclosure
 - Disclosure accepted, declined, and notice-version change
-- Firebase initialization and App Check debug/Play Integrity separation
-- Unattested, replayed, expired, and rejected App Check states where reproducible
+- Public endpoint configuration, server secret storage and no key embedded in the APK
+- Parallel shared quotas, database failure/timeouts, UTC rollover and persistence
 - Wi-Fi/mobile success and network switch during a request
 - Airplane mode, DNS failure, TLS failure, timeout, and cancellation
 - `429 RESOURCE_EXHAUSTED`, transient 5xx, invalid model, and malformed/oversized response
 - Process death and rotation during the request/result
 - Pinned model unavailable/deprecated and reviewed model migration
-- Per-user and project quota behavior under controlled load
+- Shared minute/day and Google project quotas under controlled load; no per-user limits exist
 - Bounded retry behavior with no retry storm
 - App uninstall removes app-owned preferences and cached content
-- No selected text reaches Firebase/provider before acknowledgement
-- No selected text is placed in Remote Config, analytics, crash reports, or App Check diagnostics
+- No selected text reaches the backend/provider before acknowledgement
+- No selected text is placed in app/backend logs, analytics, crash reports or diagnostics
 
-Record provider-controlled model behavior, quota configuration, default per-user limits, and every reviewed model/config change.
+Record provider-controlled model behavior, aggregate quota configuration and every reviewed model/config change. The current allowance is 10/minute and 200/UTC day across all callers; pace benchmark runs accordingly.
 
 ## 6. Privacy and security validation
 
-Run the exact procedures in [Privacy and security](PRIVACY_AND_SECURITY.md), including:
+Run the [architecture/privacy audit](TECHNICAL_PLAN.md#9-audit-and-release-review), including:
 
-- proxy/packet inspection during setup, attestation, cloud operations, failures, and idle;
+- proxy/packet inspection during disclosure/configuration, cloud operations, failures, and idle;
 - `logcat` and crash-record review with distinctive canary text;
 - app-private/shared storage search after success, error, rotation, process death, and reboot;
 - saved-state, Recents, notification, and clipboard checks;
@@ -389,7 +382,7 @@ Pass when:
 - disclosure and every cloud failure state work;
 - language/script policy passes the clear-language gate and exposes ambiguity;
 - English/Hindi/Hinglish quality gates pass for the pinned model;
-- App Check is enforced in the production-like build and no raw Gemini key exists in the APK;
+- the intended public-access boundary and quotas are reviewed and no Gemini key exists in the APK;
 - lifecycle/cancellation/process-death tests pass;
 - 1,000 repeated workflows have no crash or ANR;
 - all declared privacy assertions pass;

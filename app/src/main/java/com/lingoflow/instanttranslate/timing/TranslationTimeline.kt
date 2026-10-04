@@ -41,7 +41,7 @@ enum class TimingOutcome {
  * Records the §3.4 timing chain for one translate request and emits it as a single content-free
  * line for the benchmark harness to collect (`benchmark/collect_timings.py`).
  *
- * **The privacy rule of docs/IMPLEMENTATION_PLAN.md §3 item 6 — "no selected text or hash ever
+ * **The privacy rule of docs/TECHNICAL_PLAN.md — "no selected text or hash ever
  * enters a trace label" — is enforced by this type's signature, not by convention.** [mark] and
  * [complete] accept only enum values; there is no overload anywhere that takes a caller-supplied
  * string, so there is no code path by which selected text, a translation, or a digest of either

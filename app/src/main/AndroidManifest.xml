@@ -11,7 +11,7 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <!--
-        android:forceQueryable is deliberately NOT set here. docs/IMPLEMENTATION_PLAN.md §2 item 9 /
+        android:forceQueryable is deliberately NOT set here. docs/TECHNICAL_PLAN.md /
         docs/VALIDATION_PLAN.md §2.2 call for testing it only as a one-off spike experiment (does it
         change discovery from a host without the <queries> declaration?), weighed against making
         this app broadly visible to every other installed app — not adopting it as a default.
@@ -26,8 +26,8 @@
         android:supportsRtl="true">
 
         <!--
-            Text-action adapter (docs/IMPLEMENTATION_PLAN.md §1, docs/TECHNICAL_PLAN.md §3).
-            The only externally exported component. No launcher intent filter in Stage 0A —
+            Text-action adapter (docs/TECHNICAL_PLAN.md).
+            The only externally exported component. No launcher intent filter —
             this build is reached exclusively through the Process Text selection menu.
         -->
         <activity
