@@ -1,121 +1,176 @@
-# LingoBoard
+<p align="center">
+  <img src="docs/images/lingoboard-logo.svg" alt="LingoBoard" width="96">
+</p>
 
-Android translation keyboard with **45 languages and 67 language/script choices**, including
-22 Indian languages in native script or Roman characters. Source defaults to **Detect language**;
-target defaults to **English**. Gemini translates the meaning and context of the supplied passage.
+<h1 align="center">LingoBoard</h1>
 
-- **Keyboard writing:** tap the translation icon → choose source/target languages →
-  type in the separate draft → round arrow (**Translate & insert**). The result enters the chat; it is never sent automatically.
-- **Keyboard reading:** copy a received message → open the chat input → message icon →
-  the round **Translate** arrow. The result card appears above the keys, leaving your chat draft untouched.
-- **Write ↔ Read tabs:** the Translate and Read icons are tabs. Switching keeps each tab's own
-  draft and result, keeps the composer in place and slides one highlight between the icons; a
-  running translation finishes in its own tab unless a new request replaces it. Tapping the open
-  tab closes the panel and discards both drafts/results.
-- **Suggestions:** while typing, a local suggestion strip replaces Read/language tools with three words
-  (best guess in the centre): completions, one/two-typo corrections, next-word predictions and
-  Roman-Hindi (Hinglish) words. Translate stays accessible. Tapping one replaces the word at the cursor and adds a space.
-- **Selected editor text:** selecting text in the active typing field changes the translation icon’s
-  accessible label to **Translate selection**. Tap it to read the selection above the keyboard.
+<p align="center">
+  An Android keyboard that translates what you write and what you read, without leaving the chat.
+</p>
 
-The keyboard follows system light/dark mode with a graphite + indigo palette and a familiar five-row
-layout: a number row above three letter rows, a 10-key grid and a 56dp base row height in portrait.
-The bottom row is ?123, comma, emoji, Space, period and Enter. Letters have no long-press alternates. Keys are drawn on one
-canvas: the pressed shade, key preview balloon and haptic tick appear on touch-down, characters
-type on release, Delete/Shift act on touch-down, and a second finger commits the first key
-(rollover). Every page keeps the same height, so switching pages never resizes the host app.
-The header shows only the Translate/Read icons and keyboard switcher; source/target language
-chips appear once a translation panel opens. The draft composer holds Paste inside the field and a
-round Translate button beside it. Read stays highlighted and offers translation without insertion.
-One-shot Shift, double-tap/hold Caps Lock, three symbol pages (111 symbols), 50 smiley emoji,
-hold-to-delete and hold-Space keyboard switching are included. Translation in the keyboard needs
-**no overlay permission or reading session**. Typing and suggestions are local: the word lists
-ship in the app. Finished words and word-pair counts can be saved in private app storage to
-personalize suggestions. Learning is disabled in password, email, URL and app-marked incognito
-fields; **Clear learned words** in setup erases the local dictionary. Sentences auto-capitalise after ". " when the
-field asks for it. There is no autocorrect-on-space, swipe typing or voice input yet. Physical-device smoothness still needs testing.
-Screenshots are allowed. Setup uses a dim slate theme and collapses optional floating tools.
+<p align="center">
+  <img alt="Version" src="https://img.shields.io/badge/version-1.1.0-4f46e5">
+  <img alt="Android" src="https://img.shields.io/badge/Android-6.0%2B%20(API%2023)-3ddc84">
+  <img alt="Kotlin" src="https://img.shields.io/badge/Kotlin-Android-7f52ff">
+  <img alt="Backend" src="https://img.shields.io/badge/backend-Cloudflare%20Workers-f38020">
+</p>
 
-The existing **LingoBoard Translate** selection action still replaces editable selections. For
-read-only selections, with LingoBoard selected, it hands off to the next opened chat input
-for 60 seconds. A keyboard cannot inspect arbitrary message selections outside its active editor;
-copying and opening the composer is the reliable fallback.
+---
 
-[Keyboard layout](docs/images/keyboard-typing.png) · [Writing panel](docs/images/keyboard-writing.png) ·
-[Reading card](docs/images/keyboard-reading.png) · [Suggestion strip](docs/images/keyboard-suggestions.png) · [Landscape](docs/images/keyboard-landscape.png) ·
-[Dark keyboard](docs/images/keyboard-typing-dark.png) · [Dark reading](docs/images/keyboard-reading-dark.png).
-These show the actual view rendered on an emulator with synthetic samples.
-[Dim setup screen](docs/images/lingoboard-setup.png) · [LingoBoard logo](docs/images/lingoboard-logo.svg).
+## Overview
 
-An optional floating reading session remains for apps that allow overlays, with Copy, Minimize,
-Close and Stop. It is explicitly started and never restarts on boot.
+LingoBoard is an Android input method with built-in translation. It covers **45 languages and
+67 language/script options**, including all 22 scheduled Indian languages in both native script and
+Roman characters (e.g. Hinglish). Translation is handled by Gemini through a small Cloudflare
+Worker; typing and word suggestions run entirely on-device.
 
-The public testing backend runs on Cloudflare Workers Free with D1/SQLite and server-side Gemini.
-No account or authentication is needed. Every translation uses Gemini; there is no local
-translation engine or cached translation history. Only the requested text and language options leave
-the phone. Gemini's unpaid service is for non-sensitive test samples. Shared allowance:
-**10 translations/minute, 200/UTC day**, across all callers.
+The source language defaults to **Detect language** and the target to **English**.
 
-## Test on your phone
+## Features
 
-Install `app/build/outputs/apk/lingoboard/LingoBoard-1.1.0.apk`, then open **LingoBoard**.
-Tap **1. Enable LingoBoard**, enable it in system settings, then tap **2. Choose LingoBoard**.
-Open a chat input in your game/messaging app. Use the **translation icon** to write or the **message icon** to load a
-copied message, and acknowledge the disclosure before your first translation.
+- **Write:** compose in a separate draft, tap **Translate & insert**, and the result is placed in
+  the chat input. Nothing is ever sent automatically.
+- **Read:** copy a received message, open the chat input and tap the message icon. The translation
+  appears above the keys, leaving your own draft untouched.
+- **Independent tabs:** Write and Read keep their own draft and result, so you can switch between
+  them mid-conversation.
+- **Translate selection:** select text in the active field and translate it in place.
+- **Offline suggestions:** completions, typo corrections, next-word predictions and Roman Hindi
+  vocabulary from bundled word lists, personalised from private on-device history.
+- **Familiar layout:** five-row QWERTY with a number row, symbol and emoji pages, Caps Lock,
+  key previews, haptics and multi-touch rollover. Follows the system light/dark theme.
+- **No extra permissions:** keyboard translation needs no overlay permission or background session.
 
-Try `main kal nahi aa sakta` in the translation draft. Tap **Translate & insert** and check
-that English appears in the chat without sending it. Choose **Hindi (Roman)** as the target to test English → Roman Hindi.
-For reading, copy a Hinglish message, open the composer and tap the message icon, then **Translate**.
-The [phone guide](docs/BACKEND_SETUP.md#test-on-a-real-android-phone) includes all routes.
+<p align="center">
+  <img src="docs/images/keyboard-typing.png" alt="Keyboard" width="24%">
+  <img src="docs/images/keyboard-writing.png" alt="Writing panel" width="24%">
+  <img src="docs/images/keyboard-reading.png" alt="Reading card" width="24%">
+  <img src="docs/images/keyboard-suggestions.png" alt="Suggestion strip" width="24%">
+</p>
 
-## Languages and versions
+More screenshots: [dark keyboard](docs/images/keyboard-typing-dark.png) ·
+[dark reading](docs/images/keyboard-reading-dark.png) ·
+[landscape](docs/images/keyboard-landscape.png) ·
+[setup screen](docs/images/lingoboard-setup.png).
+All are rendered on an emulator with synthetic sample text.
 
-Indian languages: Assamese, Bengali, Bodo, Dogri, Gujarati, Hindi, Kannada, Kashmiri, Konkani,
-Maithili, Malayalam, Manipuri, Marathi, Nepali, Odia, Punjabi, Sanskrit, Santali, Sindhi, Tamil,
-Telugu and Urdu. Each has native-script and Roman translation options.
+## Getting started
 
-Other languages: English, Korean, Indonesian, Simplified Chinese, Japanese, Russian, French,
-Spanish, German, Arabic, Portuguese, Italian, Turkish, Vietnamese, Thai, Dutch, Polish,
-Ukrainian, Malay, Filipino, Persian, Hebrew and Swedish. The typing layout is Latin QWERTY;
-these are translation options, not separate native-script keyboard layouts.
+1. Install `LingoBoard-1.1.0.apk` (see [Build](#build) for where it is generated).
+2. Open **LingoBoard**, tap **Enable LingoBoard**, then **Choose LingoBoard**.
+3. Open any chat input and accept the one-time disclosure before your first translation.
 
-The language selectors remember your choices. Auto-detection is part of the same Gemini request,
-not an extra network call. Ambiguous short text can require explicitly choosing its source.
-Translation quality across every language still needs fluent-speaker review.
+Quick check: type `main kal nahi aa sakta` in the translation draft and tap **Translate & insert**.
+English text should appear in the chat input without being sent.
 
-APK naming is `LingoBoard-<version>.apk`: patches `1.0.1` → `1.0.2`, feature upgrades `1.1.0`,
-and complete upgrades `2.0.0`. Increment Android’s `versionCode` for every update. The application
-ID stays unchanged so the APK updates the existing installation.
+The [phone testing guide](docs/BACKEND_SETUP.md#test-on-a-real-android-phone) covers every flow.
 
-## Build and validate
+## Architecture
 
-JDK 17, Android SDK 34, provisional minimum Android 6/API 23; Node 24+ for the portable backend.
-Copy `backend.properties.example` to ignored `backend.properties` and set the public HTTPS origin.
-Never put a Gemini key in Android configuration.
+```text
+┌──────────────────────┐   HTTPS    ┌──────────────────────────┐        ┌────────┐
+│  Android IME (Kotlin)│ ─────────▶ │ Cloudflare Worker        │ ─────▶ │ Gemini │
+│  typing, suggestions │            │ /v1/translate, /healthz  │        └────────┘
+│  translation UI      │ ◀───────── │ D1 (SQLite) usage quotas │
+└──────────────────────┘            └──────────────────────────┘
+```
 
-```sh
-JAVA_HOME=/opt/homebrew/opt/openjdk@17 ./gradlew :app:assembleDebug :app:testDebugUnitTest :app:lintDebug :testhost:assembleWithQueriesDebug
+- Only the text being translated and the selected languages leave the device.
+- The Gemini API key lives exclusively in Worker Secrets; the APK embeds only the public URL.
+- No accounts, no stored translation history. Language detection happens in the same request.
+- The shared test backend is rate-limited to **10 translations/minute and 200/UTC day** across all
+  users, and runs on Gemini's free tier, so use non-sensitive text only.
+
+See the [technical plan](docs/TECHNICAL_PLAN.md) for design details.
+
+## Development
+
+### Requirements
+
+| Tool        | Version                     |
+|-------------|-----------------------------|
+| JDK         | 17                          |
+| Android SDK | 34 (min API 23)             |
+| Node.js     | 24+ (backend only)          |
+
+### Configuration
+
+```bash
+cp backend.properties.example backend.properties
+```
+
+Set `BACKEND_URL` to the public HTTPS origin of your Worker. This value is compiled into the APK,
+so **never** place API keys in it.
+
+### Build
+
+```bash
+./gradlew :app:assembleDebug
+```
+
+The versioned APK is written to `app/build/outputs/apk/lingoboard/LingoBoard-<version>.apk`.
+
+### Test
+
+```bash
+./gradlew :app:testDebugUnitTest :app:lintDebug :testhost:assembleWithQueriesDebug
+```
+
+```bash
 npm --prefix backend test
 ```
 
-The backend is deployed at `https://lingoflow-backend.lingoflow-backend.workers.dev`.
-The APK version is **1.1.0**, version code 7. No phone-side server/key setup.
+If Gradle does not pick up JDK 17, prefix the command with
+`JAVA_HOME=/opt/homebrew/opt/openjdk@17` (Homebrew on macOS).
 
-## Support and evidence
+### Backend
 
-Game of Khans, Discord, WhatsApp, Telegram and Instagram messages are target apps. Their actual
-selection, copy, overlay and keyboard behavior still needs physical-phone testing. Support for
-every Android phone/version is not established. Apps can omit selection actions or block overlays;
-Android/OEM restrictions also apply. Controlled keyboard tests run against a different-UID host with overlay permission denied.
-See the [validation plan](docs/VALIDATION_PLAN.md) for current keyboard results and earlier floating-flow evidence.
+```bash
+cd backend && cp .dev.vars.example .dev.vars && npm start
+```
 
-## Repository
+This serves the API on `127.0.0.1:8787` with a local SQLite database. Debug builds may call
+`localhost`, `127.0.0.1` or `10.0.2.2` over HTTP; release builds require HTTPS.
+Deployment to Cloudflare is documented in [BACKEND_SETUP.md](docs/BACKEND_SETUP.md).
 
-| Directory | Purpose |
-|---|---|
-| `app/` | Kotlin selection flows, setup, translation keyboard, optional floating reading session and HTTP provider |
-| `backend/` | Worker/Node API, SQLite aggregate quotas, tests and live smoke tool |
-| `shared/` | Translation language catalog, checked against Android IDs by backend tests |
-| `testhost/` | Development-only host and cross-UID reading/writing fixtures |
-| `benchmark/` | Dated evidence and historical corpus/timing tools |
-| `docs/` | [Product](docs/PRODUCT_REQUIREMENTS.md), [architecture](docs/TECHNICAL_PLAN.md), [validation](docs/VALIDATION_PLAN.md), [setup](docs/BACKEND_SETUP.md) |
+## Project structure
+
+```text
+app/         Android keyboard, setup screen, selection actions and backend client
+backend/     Cloudflare Worker / Node API, D1 quota schema, tests and smoke scripts
+shared/      Language catalog shared by the app and backend
+testhost/    Development-only host app for cross-process keyboard tests
+benchmark/   Translation corpus, timing harness and recorded results
+docs/        Product, architecture, validation and setup documentation
+```
+
+## Versioning
+
+Releases follow semantic versioning and the APK is named `LingoBoard-<version>.apk`:
+
+- **Patch** (`1.1.0 → 1.1.1`): fixes and polish
+- **Minor** (`1.1.x → 1.2.0`): new features
+- **Major** (`1.x → 2.0.0`): significant rewrites
+
+`versionCode` is incremented on every release. The application ID never changes, so new builds
+install over existing ones.
+
+## Known limitations
+
+- Target apps (WhatsApp, Telegram, Discord, Instagram, Game of Khans) still need verification on
+  physical devices; behaviour varies by OEM and Android version.
+- The keyboard cannot read text selected outside its active editor. Copy the message and use
+  **Read** instead.
+- The typing layout is Latin QWERTY only; other languages are translation targets, not native
+  keyboard layouts.
+- No autocorrect-on-space, swipe typing or voice input yet.
+- Translation quality across all languages has not yet been reviewed by fluent speakers.
+
+Current test evidence is tracked in the [validation plan](docs/VALIDATION_PLAN.md).
+
+## Documentation
+
+- [Product requirements](docs/PRODUCT_REQUIREMENTS.md)
+- [Technical plan](docs/TECHNICAL_PLAN.md)
+- [Validation plan](docs/VALIDATION_PLAN.md)
+- [Backend setup & phone testing](docs/BACKEND_SETUP.md)
